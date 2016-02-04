@@ -52,6 +52,7 @@ Filename: "{win}\explorer.exe"; Parameters: "{userprograms}\Docker\"; Flags: pos
 Name: desktopicon; Description: "{cm:CreateDesktopIcon}"
 Name: modifypath; Description: "Add docker binaries to &PATH"
 Name: upgradevm; Description: "Upgrade Boot2Docker VM"
+Name: ndis5; Description: "NDIS5"
 
 [Components]
 Name: "Docker"; Description: "Docker Client for Windows" ; Types: full custom; Flags: fixed
@@ -214,7 +215,7 @@ begin
 		// Don't do this until we can compare versions
 		// Wizardform.ComponentsList.Checked[3] := NeedToInstallVirtualBox();
 		Wizardform.ComponentsList.ItemEnabled[3] := not NeedToInstallVirtualBox();
-		Wizardform.ComponentsList.Checked[5] := NeedToInstallGit();
+		Wizardform.ComponentsList.Checked[4] := NeedToInstallGit();
 end;
 
 function InitializeSetup(): boolean;
@@ -243,9 +244,14 @@ end;
 procedure RunInstallVirtualBox();
 var
 	ResultCode: Integer;
+	MsiParams: String;
 begin
+	MsiParams := '';
+	if IsTaskSelected('ndis5') then
+		MsiParams := '-msiparams NETWORKTYPE=NDIS5';
+
 	WizardForm.FilenameLabel.Caption := 'installing VirtualBox'
-	if not Exec(ExpandConstant('msiexec'), ExpandConstant('/qn /i "{app}\installers\virtualbox\virtualbox.msi" /norestart -msiparams NETWORKTYPE=NDIS5'), '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
+	if not Exec(ExpandConstant('msiexec'), ExpandConstant('/qn /i "{app}\installers\virtualbox\virtualbox.msi" /norestart ' + MsiParams), '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
 		MsgBox('virtualbox install failure', mbInformation, MB_OK);
 end;
 
