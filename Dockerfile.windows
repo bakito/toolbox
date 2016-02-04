@@ -22,7 +22,6 @@ ENV DOCKER_VERSION 1.10.0-rc4
 ENV DOCKER_MACHINE_VERSION 0.6.0-rc4
 ENV DOCKER_COMPOSE_VERSION 1.6.0-rc2
 ENV BOOT2DOCKER_ISO_VERSION $DOCKER_VERSION
-ENV KITEMATIC_VERSION 0.9.6
 ENV VIRTUALBOX_VERSION 5.0.14
 ENV VIRTUALBOX_REVISION 105127
 ENV GIT_VERSION 2.7.0
@@ -39,11 +38,6 @@ RUN curl -fsSL -o docker-compose.exe "https://github.com/docker/compose/releases
 
 RUN curl -fsSL -o boot2docker.iso https://github.com/boot2docker/boot2docker/releases/download/v$BOOT2DOCKER_ISO_VERSION/boot2docker.iso
 
-RUN curl -fsSL -o kitematic.zip "https://github.com/kitematic/kitematic/releases/download/v$KITEMATIC_VERSION/Kitematic-$KITEMATIC_VERSION-Windows.zip" && \
-    mkdir kitematic && \
-    cd kitematic && \
-    unzip ../kitematic.zip && \
-    rm ../kitematic.zip
 RUN curl -fsSL -o Git.exe "https://github.com/git-for-windows/git/releases/download/v$GIT_VERSION.windows.1/Git-$GIT_VERSION-64-bit.exe"
 RUN curl -fsSL -o virtualbox.exe "http://download.virtualbox.org/virtualbox/$VIRTUALBOX_VERSION/VirtualBox-$VIRTUALBOX_VERSION-$VIRTUALBOX_REVISION-Win.exe"
 RUN wine virtualbox.exe -extract -silent -path . && \
