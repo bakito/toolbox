@@ -84,21 +84,24 @@ func main() {
 				panic(err)
 			}
 
-			if err := fetchTool(tmp, tool.Name, b.String(), tb.Target); err != nil {
+			if err := fetchTool(tmp, tool.Name, tool.Name, b.String(), tb.Target); err != nil {
 				panic(err)
 			}
 		} else if ghr != nil {
-
 			for _, a := range ghr.Assets {
-				if strings.Contains(a.Name, tool.Name) && matches(runtime.GOOS, a.Name) && matches(runtime.GOARCH, a.Name) {
-					if err := fetchTool(tmp, tool.Name, a.BrowserDownloadUrl, tb.Target); err != nil {
+				if a.Name == tool.FileNameForOS() {
+					if err := fetchTool(tmp, a.Name, tool.Name, a.BrowserDownloadUrl, tb.Target); err != nil {
+						panic(err)
+					}
+				} else if strings.Contains(a.Name, tool.Name) && matches(runtime.GOOS, a.Name) && matches(runtime.GOARCH, a.Name) {
+					if err := fetchTool(tmp, tool.Name, tool.Name, a.BrowserDownloadUrl, tb.Target); err != nil {
 						panic(err)
 					}
 				}
 				for _, add := range tool.Additional {
 
 					if strings.Contains(a.Name, add) && matches(runtime.GOOS, a.Name) && matches(runtime.GOARCH, a.Name) {
-						if err := fetchTool(tmp, add, a.BrowserDownloadUrl, tb.Target); err != nil {
+						if err := fetchTool(tmp, add, add, a.BrowserDownloadUrl, tb.Target); err != nil {
 							panic(err)
 						}
 					}
@@ -108,8 +111,8 @@ func main() {
 	}
 }
 
-func fetchTool(tmp string, toolName string, url string, targetDir string) error {
-	dir := fmt.Sprintf("%s/%s", tmp, toolName)
+func fetchTool(tmp string, remoteToolName string, trueToolName string, url string, targetDir string) error {
+	dir := fmt.Sprintf("%s/%s", tmp, remoteToolName)
 	paths := strings.Split(url, "/")
 	fileName := paths[len(paths)-1]
 	path := fmt.Sprintf("%s/%s", dir, fileName)
@@ -120,17 +123,17 @@ func fetchTool(tmp string, toolName string, url string, targetDir string) error 
 	if err := extract.File(path, dir); err != nil {
 		return err
 	}
-	ok, err := copyTool(dir, toolName, targetDir)
+	ok, err := copyTool(dir, remoteToolName, targetDir, trueToolName)
 	if err != nil {
 		return err
 	}
 	if !ok {
-		log.Printf("WARN: Could not find: %s", toolName)
+		log.Printf("WARN: Could not find: %s", remoteToolName)
 	}
 	return nil
 }
 
-func copyTool(dir string, tool string, targetDir string) (bool, error) {
+func copyTool(dir string, fileName string, targetDir string, targetName string) (bool, error) {
 	files, err := os.ReadDir(dir)
 	if err != nil {
 		return false, err
@@ -140,16 +143,16 @@ func copyTool(dir string, tool string, targetDir string) (bool, error) {
 		if file.IsDir() {
 			dirs = append(dirs, file)
 		}
-		if file.Name() == tool || (runtime.GOOS == "windows" && file.Name() == tool+".exe") {
+		if file.Name() == fileName || (runtime.GOOS == "windows" && file.Name() == fileName+".exe") {
 
-			if err := copyFile(dir, file, targetDir); err != nil {
+			if err := copyFile(dir, file, targetDir, targetName); err != nil {
 				return false, err
 			}
 			return true, nil
 		}
 	}
 	for _, d := range dirs {
-		ok, err := copyTool(filepath.Join(dir, d.Name()), tool, targetDir)
+		ok, err := copyTool(filepath.Join(dir, d.Name()), fileName, targetDir, targetName)
 		if ok || err != nil {
 			return ok, err
 		}
@@ -157,13 +160,13 @@ func copyTool(dir string, tool string, targetDir string) (bool, error) {
 	return false, nil
 }
 
-func copyFile(dir string, file os.DirEntry, targetDir string) error {
+func copyFile(dir string, file os.DirEntry, targetDir string, targetName string) error {
 	from, err := os.Open(filepath.Join(dir, file.Name()))
 	if err != nil {
 		return err
 	}
 	defer from.Close()
-	to, err := os.OpenFile(filepath.Join(targetDir, file.Name()), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+	to, err := os.OpenFile(filepath.Join(targetDir, targetName), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
 	if err != nil {
 		return err
 	}

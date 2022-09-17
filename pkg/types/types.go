@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"runtime"
 	"time"
 )
 
@@ -15,12 +16,30 @@ type Toolbox struct {
 }
 
 type Tool struct {
-	Name        string   `yaml:"name"`
-	Github      string   `yaml:"github"`
-	Google      string   `yaml:"google"`
-	DownloadURL string   `yaml:"downloadURL"`
-	Version     string   `yaml:"version"`
-	Additional  []string `yaml:"additional"`
+	Name        string     `yaml:"name"`
+	Github      string     `yaml:"github"`
+	Google      string     `yaml:"google"`
+	DownloadURL string     `yaml:"downloadURL"`
+	Version     string     `yaml:"version"`
+	Additional  []string   `yaml:"additional"`
+	FileNames   *FileNames `yaml:"fileNames"`
+}
+
+func (t *Tool) FileNameForOS() string {
+	if t.FileNames != nil {
+		switch runtime.GOOS {
+		case "linux":
+			return t.FileNames.Linux
+		case "windows":
+			return t.FileNames.Windows
+		}
+	}
+	return ""
+}
+
+type FileNames struct {
+	Linux   string `yaml:"linux"`
+	Windows string `yaml:"windows"`
 }
 
 func (t *Tool) LatestURL() string {
