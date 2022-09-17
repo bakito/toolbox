@@ -1,0 +1,12 @@
+tools:
+  kubexporter:
+    github: bakito/kubexporter
+  upx:
+    github: upx/upx
+  kubectx:
+    github: ahmetb/kubectx
+    additional:
+      - kubens
+  kubectl:
+    downloadURL: https://dl.k8s.io/release/{{ .Version }}/bin/{{ .OS }}/{{ .Arch }}/kubectl
+    version: https://storage.googleapis.com/kubernetes-release/release/stable.txt
