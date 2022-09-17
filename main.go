@@ -42,9 +42,14 @@ func main() {
 		var ghr *types.GithubRelease
 		if tool.Github != "" {
 			ghr = &types.GithubRelease{}
-			_, err := client.R().
-				EnableTrace().
+
+			ghc := client.R().
 				SetResult(ghr).
+				SetHeader("Accept", "application/json")
+			if t, ok := os.LookupEnv("GITHUB_TOKEN"); ok {
+				ghc = ghc.SetAuthToken(t)
+			}
+			_, err := ghc.
 				Get(tool.LatestURL())
 			//Get(os.Args[0])
 
