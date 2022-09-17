@@ -13,5 +13,9 @@ tools:
   helm:
     github: helm/helm
     downloadURL: https://get.helm.sh/helm-{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
+  jq:
+    github: stedolan/jq
+  yq:
+    github: mikefarah/yq
 
 target: ./download

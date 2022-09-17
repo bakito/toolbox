@@ -115,8 +115,12 @@ func fetchTool(tmp string, toolName string, url string, targetDir string) error 
 	if err := extract.File(path, dir); err != nil {
 		return err
 	}
-	if _, err := copyTool(dir, toolName, targetDir); err != nil {
+	ok, err := copyTool(dir, toolName, targetDir)
+	if err != nil {
 		return err
+	}
+	if !ok {
+		log.Printf("WARN: Could not find: %s", toolName)
 	}
 	return nil
 }
