@@ -10,7 +10,8 @@ const (
 )
 
 type Toolbox struct {
-	Tools map[string]*Tool `yaml:"tools"`
+	Tools  map[string]*Tool `yaml:"tools"`
+	Target string           `yaml:"target"`
 }
 
 type Tool struct {

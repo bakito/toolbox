@@ -10,3 +10,8 @@ tools:
   kubectl:
     downloadURL: https://dl.k8s.io/release/{{ .Version }}/bin/{{ .OS }}/{{ .Arch }}/kubectl
     version: https://storage.googleapis.com/kubernetes-release/release/stable.txt
+  helm:
+    github: helm/helm
+    downloadURL: https://get.helm.sh/helm-{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
+
+target: ./download

@@ -3,23 +3,28 @@ package extract
 import (
 	"archive/tar"
 	"archive/zip"
-	"github.com/verybluebot/tarinator-go"
-	"github.com/xi2/xz"
 	"io"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/verybluebot/tarinator-go"
+	"github.com/xi2/xz"
 )
 
 func File(file, target string) error {
 	if strings.HasSuffix(file, ".tar.gz") {
+		log.Printf("Extracting %s", file)
 		return tarGz(file, target)
 	}
 	if strings.HasSuffix(file, ".zip") {
+		log.Printf("Extracting %s", file)
 		return unzip(file, target)
 	}
 	if strings.HasSuffix(file, ".tar.xz") {
+		log.Printf("Extracting %s", file)
 		return tarXz(file, target)
 	}
 	return nil
@@ -40,13 +45,13 @@ func unzip(file string, target string) error {
 			return err
 		}
 		name := path.Join(target, file.Name)
-		os.MkdirAll(path.Dir(name), os.ModeDir)
+		_ = os.MkdirAll(path.Dir(name), os.ModeDir)
 		create, err := os.Create(name)
 		if err != nil {
 			return err
 		}
 		defer create.Close()
-		create.ReadFrom(open)
+		_, _ = create.ReadFrom(open)
 	}
 	return nil
 }

@@ -3,17 +3,18 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/bakito/toolbox/pkg/extract"
-	"github.com/bakito/toolbox/pkg/types"
-	"github.com/cavaliergopher/grab/v3"
-	"github.com/go-resty/resty/v2"
-	"gopkg.in/yaml.v3"
-	"html/template"
 	"log"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
+	"text/template"
+
+	"github.com/bakito/toolbox/pkg/extract"
+	"github.com/bakito/toolbox/pkg/types"
+	"github.com/cavaliergopher/grab/v3"
+	"github.com/go-resty/resty/v2"
+	"gopkg.in/yaml.v3"
 )
 
 func main() {
@@ -21,6 +22,10 @@ func main() {
 	tb, err := readToolbox()
 	if err != nil {
 		panic(err)
+	}
+
+	if tb.Target == "" {
+		tb.Target = "tools"
 	}
 
 	tmp, err := os.MkdirTemp("", "toolbox")
@@ -34,8 +39,9 @@ func main() {
 
 	for _, tool := range tb.Tools {
 		log.Printf("Download %s\n", tool.Name)
+		var ghr *types.GithubRelease
 		if tool.Github != "" {
-			ghr := &types.GithubRelease{}
+			ghr = &types.GithubRelease{}
 			_, err := client.R().
 				EnableTrace().
 				SetResult(ghr).
@@ -47,26 +53,12 @@ func main() {
 			}
 
 			if tool.Version == "" {
-				tool.Version = ghr.Name
+				tool.Version = ghr.TagName
 				log.Printf("Latest Version: %s", tool.Version)
 			}
+		}
 
-			for _, a := range ghr.Assets {
-				if strings.Contains(a.Name, tool.Name) && matches(runtime.GOOS, a.Name) && matches(runtime.GOARCH, a.Name) {
-					if err := fetchTool(tmp, tool.Name, a.Name, a.BrowserDownloadUrl); err != nil {
-						panic(err)
-					}
-				}
-				for _, add := range tool.Additional {
-
-					if strings.Contains(a.Name, add) && matches(runtime.GOOS, a.Name) && matches(runtime.GOARCH, a.Name) {
-						if err := fetchTool(tmp, add, a.Name, a.BrowserDownloadUrl); err != nil {
-							panic(err)
-						}
-					}
-				}
-			}
-		} else if tool.Version != "" {
+		if tool.DownloadURL != "" {
 			if strings.HasPrefix(tool.Version, "http") {
 				resp, err := client.R().
 					EnableTrace().
@@ -75,6 +67,7 @@ func main() {
 					panic(err)
 				}
 				tool.Version = string(resp.Body())
+				log.Printf("Latest Version: %s", tool.Version)
 			}
 			ut, err := template.New("url").Parse(tool.DownloadURL)
 			if err != nil {
@@ -82,15 +75,38 @@ func main() {
 			}
 
 			var b bytes.Buffer
-			err = ut.Execute(&b, map[string]string{"Version": tool.Version, "OS": runtime.GOOS, "Arch": runtime.GOARCH})
+			if err := ut.Execute(&b, map[string]string{"Version": tool.Version, "OS": runtime.GOOS, "Arch": runtime.GOARCH}); err != nil {
+				panic(err)
+			}
 
-			fetchTool(tmp, tool.Name, tool.Name, b.String())
+			if err := fetchTool(tmp, tool.Name, b.String(), tb.Target); err != nil {
+				panic(err)
+			}
+		} else if ghr != nil {
+
+			for _, a := range ghr.Assets {
+				if strings.Contains(a.Name, tool.Name) && matches(runtime.GOOS, a.Name) && matches(runtime.GOARCH, a.Name) {
+					if err := fetchTool(tmp, tool.Name, a.BrowserDownloadUrl, tb.Target); err != nil {
+						panic(err)
+					}
+				}
+				for _, add := range tool.Additional {
+
+					if strings.Contains(a.Name, add) && matches(runtime.GOOS, a.Name) && matches(runtime.GOARCH, a.Name) {
+						if err := fetchTool(tmp, add, a.BrowserDownloadUrl, tb.Target); err != nil {
+							panic(err)
+						}
+					}
+				}
+			}
 		}
 	}
 }
 
-func fetchTool(tmp string, toolName string, fileName string, url string) error {
+func fetchTool(tmp string, toolName string, url string, targetDir string) error {
 	dir := fmt.Sprintf("%s/%s", tmp, toolName)
+	paths := strings.Split(url, "/")
+	fileName := paths[len(paths)-1]
 	path := fmt.Sprintf("%s/%s", dir, fileName)
 	log.Printf("Downloading %s", url)
 	if err := downloadFile(path, url); err != nil {
@@ -99,13 +115,13 @@ func fetchTool(tmp string, toolName string, fileName string, url string) error {
 	if err := extract.File(path, dir); err != nil {
 		return err
 	}
-	if _, err := copyTool(dir, toolName); err != nil {
+	if _, err := copyTool(dir, toolName, targetDir); err != nil {
 		return err
 	}
 	return nil
 }
 
-func copyTool(dir string, tool string) (bool, error) {
+func copyTool(dir string, tool string, targetDir string) (bool, error) {
 	files, err := os.ReadDir(dir)
 	if err != nil {
 		return false, err
@@ -117,14 +133,14 @@ func copyTool(dir string, tool string) (bool, error) {
 		}
 		if file.Name() == tool || (runtime.GOOS == "windows" && file.Name() == tool+".exe") {
 
-			if err := copyFile(dir, file); err != nil {
+			if err := copyFile(dir, file, targetDir); err != nil {
 				return false, err
 			}
 			return true, nil
 		}
 	}
 	for _, d := range dirs {
-		ok, err := copyTool(filepath.Join(dir, d.Name()), tool)
+		ok, err := copyTool(filepath.Join(dir, d.Name()), tool, targetDir)
 		if ok || err != nil {
 			return ok, err
 		}
@@ -132,18 +148,18 @@ func copyTool(dir string, tool string) (bool, error) {
 	return false, nil
 }
 
-func copyFile(dir string, file os.DirEntry) error {
+func copyFile(dir string, file os.DirEntry, targetDir string) error {
 	from, err := os.Open(filepath.Join(dir, file.Name()))
 	if err != nil {
 		return err
 	}
 	defer from.Close()
-	to, err := os.OpenFile(filepath.Join("download", file.Name()), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+	to, err := os.OpenFile(filepath.Join(targetDir, file.Name()), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
 	if err != nil {
 		return err
 	}
 	defer to.Close()
-
+	log.Printf("Copy %s to %s", from.Name(), to.Name())
 	_, err = to.ReadFrom(from)
 	return err
 }
@@ -192,6 +208,6 @@ func downloadFile(path string, url string) (err error) {
 		return err
 	}
 
-	fmt.Println("Download saved to", resp.Filename)
+	log.Printf("Download saved to %s", resp.Filename)
 	return nil
 }
