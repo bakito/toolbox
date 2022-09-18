@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 	"text/template"
@@ -18,6 +19,14 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+var (
+	aliases = map[string][]string{
+		"amd64":   {"x86_64", "64"},
+		"windows": {"win", "win64"},
+		"linux":   {"linux64"},
+	}
+)
+
 func main() {
 
 	tb, err := readToolbox()
@@ -27,6 +36,9 @@ func main() {
 
 	if tb.Target == "" {
 		tb.Target = "./tools"
+	}
+	if tb.Aliases != nil {
+		aliases = *tb.Aliases
 	}
 
 	if _, err := os.Stat(tb.Target); err != nil {
@@ -92,29 +104,47 @@ func main() {
 				panic(err)
 			}
 		} else if ghr != nil {
-			for _, a := range ghr.Assets {
-				if tool.FileNameForOS() != "" {
-					if a.Name == tool.FileNameForOS() {
-						if err := fetchTool(tmp, a.Name, tool.Name, a.BrowserDownloadUrl, tb.Target); err != nil {
-							panic(err)
-						}
-					}
-				} else if strings.Contains(a.Name, tool.Name) && matches(runtime.GOOS, a.Name) && matches(runtime.GOARCH, a.Name) {
-					if err := fetchTool(tmp, tool.Name, tool.Name, a.BrowserDownloadUrl, tb.Target); err != nil {
-						panic(err)
-					}
+			matching := findMatching(tool.Name, ghr.Assets)
+			if matching != nil {
+				if err := fetchTool(tmp, tool.Name, tool.Name, matching.BrowserDownloadUrl, tb.Target); err != nil {
+					panic(err)
 				}
-				for _, add := range tool.Additional {
-
-					if strings.Contains(a.Name, add) && matches(runtime.GOOS, a.Name) && matches(runtime.GOARCH, a.Name) {
-						if err := fetchTool(tmp, add, add, a.BrowserDownloadUrl, tb.Target); err != nil {
-							panic(err)
-						}
+			}
+			for _, add := range tool.Additional {
+				matching := findMatching(add, ghr.Assets)
+				if matching != nil {
+					if err := fetchTool(tmp, add, add, matching.BrowserDownloadUrl, tb.Target); err != nil {
+						panic(err)
 					}
 				}
 			}
 		}
+		println()
 	}
+}
+
+func findMatching(toolName string, assets []types.Asset) *types.Asset {
+	var matching []*types.Asset
+	for i := range assets {
+		a := assets[i]
+		if strings.Contains(a.Name, toolName) && matches(runtime.GOOS, a.Name) {
+			matching = append(matching, &a)
+		}
+	}
+	sort.Slice(matching, func(i, j int) bool {
+		mi := matches(runtime.GOARCH, matching[i].Name)
+		mj := matches(runtime.GOARCH, matching[j].Name)
+
+		if mi == mj {
+			return true
+		}
+
+		return mi
+	})
+	if len(matching) == 0 {
+		return nil
+	}
+	return matching[0]
 }
 
 func parseTemplate(templ string, version string) string {
@@ -149,8 +179,12 @@ func fetchTool(tmp string, remoteToolName string, trueToolName string, url strin
 	if err := downloadFile(path, url); err != nil {
 		return err
 	}
-	if err := extract.File(path, dir); err != nil {
+	extracted, err := extract.File(path, dir)
+	if err != nil {
 		return err
+	}
+	if !extracted {
+		remoteToolName = fileName
 	}
 	ok, err := copyTool(dir, remoteToolName, targetDir, trueToolName)
 	if err != nil {
@@ -172,7 +206,7 @@ func copyTool(dir string, fileName string, targetDir string, targetName string) 
 		if file.IsDir() {
 			dirs = append(dirs, file)
 		}
-		if file.Name() == binaryName(fileName) {
+		if file.Name() == binaryName(fileName) || file.Name() == binaryName(fmt.Sprintf("%s_%s_%s", fileName, runtime.GOOS, runtime.GOARCH)) {
 
 			if err := copyFile(dir, file, targetDir, targetName); err != nil {
 				return false, err
@@ -237,10 +271,6 @@ func matches(info string, name string) bool {
 
 	return false
 }
-
-var (
-	aliases = map[string][]string{"amd64": {"x86_64"}}
-)
 
 func downloadFile(path string, url string) (err error) {
 	resp, err := grab.Get(path, url)

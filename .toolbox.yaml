@@ -15,13 +15,6 @@ tools:
     downloadURL: https://get.helm.sh/helm-{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
   jq:
     github: stedolan/jq
-    fileNames:
-      linux: jq-linux64
-      windows: jq-win64.exe
   yq:
     github: mikefarah/yq
-    fileNames:
-      linux: yq_linux_amd64
-      windows: yq_windows_amd64.exe
-
 target: ./download

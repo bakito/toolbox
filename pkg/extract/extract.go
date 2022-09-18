@@ -14,20 +14,20 @@ import (
 	"github.com/xi2/xz"
 )
 
-func File(file, target string) error {
+func File(file, target string) (bool, error) {
 	if strings.HasSuffix(file, ".tar.gz") {
 		log.Printf("Extracting %s", file)
-		return tarGz(file, target)
+		return true, tarGz(file, target)
 	}
 	if strings.HasSuffix(file, ".zip") {
 		log.Printf("Extracting %s", file)
-		return unzip(file, target)
+		return true, unzip(file, target)
 	}
 	if strings.HasSuffix(file, ".tar.xz") {
 		log.Printf("Extracting %s", file)
-		return tarXz(file, target)
+		return true, tarXz(file, target)
 	}
-	return nil
+	return false, nil
 }
 
 func unzip(file string, target string) error {
