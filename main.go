@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -74,17 +75,8 @@ func main() {
 				tool.Version = string(resp.Body())
 				log.Printf("Latest Version: %s", tool.Version)
 			}
-			ut, err := template.New("url").Parse(tool.DownloadURL)
-			if err != nil {
-				panic(err)
-			}
 
-			var b bytes.Buffer
-			if err := ut.Execute(&b, map[string]string{"Version": tool.Version, "OS": runtime.GOOS, "Arch": runtime.GOARCH}); err != nil {
-				panic(err)
-			}
-
-			if err := fetchTool(tmp, tool.Name, tool.Name, b.String(), tb.Target); err != nil {
+			if err := fetchTool(tmp, tool.Name, tool.Name, parseTemplate(tool.DownloadURL, tool.Version), tb.Target); err != nil {
 				panic(err)
 			}
 		} else if ghr != nil {
@@ -108,6 +100,28 @@ func main() {
 				}
 			}
 		}
+	}
+}
+
+func parseTemplate(templ string, version string) string {
+	ut, err := template.New("url").Parse(templ)
+	if err != nil {
+		panic(err)
+	}
+
+	var b bytes.Buffer
+	if err := ut.Execute(&b, templateData(version)); err != nil {
+		panic(err)
+	}
+	return b.String()
+}
+
+func templateData(version string) map[string]string {
+	return map[string]string{
+		"Version": version,
+		"OS":      runtime.GOOS,
+		"Arch":    runtime.GOARCH,
+		"ArchBIT": fmt.Sprintf("%d", strconv.IntSize),
 	}
 }
 
