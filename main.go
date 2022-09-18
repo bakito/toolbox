@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"github.com/bakito/toolbox/version"
 	"log"
 	"os"
 	"path/filepath"
@@ -28,6 +29,8 @@ var (
 )
 
 func main() {
+
+	log.Printf("toolbox v%s", version.Version)
 
 	tb, err := readToolbox()
 	if err != nil {
