@@ -5,8 +5,12 @@ package main
 import "strings"
 
 func binaryName(name string) string {
-	if strings.HasSuffix(name, ".exe") {
+	if strings.HasSuffix(name, defaultFileExtension()) {
 		return name
 	}
-	return name + ".exe"
+	return name + defaultFileExtension()
+}
+
+func defaultFileExtension() string {
+	return ".exe"
 }

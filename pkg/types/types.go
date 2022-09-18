@@ -9,8 +9,9 @@ const (
 )
 
 type Toolbox struct {
-	Tools  map[string]*Tool `yaml:"tools"`
-	Target string           `yaml:"target"`
+	Tools        map[string]*Tool `yaml:"tools"`
+	Target       string           `yaml:"target"`
+	CreateTarget *bool            `yaml:"createTarget"`
 }
 
 type Tool struct {

@@ -8,7 +8,7 @@ tools:
     additional:
       - kubens
   kubectl:
-    downloadURL: https://dl.k8s.io/release/{{ .Version }}/bin/{{ .OS }}/{{ .Arch }}/kubectl
+    downloadURL: https://dl.k8s.io/release/{{ .Version }}/bin/{{ .OS }}/{{ .Arch }}/kubectl{{ .FileExt }}
     version: https://storage.googleapis.com/kubernetes-release/release/stable.txt
   helm:
     github: helm/helm

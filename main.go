@@ -26,7 +26,20 @@ func main() {
 	}
 
 	if tb.Target == "" {
-		tb.Target = "tools"
+		tb.Target = "./tools"
+	}
+
+	if _, err := os.Stat(tb.Target); err != nil {
+		if os.IsNotExist(err) {
+			if tb.CreateTarget == nil || *tb.CreateTarget {
+				log.Printf("Creating target dir %q\n", tb.Target)
+				_ = os.MkdirAll(tb.Target, 0700)
+			} else {
+				log.Fatalf("Target dir %q does not exist and may not be created.\n", tb.Target)
+			}
+		} else {
+			panic(err)
+		}
 	}
 
 	tmp, err := os.MkdirTemp("", "toolbox")
@@ -34,7 +47,7 @@ func main() {
 		panic(err)
 	}
 
-	defer os.RemoveAll(tmp)
+	defer func() { _ = os.RemoveAll(tmp) }()
 
 	client := resty.New()
 
@@ -123,6 +136,7 @@ func templateData(version string) map[string]string {
 		"OS":      runtime.GOOS,
 		"Arch":    runtime.GOARCH,
 		"ArchBIT": fmt.Sprintf("%d", strconv.IntSize),
+		"FileExt": defaultFileExtension(),
 	}
 }
 
