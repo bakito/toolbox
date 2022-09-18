@@ -2,7 +2,6 @@ package types
 
 import (
 	"fmt"
-	"runtime"
 	"time"
 )
 
@@ -23,18 +22,6 @@ type Tool struct {
 	Version     string     `yaml:"version"`
 	Additional  []string   `yaml:"additional"`
 	FileNames   *FileNames `yaml:"fileNames"`
-}
-
-func (t *Tool) FileNameForOS() string {
-	if t.FileNames != nil {
-		switch runtime.GOOS {
-		case "linux":
-			return t.FileNames.Linux
-		case "windows":
-			return t.FileNames.Windows
-		}
-	}
-	return ""
 }
 
 type FileNames struct {

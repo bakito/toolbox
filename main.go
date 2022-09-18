@@ -52,7 +52,6 @@ func main() {
 			}
 			_, err := ghc.
 				Get(tool.LatestURL())
-			//Get(os.Args[0])
 
 			if err != nil {
 				panic(err)
@@ -81,9 +80,11 @@ func main() {
 			}
 		} else if ghr != nil {
 			for _, a := range ghr.Assets {
-				if a.Name == tool.FileNameForOS() {
-					if err := fetchTool(tmp, a.Name, tool.Name, a.BrowserDownloadUrl, tb.Target); err != nil {
-						panic(err)
+				if tool.FileNameForOS() != "" {
+					if a.Name == tool.FileNameForOS() {
+						if err := fetchTool(tmp, a.Name, tool.Name, a.BrowserDownloadUrl, tb.Target); err != nil {
+							panic(err)
+						}
 					}
 				} else if strings.Contains(a.Name, tool.Name) && matches(runtime.GOOS, a.Name) && matches(runtime.GOARCH, a.Name) {
 					if err := fetchTool(tmp, tool.Name, tool.Name, a.BrowserDownloadUrl, tb.Target); err != nil {
@@ -157,7 +158,7 @@ func copyTool(dir string, fileName string, targetDir string, targetName string) 
 		if file.IsDir() {
 			dirs = append(dirs, file)
 		}
-		if file.Name() == fileName || (runtime.GOOS == "windows" && file.Name() == fileName+".exe") {
+		if file.Name() == binaryName(fileName) {
 
 			if err := copyFile(dir, file, targetDir, targetName); err != nil {
 				return false, err
@@ -180,12 +181,8 @@ func copyFile(dir string, file os.DirEntry, targetDir string, targetName string)
 		return err
 	}
 	defer from.Close()
-	toName := targetName
-	if runtime.GOOS == "windows" && !strings.HasSuffix(toName, ".exe") {
-		toName += ".exe"
-	}
 
-	to, err := os.OpenFile(filepath.Join(targetDir, toName), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+	to, err := os.OpenFile(filepath.Join(targetDir, binaryName(targetName)), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
 	if err != nil {
 		return err
 	}
@@ -212,8 +209,6 @@ func readToolbox() (*types.Toolbox, error) {
 	}
 	return tb, nil
 }
-
-// https://get.helm.sh/helm-v3.9.4-darwin-amd64.tar.gz
 
 func matches(info string, name string) bool {
 	if strings.Contains(name, info) {
