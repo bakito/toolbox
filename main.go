@@ -180,7 +180,12 @@ func copyFile(dir string, file os.DirEntry, targetDir string, targetName string)
 		return err
 	}
 	defer from.Close()
-	to, err := os.OpenFile(filepath.Join(targetDir, targetName), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+	toName := targetName
+	if runtime.GOOS == "windows" && !strings.HasSuffix(toName, ".exe") {
+		toName += ".exe"
+	}
+
+	to, err := os.OpenFile(filepath.Join(targetDir, toName), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
 	if err != nil {
 		return err
 	}
