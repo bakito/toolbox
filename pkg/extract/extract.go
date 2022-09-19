@@ -3,6 +3,7 @@ package extract
 import (
 	"archive/tar"
 	"archive/zip"
+	"errors"
 	"io"
 	"log"
 	"os"
@@ -44,6 +45,7 @@ func unzip(file string, target string) error {
 		if err != nil {
 			return err
 		}
+		// #nosec G305
 		name := path.Join(target, file.Name)
 		_ = os.MkdirAll(path.Dir(name), os.ModeDir)
 		create, err := os.Create(name)
@@ -67,7 +69,7 @@ func tarXz(file, target string) error {
 		return err
 	}
 	defer f.Close()
-	// Create an xz Reader
+	// Create a xz Reader
 	r, err := xz.NewReader(f, 0)
 	if err != nil {
 		return err
@@ -77,7 +79,7 @@ func tarXz(file, target string) error {
 	// Iterate through the files in the archive.
 	for {
 		hdr, err := tr.Next()
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			// end of tar archive
 			break
 		}
@@ -87,16 +89,20 @@ func tarXz(file, target string) error {
 		switch hdr.Typeflag {
 		case tar.TypeDir:
 			// create a directory
-			err = os.MkdirAll(filepath.Join(target, hdr.Name), 0777)
+			// #nosec G305
+			err = os.MkdirAll(filepath.Join(target, hdr.Name), 0o777)
 			if err != nil {
 				return err
 			}
 		case tar.TypeReg:
 			// write a file
-			w, err := os.Create(filepath.Join(target, hdr.Name))
+			// #nosec G305
+			path := filepath.Join(target, hdr.Name)
+			w, err := os.Create(path)
 			if err != nil {
 				return err
 			}
+			// #nosec G110
 			_, err = io.Copy(w, tr)
 			if err != nil {
 				return err

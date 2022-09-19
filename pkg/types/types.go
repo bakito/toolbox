@@ -2,6 +2,7 @@ package types
 
 import (
 	"fmt"
+	"sort"
 )
 
 const (
@@ -13,6 +14,23 @@ type Toolbox struct {
 	Target       string               `yaml:"target"`
 	CreateTarget *bool                `yaml:"createTarget"`
 	Aliases      *map[string][]string `yaml:"aliases"`
+}
+
+func (t *Toolbox) GetTools() []*Tool {
+	var tools []*Tool
+	for n := range t.Tools {
+		tool := t.Tools[n]
+		if tool.Name == "" {
+			tool.Name = n
+		}
+		tools = append(tools, tool)
+	}
+
+	sort.Slice(tools, func(i, j int) bool {
+		return tools[i].Name < tools[j].Name
+	})
+
+	return tools
 }
 
 type Tool struct {

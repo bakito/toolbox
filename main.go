@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/bakito/toolbox/version"
 	"log"
 	"os"
 	"path/filepath"
@@ -15,21 +14,19 @@ import (
 
 	"github.com/bakito/toolbox/pkg/extract"
 	"github.com/bakito/toolbox/pkg/types"
+	"github.com/bakito/toolbox/version"
 	"github.com/cavaliergopher/grab/v3"
 	"github.com/go-resty/resty/v2"
 	"gopkg.in/yaml.v3"
 )
 
-var (
-	aliases = map[string][]string{
-		"amd64":   {"x86_64", "64"},
-		"windows": {"win", "win64"},
-		"linux":   {"linux64"},
-	}
-)
+var aliases = map[string][]string{
+	"amd64":   {"x86_64", "64"},
+	"windows": {"win", "win64"},
+	"linux":   {"linux64"},
+}
 
 func main() {
-
 	log.Printf("toolbox v%s", version.Version)
 
 	tb, err := readToolbox()
@@ -48,7 +45,7 @@ func main() {
 		if os.IsNotExist(err) {
 			if tb.CreateTarget == nil || *tb.CreateTarget {
 				log.Printf("Creating target dir %q\n", tb.Target)
-				_ = os.MkdirAll(tb.Target, 0700)
+				_ = os.MkdirAll(tb.Target, 0o700)
 			} else {
 				log.Fatalf("Target dir %q does not exist and may not be created.\n", tb.Target)
 			}
@@ -66,7 +63,7 @@ func main() {
 
 	client := resty.New()
 
-	for _, tool := range tb.Tools {
+	for _, tool := range tb.GetTools() {
 		log.Printf("Download %s\n", tool.Name)
 		var ghr *types.GithubRelease
 		if tool.Github != "" {
@@ -80,7 +77,6 @@ func main() {
 			}
 			_, err := ghc.
 				Get(tool.LatestURL())
-
 			if err != nil {
 				panic(err)
 			}
@@ -109,14 +105,14 @@ func main() {
 		} else if ghr != nil {
 			matching := findMatching(tool.Name, ghr.Assets)
 			if matching != nil {
-				if err := fetchTool(tmp, tool.Name, tool.Name, matching.BrowserDownloadUrl, tb.Target); err != nil {
+				if err := fetchTool(tmp, tool.Name, tool.Name, matching.BrowserDownloadURL, tb.Target); err != nil {
 					panic(err)
 				}
 			}
 			for _, add := range tool.Additional {
 				matching := findMatching(add, ghr.Assets)
 				if matching != nil {
-					if err := fetchTool(tmp, add, add, matching.BrowserDownloadUrl, tb.Target); err != nil {
+					if err := fetchTool(tmp, add, add, matching.BrowserDownloadURL, tb.Target); err != nil {
 						panic(err)
 					}
 				}
@@ -233,7 +229,7 @@ func copyFile(dir string, file os.DirEntry, targetDir string, targetName string)
 	}
 	defer from.Close()
 
-	to, err := os.OpenFile(filepath.Join(targetDir, binaryName(targetName)), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0755)
+	to, err := os.OpenFile(filepath.Join(targetDir, binaryName(targetName)), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o755)
 	if err != nil {
 		return err
 	}
@@ -253,11 +249,7 @@ func readToolbox() (*types.Toolbox, error) {
 	if err != nil {
 		return nil, err
 	}
-	for name, tool := range tb.Tools {
-		if tool.Name == "" {
-			tool.Name = name
-		}
-	}
+
 	return tb, nil
 }
 
