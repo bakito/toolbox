@@ -165,6 +165,10 @@ func findMatching(toolName string, assets []types.Asset) *types.Asset {
 		mj := matches(runtime.GOARCH, matching[j].Name)
 
 		if mi == mj {
+			mi = strings.Contains(matching[i].Name, runtime.GOARCH)
+			mj = strings.Contains(matching[j].Name, runtime.GOARCH)
+		}
+		if mi == mj {
 			return true
 		}
 
