@@ -14,6 +14,7 @@ import (
 	"text/template"
 
 	"github.com/bakito/toolbox/pkg/extract"
+	"github.com/bakito/toolbox/pkg/quietly"
 	"github.com/bakito/toolbox/pkg/types"
 	"github.com/bakito/toolbox/version"
 	"github.com/cavaliergopher/grab/v3"
@@ -256,13 +257,13 @@ func copyFile(dir string, file os.DirEntry, targetDir string, targetName string)
 	if err != nil {
 		return err
 	}
-	defer from.Close()
+	defer quietly.Close(from)
 
 	to, err := os.OpenFile(filepath.Join(targetDir, binaryName(targetName)), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o755)
 	if err != nil {
 		return err
 	}
-	defer to.Close()
+	defer quietly.Close(to)
 	log.Printf("Copy %s to %s", from.Name(), to.Name())
 	_, err = to.ReadFrom(from)
 	return err

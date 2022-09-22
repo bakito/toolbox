@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/bakito/toolbox/pkg/quietly"
 	"github.com/verybluebot/tarinator-go"
 	"github.com/xi2/xz"
 )
@@ -36,26 +37,33 @@ func unzip(file string, target string) error {
 	if err != nil {
 		return err
 	}
-	defer read.Close()
+	defer quietly.Close(read)
 	for _, file := range read.File {
 		if file.Mode().IsDir() {
 			continue
 		}
-		open, err := file.Open()
-		if err != nil {
+		if err := unzipFile(file, target); err != nil {
 			return err
 		}
-		// #nosec G305
-		name := path.Join(target, file.Name)
-		_ = os.MkdirAll(path.Dir(name), os.ModeDir)
-		create, err := os.Create(name)
-		if err != nil {
-			return err
-		}
-		defer create.Close()
-		_, _ = create.ReadFrom(open)
 	}
 	return nil
+}
+
+func unzipFile(file *zip.File, target string) error {
+	open, err := file.Open()
+	if err != nil {
+		return err
+	}
+	// #nosec G305
+	name := path.Join(target, file.Name)
+	_ = os.MkdirAll(path.Dir(name), os.ModeDir)
+	create, err := os.Create(name)
+	if err != nil {
+		return err
+	}
+	defer quietly.Close(create)
+	_, err = create.ReadFrom(open)
+	return err
 }
 
 func tarGz(file, target string) error {
@@ -68,7 +76,7 @@ func tarXz(file, target string) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer quietly.Close(f)
 	// Create a xz Reader
 	r, err := xz.NewReader(f, 0)
 	if err != nil {
