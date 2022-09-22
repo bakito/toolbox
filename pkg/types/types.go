@@ -33,6 +33,14 @@ func (t *Toolbox) GetTools() []*Tool {
 	return tools
 }
 
+func (t *Toolbox) Versions() Versions {
+	v := Versions{Versions: map[string]string{}}
+	for _, t := range t.Tools {
+		v.Versions[t.Name] = t.Version
+	}
+	return v
+}
+
 type Tool struct {
 	Name        string   `yaml:"name"`
 	Github      string   `yaml:"github"`
@@ -40,6 +48,15 @@ type Tool struct {
 	DownloadURL string   `yaml:"downloadURL"`
 	Version     string   `yaml:"version"`
 	Additional  []string `yaml:"additional"`
+}
+
+type ToolVersion struct {
+	Name    string `yaml:"name"`
+	Version string `yaml:"version"`
+}
+
+type Versions struct {
+	Versions map[string]string `yaml:"versions"`
 }
 
 func (t *Tool) LatestURL() string {

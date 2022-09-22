@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -20,6 +21,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const (
+	toolboxConfFile     = ".toolbox.yaml"
+	toolboxVersionsFile = ".toolbox-versions.yaml"
+)
+
 var aliases = map[string][]string{
 	"amd64":   {"x86_64", "64"},
 	"windows": {"win", "win64"},
@@ -27,7 +33,7 @@ var aliases = map[string][]string{
 }
 
 func main() {
-	log.Printf("toolbox v%s", version.Version)
+	log.Printf("toolbox %s", version.Version)
 
 	tb, err := readToolbox()
 	if err != nil {
@@ -40,7 +46,6 @@ func main() {
 	if tb.Aliases != nil {
 		aliases = *tb.Aliases
 	}
-
 	if _, err := os.Stat(tb.Target); err != nil {
 		if os.IsNotExist(err) {
 			if tb.CreateTarget == nil || *tb.CreateTarget {
@@ -52,6 +57,11 @@ func main() {
 		} else {
 			panic(err)
 		}
+	}
+
+	ver, err := readVersions(tb.Target)
+	if err != nil {
+		panic(err)
 	}
 
 	tmp, err := os.MkdirTemp("", "toolbox")
@@ -87,6 +97,11 @@ func main() {
 			}
 		}
 
+		if tool.Version == ver[tool.Name] {
+			log.Printf("Skipping since already latest version\n")
+			continue
+		}
+
 		if tool.DownloadURL != "" {
 			if strings.HasPrefix(tool.Version, "http") {
 				resp, err := client.R().
@@ -99,6 +114,10 @@ func main() {
 				log.Printf("Latest Version: %s", tool.Version)
 			}
 
+			if tool.Version == ver[tool.Name] {
+				log.Printf("Skipping since already latest version\n")
+				continue
+			}
 			if err := fetchTool(tmp, tool.Name, tool.Name, parseTemplate(tool.DownloadURL, tool.Version), tb.Target); err != nil {
 				panic(err)
 			}
@@ -119,6 +138,16 @@ func main() {
 			}
 		}
 		println()
+	}
+
+	// save versions
+	tv := tb.Versions()
+	out, err := yaml.Marshal(&tv)
+	if err != nil {
+		panic(err)
+	}
+	if err := os.WriteFile(filepath.Join(tb.Target, toolboxVersionsFile), out, 0o600); err != nil {
+		panic(err)
 	}
 }
 
@@ -240,7 +269,21 @@ func copyFile(dir string, file os.DirEntry, targetDir string, targetName string)
 }
 
 func readToolbox() (*types.Toolbox, error) {
-	b, err := os.ReadFile(".toolbox.yaml")
+	tbFile := filepath.Join(".", toolboxConfFile)
+	if _, err := os.Stat(tbFile); errors.Is(err, os.ErrNotExist) {
+
+		userHomeDir, err := os.UserHomeDir()
+		if err != nil {
+			return nil, err
+		}
+
+		tbFile = filepath.Join(userHomeDir, toolboxConfFile)
+		if _, err := os.Stat(tbFile); err != nil {
+			return nil, err
+		}
+	}
+	log.Printf("Reading config %s\n", tbFile)
+	b, err := os.ReadFile(tbFile)
 	if err != nil {
 		return nil, err
 	}
@@ -251,6 +294,24 @@ func readToolbox() (*types.Toolbox, error) {
 	}
 
 	return tb, nil
+}
+
+func readVersions(target string) (map[string]string, error) {
+	ver := make(map[string]string)
+	path := filepath.Join(target, toolboxVersionsFile)
+	if _, err := os.Stat(path); err == nil {
+		b, err := os.ReadFile(path)
+		if err != nil {
+			return nil, err
+		}
+		v := &types.Versions{}
+		err = yaml.Unmarshal(b, v)
+		if err != nil {
+			return nil, err
+		}
+		ver = v.Versions
+	}
+	return ver, nil
 }
 
 func matches(info string, name string) bool {
