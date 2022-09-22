@@ -143,11 +143,14 @@ func main() {
 
 	// save versions
 	tv := tb.Versions()
-	out, err := yaml.Marshal(&tv)
-	if err != nil {
+	var b bytes.Buffer
+	env := yaml.NewEncoder(&b)
+	env.SetIndent(2)
+
+	if err := env.Encode(&tv); err != nil {
 		panic(err)
 	}
-	if err := os.WriteFile(filepath.Join(tb.Target, toolboxVersionsFile), out, 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(tb.Target, toolboxVersionsFile), b.Bytes(), 0o600); err != nil {
 		panic(err)
 	}
 }
