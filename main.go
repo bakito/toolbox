@@ -198,11 +198,12 @@ func parseTemplate(templ string, version string) string {
 
 func templateData(version string) map[string]string {
 	return map[string]string{
-		"Version": version,
-		"OS":      runtime.GOOS,
-		"Arch":    runtime.GOARCH,
-		"ArchBIT": fmt.Sprintf("%d", strconv.IntSize),
-		"FileExt": defaultFileExtension(),
+		"Version":    version,
+		"VersionNum": strings.TrimPrefix(version, "v"),
+		"OS":         runtime.GOOS,
+		"Arch":       runtime.GOARCH,
+		"ArchBIT":    fmt.Sprintf("%d", strconv.IntSize),
+		"FileExt":    defaultFileExtension(),
 	}
 }
 
@@ -284,9 +285,8 @@ func readToolbox() (*types.Toolbox, error) {
 		if err != nil {
 			return nil, err
 		}
-
 		homePath := filepath.Join(userHomeDir, toolboxConfFile)
-		if _, err := os.Stat(tbFile); err == nil {
+		if _, err := os.Stat(homePath); err == nil {
 			tbFile = homePath
 		}
 	}
