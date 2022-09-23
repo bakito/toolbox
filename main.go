@@ -285,9 +285,9 @@ func readToolbox() (*types.Toolbox, error) {
 			return nil, err
 		}
 
-		tbFile = filepath.Join(userHomeDir, toolboxConfFile)
-		if _, err := os.Stat(tbFile); err != nil {
-			return nil, err
+		homePath := filepath.Join(userHomeDir, toolboxConfFile)
+		if _, err := os.Stat(tbFile); err == nil {
+			tbFile = homePath
 		}
 	}
 	log.Printf("Reading config %s\n", tbFile)

@@ -8,7 +8,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -59,7 +58,8 @@ func unzipFile(file *zip.File, target string) error {
 	if err != nil {
 		return err
 	}
-	_ = os.MkdirAll(path.Dir(name), os.ModeDir)
+	parent, _ := filepath.Split(name)
+	_ = os.MkdirAll(parent, os.ModeDir)
 	create, err := os.Create(name)
 	if err != nil {
 		return err
