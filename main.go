@@ -323,12 +323,13 @@ func readVersions(target string) (map[string]string, error) {
 }
 
 func matches(info string, name string) bool {
-	if strings.Contains(name, info) {
+	ln := strings.ToLower(name)
+	if strings.Contains(ln, strings.ToLower(info)) {
 		return true
 	}
 
 	for _, a := range aliases[info] {
-		if strings.Contains(name, a) {
+		if strings.Contains(ln, a) {
 			return true
 		}
 	}

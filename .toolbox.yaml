@@ -17,4 +17,10 @@ tools:
     github: stedolan/jq
   yq:
     github: mikefarah/yq
+  vault:
+    github: hashicorp/vault
+    downloadURL: https://releases.hashicorp.com/vault/{{ .VersionNum }}/vault_{{ .VersionNum }}_{{ .OS }}_{{ .Arch }}.zip
+  terraform:
+    github: hashicorp/terraform
+    downloadURL: https://releases.hashicorp.com/terraform/{{ .VersionNum }}/terraform_{{ .VersionNum }}_{{ .OS }}_{{ .Arch }}.zip
 target: ./download
