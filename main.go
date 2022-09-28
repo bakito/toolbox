@@ -79,7 +79,6 @@ func main() {
 		if err := handleTool(client, ver, tmp, tb, tool); err != nil {
 			panic(err)
 		}
-
 	}
 
 	// save versions
@@ -107,6 +106,7 @@ func handleTool(client *resty.Client, ver map[string]string, tmp string, tb *typ
 			SetResult(ghr).
 			SetHeader("Accept", "application/json")
 		if t, ok := os.LookupEnv("GITHUB_TOKEN"); ok {
+			log.Printf("Using github toklen\n")
 			ghc = ghc.SetAuthToken(t)
 		}
 		_, err := ghc.
@@ -147,7 +147,9 @@ func handleTool(client *resty.Client, ver map[string]string, tmp string, tb *typ
 		}
 	} else if ghr != nil {
 		matching := findMatching(tool.Name, ghr.Assets)
+		tool.CouldNotBeFound = true
 		if matching != nil {
+			tool.CouldNotBeFound = false
 			if err := fetchTool(tmp, tool.Name, tool.Name, matching.BrowserDownloadURL, tb.Target); err != nil {
 				return err
 			}
@@ -155,10 +157,14 @@ func handleTool(client *resty.Client, ver map[string]string, tmp string, tb *typ
 		for _, add := range tool.Additional {
 			matching := findMatching(add, ghr.Assets)
 			if matching != nil {
+				tool.CouldNotBeFound = false
 				if err := fetchTool(tmp, add, add, matching.BrowserDownloadURL, tb.Target); err != nil {
 					return err
 				}
 			}
+		}
+		if tool.CouldNotBeFound {
+			log.Printf("❌ Couldn't find a file here!\n")
 		}
 	}
 	return nil

@@ -23,4 +23,7 @@ tools:
   terraform:
     github: hashicorp/terraform
     downloadURL: https://releases.hashicorp.com/terraform/{{ .VersionNum }}/terraform_{{ .VersionNum }}_{{ .OS }}_{{ .Arch }}.zip
+  jf:
+    github: jfrog/jfrog-cli
+    downloadURL: https://releases.jfrog.io/artifactory/jfrog-cli/v2-jf/{{ .VersionNum }}/jfrog-cli-{{ .OS }}-{{ .Arch }}/jf{{ .FileExt }}
 target: ./download
