@@ -34,7 +34,7 @@ var aliases = map[string][]string{
 }
 
 func main() {
-	log.Printf("toolbox %s", version.Version)
+	log.Printf("🧰 toolbox %s", version.Version)
 
 	tb, err := readToolbox()
 	if err != nil {
@@ -73,72 +73,13 @@ func main() {
 	defer func() { _ = os.RemoveAll(tmp) }()
 
 	client := resty.New()
-
-	for _, tool := range tb.GetTools() {
-		log.Printf("Download %s\n", tool.Name)
-		var ghr *types.GithubRelease
-		if tool.Github != "" {
-			ghr = &types.GithubRelease{}
-
-			ghc := client.R().
-				SetResult(ghr).
-				SetHeader("Accept", "application/json")
-			if t, ok := os.LookupEnv("GITHUB_TOKEN"); ok {
-				ghc = ghc.SetAuthToken(t)
-			}
-			_, err := ghc.
-				Get(tool.LatestURL())
-			if err != nil {
-				panic(err)
-			}
-
-			if tool.Version == "" {
-				tool.Version = ghr.TagName
-				log.Printf("Latest Version: %s", tool.Version)
-			}
+	tools := tb.GetTools()
+	for i := range tools {
+		tool := tools[i]
+		if err := handleTool(client, ver, tmp, tb, tool); err != nil {
+			panic(err)
 		}
 
-		if tool.Version == ver[tool.Name] {
-			log.Printf("Skipping since already latest version\n")
-			continue
-		}
-
-		if tool.DownloadURL != "" {
-			if strings.HasPrefix(tool.Version, "http") {
-				resp, err := client.R().
-					EnableTrace().
-					Get(tool.Version)
-				if err != nil {
-					panic(err)
-				}
-				tool.Version = string(resp.Body())
-				log.Printf("Latest Version: %s", tool.Version)
-			}
-
-			if tool.Version == ver[tool.Name] {
-				log.Printf("Skipping since already latest version\n")
-				continue
-			}
-			if err := fetchTool(tmp, tool.Name, tool.Name, parseTemplate(tool.DownloadURL, tool.Version), tb.Target); err != nil {
-				panic(err)
-			}
-		} else if ghr != nil {
-			matching := findMatching(tool.Name, ghr.Assets)
-			if matching != nil {
-				if err := fetchTool(tmp, tool.Name, tool.Name, matching.BrowserDownloadURL, tb.Target); err != nil {
-					panic(err)
-				}
-			}
-			for _, add := range tool.Additional {
-				matching := findMatching(add, ghr.Assets)
-				if matching != nil {
-					if err := fetchTool(tmp, add, add, matching.BrowserDownloadURL, tb.Target); err != nil {
-						panic(err)
-					}
-				}
-			}
-		}
-		println()
 	}
 
 	// save versions
@@ -153,6 +94,74 @@ func main() {
 	if err := os.WriteFile(filepath.Join(tb.Target, toolboxVersionsFile), b.Bytes(), 0o600); err != nil {
 		panic(err)
 	}
+}
+
+func handleTool(client *resty.Client, ver map[string]string, tmp string, tb *types.Toolbox, tool *types.Tool) error {
+	log.Printf("Processing %s\n", tool.Name)
+	defer func() { println() }()
+	var ghr *types.GithubRelease
+	if tool.Github != "" {
+		ghr = &types.GithubRelease{}
+
+		ghc := client.R().
+			SetResult(ghr).
+			SetHeader("Accept", "application/json")
+		if t, ok := os.LookupEnv("GITHUB_TOKEN"); ok {
+			ghc = ghc.SetAuthToken(t)
+		}
+		_, err := ghc.
+			Get(tool.LatestURL())
+		if err != nil {
+			return err
+		}
+
+		if tool.Version == "" {
+			tool.Version = ghr.TagName
+			log.Printf("Latest Version: %s", tool.Version)
+		}
+	}
+
+	if tool.Version == ver[tool.Name] {
+		log.Printf("✔ Skipping since already latest version\n")
+		return nil
+	}
+
+	if tool.DownloadURL != "" {
+		if strings.HasPrefix(tool.Version, "http") {
+			resp, err := client.R().
+				EnableTrace().
+				Get(tool.Version)
+			if err != nil {
+				return nil
+			}
+			tool.Version = string(resp.Body())
+			log.Printf("Latest Version: %s", tool.Version)
+		}
+
+		if tool.Version == ver[tool.Name] {
+			log.Printf("✔ Skipping since already latest version\n")
+			return nil
+		}
+		if err := fetchTool(tmp, tool.Name, tool.Name, parseTemplate(tool.DownloadURL, tool.Version), tb.Target); err != nil {
+			return err
+		}
+	} else if ghr != nil {
+		matching := findMatching(tool.Name, ghr.Assets)
+		if matching != nil {
+			if err := fetchTool(tmp, tool.Name, tool.Name, matching.BrowserDownloadURL, tb.Target); err != nil {
+				return err
+			}
+		}
+		for _, add := range tool.Additional {
+			matching := findMatching(add, ghr.Assets)
+			if matching != nil {
+				if err := fetchTool(tmp, add, add, matching.BrowserDownloadURL, tb.Target); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
 }
 
 func findMatching(toolName string, assets []types.Asset) *types.Asset {
@@ -212,7 +221,7 @@ func fetchTool(tmp string, remoteToolName string, trueToolName string, url strin
 	paths := strings.Split(url, "/")
 	fileName := paths[len(paths)-1]
 	path := fmt.Sprintf("%s/%s", dir, fileName)
-	log.Printf("Downloading %s", url)
+	log.Printf("📥 Downloading %s", url)
 	if err := downloadFile(path, url); err != nil {
 		return err
 	}
@@ -290,7 +299,7 @@ func readToolbox() (*types.Toolbox, error) {
 			tbFile = homePath
 		}
 	}
-	log.Printf("Reading config %s\n", tbFile)
+	log.Printf("📒 Reading config %s\n", tbFile)
 	b, err := os.ReadFile(tbFile)
 	if err != nil {
 		return nil, err
