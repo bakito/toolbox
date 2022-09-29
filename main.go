@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"net"
+	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -27,11 +29,16 @@ const (
 	toolboxVersionsFile = ".toolbox-versions.yaml"
 )
 
-var aliases = map[string][]string{
-	"amd64":   {"x86_64", "64"},
-	"windows": {"win", "win64"},
-	"linux":   {"linux64"},
-}
+var (
+	aliases = map[string][]string{
+		"amd64":   {"x86_64", "64", "64bit"},
+		"windows": {"win", "win64"},
+		"linux":   {"linux64"},
+	}
+	stopAliases = map[string][]string{
+		"amd64": {"arm"},
+	}
+)
 
 func main() {
 	log.Printf("🧰 toolbox %s", version.Version)
@@ -56,18 +63,18 @@ func main() {
 				log.Fatalf("Target dir %q does not exist and may not be created.\n", tb.Target)
 			}
 		} else {
-			panic(err)
+			log.Fatal(err)
 		}
 	}
 
 	ver, err := readVersions(tb.Target)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	tmp, err := os.MkdirTemp("", "toolbox")
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	defer func() { _ = os.RemoveAll(tmp) }()
@@ -77,7 +84,7 @@ func main() {
 	for i := range tools {
 		tool := tools[i]
 		if err := handleTool(client, ver, tmp, tb, tool); err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 	}
 
@@ -106,13 +113,12 @@ func handleTool(client *resty.Client, ver map[string]string, tmp string, tb *typ
 			SetResult(ghr).
 			SetHeader("Accept", "application/json")
 		if t, ok := os.LookupEnv("GITHUB_TOKEN"); ok {
-			log.Printf("Using github toklen\n")
+			log.Printf("Using github token\n")
 			ghc = ghc.SetAuthToken(t)
 		}
-		_, err := ghc.
-			Get(tool.LatestURL())
+		_, err := ghc.Get(tool.LatestURL())
 		if err != nil {
-			return err
+			return checkHTTPError(err)
 		}
 
 		if tool.Version == "" {
@@ -168,6 +174,20 @@ func handleTool(client *resty.Client, ver map[string]string, tmp string, tb *typ
 		}
 	}
 	return nil
+}
+
+func checkHTTPError(err error) error {
+	urlError := &url.Error{}
+	if errors.As(err, &urlError) {
+		opError := &net.OpError{}
+		if errors.As(urlError.Err, &opError) {
+			if opError.Op == "dial" {
+				log.Fatalf("Network error - did you forget to set a proxy?\n%v", err)
+			}
+		}
+	}
+
+	return err
 }
 
 func findMatching(toolName string, assets []types.Asset) *types.Asset {
@@ -345,7 +365,15 @@ func matches(info string, name string) bool {
 
 	for _, a := range aliases[info] {
 		if strings.Contains(ln, a) {
-			return true
+			matches := true
+			for _, sa := range stopAliases[info] {
+				if matches && strings.Contains(ln, sa) {
+					matches = false
+				}
+			}
+			if matches {
+				return matches
+			}
 		}
 	}
 
@@ -355,7 +383,7 @@ func matches(info string, name string) bool {
 func downloadFile(path string, url string) (err error) {
 	resp, err := grab.Get(path, url)
 	if err != nil {
-		return err
+		return checkHTTPError(err)
 	}
 
 	log.Printf("Download saved to %s", resp.Filename)
