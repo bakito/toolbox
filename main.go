@@ -194,7 +194,7 @@ func findMatching(toolName string, assets []types.Asset) *types.Asset {
 	var matching []*types.Asset
 	for i := range assets {
 		a := assets[i]
-		if strings.Contains(a.Name, toolName) && matches(runtime.GOOS, a.Name) {
+		if strings.Contains(a.Name, toolName) && matches(runtime.GOOS, a.Name) && !strings.HasSuffix(a.Name, "sum") {
 			matching = append(matching, &a)
 		}
 	}
@@ -205,6 +205,11 @@ func findMatching(toolName string, assets []types.Asset) *types.Asset {
 		if mi == mj {
 			mi = strings.Contains(matching[i].Name, runtime.GOARCH)
 			mj = strings.Contains(matching[j].Name, runtime.GOARCH)
+		}
+		if mi == mj {
+			// prefer non archive files
+			mi = !strings.Contains(matching[i].Name, ".")
+			mj = !strings.Contains(matching[j].Name, ".")
 		}
 		if mi == mj {
 			return true

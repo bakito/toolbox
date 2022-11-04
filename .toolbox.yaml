@@ -26,4 +26,8 @@ tools:
   jf:
     github: jfrog/jfrog-cli
     downloadURL: https://releases.jfrog.io/artifactory/jfrog-cli/v2-jf/{{ .VersionNum }}/jfrog-cli-{{ .OS }}-{{ .Arch }}/jf{{ .FileExt }}
+  kind:
+    github: kubernetes-sigs/kind
+  minikube:
+    github: kubernetes/minikube
 target: ./download
