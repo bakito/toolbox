@@ -103,7 +103,7 @@ func main() {
 }
 
 func handleTool(client *resty.Client, ver map[string]string, tmp string, tb *types.Toolbox, tool *types.Tool) error {
-	log.Printf("Processing %s\n", tool.Name)
+	log.Printf("⚙️  Processing %s\n", tool.Name)
 	defer func() { println() }()
 	var ghr *types.GithubRelease
 	if tool.Github != "" {
@@ -113,7 +113,7 @@ func handleTool(client *resty.Client, ver map[string]string, tmp string, tb *typ
 			SetResult(ghr).
 			SetHeader("Accept", "application/json")
 		if t, ok := os.LookupEnv("GITHUB_TOKEN"); ok {
-			log.Printf("Using github token\n")
+			log.Printf("🔑 Using github token\n")
 			ghc = ghc.SetAuthToken(t)
 		}
 		_, err := ghc.Get(tool.LatestURL())
@@ -128,7 +128,7 @@ func handleTool(client *resty.Client, ver map[string]string, tmp string, tb *typ
 	}
 
 	if tool.Version == ver[tool.Name] {
-		log.Printf("✔ Skipping since already latest version\n")
+		log.Printf("✅ Skipping since already latest version\n")
 		return nil
 	}
 
@@ -145,7 +145,7 @@ func handleTool(client *resty.Client, ver map[string]string, tmp string, tb *typ
 		}
 
 		if tool.Version == ver[tool.Name] {
-			log.Printf("✔ Skipping since already latest version\n")
+			log.Printf("✅ Skipping since already latest version\n")
 			return nil
 		}
 		if err := fetchTool(tmp, tool.Name, tool.Name, parseTemplate(tool.DownloadURL, tool.Version), tb.Target); err != nil {
@@ -330,7 +330,7 @@ func readToolbox() (*types.Toolbox, error) {
 			tbFile = homePath
 		}
 	}
-	log.Printf("📒 Reading config %s\n", tbFile)
+	log.Printf("📒 Reading config %s\n\n", tbFile)
 	b, err := os.ReadFile(tbFile)
 	if err != nil {
 		return nil, err
