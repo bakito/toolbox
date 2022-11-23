@@ -1,12 +1,7 @@
 package types
 
 import (
-	"fmt"
 	"sort"
-)
-
-const (
-	latestURLPattern = "https://api.github.com/repos/%s/releases/latest"
 )
 
 type Toolbox struct {
@@ -60,11 +55,4 @@ type ToolVersion struct {
 
 type Versions struct {
 	Versions map[string]string `yaml:"versions"`
-}
-
-func (t *Tool) LatestURL() string {
-	if t.Github != "" {
-		return fmt.Sprintf(latestURLPattern, t.Github)
-	}
-	return ""
 }

@@ -3,10 +3,9 @@ package main
 import (
 	"bytes"
 	"errors"
+	"flag"
 	"fmt"
 	"log"
-	"net"
-	"net/url"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -16,6 +15,9 @@ import (
 	"text/template"
 
 	"github.com/bakito/toolbox/pkg/extract"
+	"github.com/bakito/toolbox/pkg/github"
+	"github.com/bakito/toolbox/pkg/http"
+	"github.com/bakito/toolbox/pkg/makefile"
 	"github.com/bakito/toolbox/pkg/quietly"
 	"github.com/bakito/toolbox/pkg/types"
 	"github.com/bakito/toolbox/version"
@@ -41,6 +43,17 @@ var (
 )
 
 func main() {
+	var fMake = flag.String("make", "", "generate makefile tool syntax")
+	flag.Parse()
+
+	client := resty.New()
+
+	if *fMake != "" {
+		if err := makefile.Generate(*fMake, client); err != nil {
+			log.Fatal(err)
+		}
+		return
+	}
 	log.Printf("🧰 toolbox %s", version.Version)
 
 	tb, err := readToolbox()
@@ -79,7 +92,6 @@ func main() {
 
 	defer func() { _ = os.RemoveAll(tmp) }()
 
-	client := resty.New()
 	tools := tb.GetTools()
 	for i := range tools {
 		tool := tools[i]
@@ -107,18 +119,9 @@ func handleTool(client *resty.Client, ver map[string]string, tmp string, tb *typ
 	defer func() { println() }()
 	var ghr *types.GithubRelease
 	if tool.Github != "" {
-		ghr = &types.GithubRelease{}
-
-		ghc := client.R().
-			SetResult(ghr).
-			SetHeader("Accept", "application/json")
-		if t, ok := os.LookupEnv("GITHUB_TOKEN"); ok {
-			log.Printf("🔑 Using github token\n")
-			ghc = ghc.SetAuthToken(t)
-		}
-		_, err := ghc.Get(tool.LatestURL())
+		ghr, err := github.LatestRelease(client, tool.Github, false)
 		if err != nil {
-			return checkHTTPError(err)
+			return err
 		}
 
 		if tool.Version == "" {
@@ -174,20 +177,6 @@ func handleTool(client *resty.Client, ver map[string]string, tmp string, tb *typ
 		}
 	}
 	return nil
-}
-
-func checkHTTPError(err error) error {
-	urlError := &url.Error{}
-	if errors.As(err, &urlError) {
-		opError := &net.OpError{}
-		if errors.As(urlError.Err, &opError) {
-			if opError.Op == "dial" {
-				log.Fatalf("Network error - did you forget to set a proxy?\n%v", err)
-			}
-		}
-	}
-
-	return err
 }
 
 func findMatching(toolName string, assets []types.Asset) *types.Asset {
@@ -388,7 +377,7 @@ func matches(info string, name string) bool {
 func downloadFile(path string, url string) (err error) {
 	resp, err := grab.Get(path, url)
 	if err != nil {
-		return checkHTTPError(err)
+		return http.CheckError(err)
 	}
 
 	log.Printf("Download saved to %s", resp.Filename)
