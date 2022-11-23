@@ -28,7 +28,9 @@ func Generate(client *resty.Client, makefile string, tools ...string) error {
 	out := &bytes.Buffer{}
 	t := template.Must(template.New("Makefile").Parse(makefileTemplate))
 	if err := t.Execute(out, map[string]interface{}{
-		"Tools": toolData,
+		"Tools":       toolData,
+		"ArgMakeFile": ArgMakefile,
+		"ArgWith":     ArgWith,
 	}); err != nil {
 		return err
 	}
@@ -91,6 +93,8 @@ type toolData struct {
 }
 
 const (
+	ArgMakefile      = "makefile"
+	ArgWith          = "with"
 	markerStart      = "## toolbox - start"
 	markerEnd        = "## toolbox - end"
 	makefileTemplate = markerStart + `
@@ -120,8 +124,8 @@ $({{.UpperName}}): $(LOCALBIN)
 ## Update Tools
 .PHONY: update-toolbox-tools
 update-toolbox-tools:
-	toolbox --makefile $$(pwd)/Makefile{{- range .Tools }} \
-		--make {{.Tool}}
+	toolbox --{{$.ArgMakeFile}} $$(pwd)/Makefile{{- range .Tools }} \
+		--{{$.ArgWith}} {{.Tool}}
 {{- end }}
 ` + markerEnd
 )

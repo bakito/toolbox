@@ -44,8 +44,8 @@ var (
 
 func main() {
 	var fMakeTools stringSlice
-	flag.Var(&fMakeTools, "make", "generate makefile tool syntax")
-	fMakefile := flag.String("makefile", "", "generate makefile tool syntax")
+	flag.Var(&fMakeTools, makefile.ArgWith, "Tools to be added to a Makefile")
+	fMakefile := flag.String(makefile.ArgMakefile, "", "The Makefile path to generate tools in")
 	flag.Parse()
 
 	client := resty.New()
