@@ -54,9 +54,7 @@ func Generate(client *resty.Client, makefile string, tools ...string) error {
 		}
 	}
 	file := start
-	file += markerStart
 	file += out.String()
-	file += markerEnd
 	file += end
 
 	return os.WriteFile(makefile, []byte(file), 0o600)
@@ -95,7 +93,7 @@ type toolData struct {
 const (
 	markerStart      = "## toolbox - start"
 	markerEnd        = "## toolbox - end"
-	makefileTemplate = `
+	makefileTemplate = markerStart + `
 ## Location to install dependencies to
 LOCALBIN ?= $(shell pwd)/bin
 $(LOCALBIN):
@@ -117,6 +115,13 @@ $(LOCALBIN):
 {{.Name}}: $({{.UpperName}}) ## Download {{.Name}} locally if necessary.
 $({{.UpperName}}): $(LOCALBIN)
 	test -s $(LOCALBIN)/{{.Name}} || GOBIN=$(LOCALBIN) go install {{.Tool}}@$({{.UpperName}}_VERSION)
-{{ end }}
-`
+{{- end }}
+
+## Update Tools
+.PHONY: update-toolbox-tools
+update-toolbox-tools:
+	toolbox --makefile $$(pwd)/Makefile{{- range .Tools }} \
+		--make {{.Tool}}
+{{- end }}
+` + markerEnd
 )
