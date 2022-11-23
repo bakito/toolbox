@@ -43,13 +43,15 @@ var (
 )
 
 func main() {
-	var fMake = flag.String("make", "", "generate makefile tool syntax")
+	var fMakeTools stringSlice
+	flag.Var(&fMakeTools, "make", "generate makefile tool syntax")
+	fMakefile := flag.String("makefile", "", "generate makefile tool syntax")
 	flag.Parse()
 
 	client := resty.New()
 
-	if *fMake != "" {
-		if err := makefile.Generate(*fMake, client); err != nil {
+	if len(fMakeTools) != 0 {
+		if err := makefile.Generate(client, *fMakefile, fMakeTools...); err != nil {
 			log.Fatal(err)
 		}
 		return
@@ -381,5 +383,16 @@ func downloadFile(path string, url string) (err error) {
 	}
 
 	log.Printf("Download saved to %s", resp.Filename)
+	return nil
+}
+
+type stringSlice []string
+
+func (i *stringSlice) String() string {
+	return strings.Join(*i, ",")
+}
+
+func (i *stringSlice) Set(value string) error {
+	*i = append(*i, value)
 	return nil
 }
