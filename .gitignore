@@ -4,3 +4,4 @@ dist
 main
 toolbox*
 coverage.out
+bin

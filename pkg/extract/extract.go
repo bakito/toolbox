@@ -58,8 +58,11 @@ func unzipFile(file *zip.File, target string) error {
 	if err != nil {
 		return err
 	}
-	parent, _ := filepath.Split(name)
-	_ = os.MkdirAll(parent, os.ModeDir)
+	parent := filepath.Dir(name)
+	err = os.MkdirAll(parent, 0o755)
+	if err != nil {
+		return err
+	}
 	create, err := os.Create(name)
 	if err != nil {
 		return err
@@ -104,29 +107,20 @@ func tarGz(file, target string) error {
 			return fmt.Errorf("extractTarGz: Next() failed: %w", err)
 		}
 
-		switch header.Typeflag {
-		case tar.TypeDir:
-			//nolint:gosec
-			if err := os.MkdirAll(filepath.Join(target, header.Name), 0o755); err != nil {
-				return fmt.Errorf("extractTarGz: Mkdir() failed: %w", err)
-			}
-		case tar.TypeReg:
+		if header.Typeflag == tar.TypeReg {
 			if err := extractTarFile(target, header, tarReader); err != nil {
 				return err
 			}
-
-		default:
-			return fmt.Errorf("extractTarGz: uknown type: %d in %s",
-				header.Typeflag,
-				header.Name)
 		}
 	}
 	return nil
 }
 
 func extractTarFile(target string, header *tar.Header, tarReader *tar.Reader) error {
-	//nolint:gosec
-	path := filepath.Join(target, header.Name)
+	path, err := sanitizeArchivePath(target, header.Name)
+	if err != nil {
+		return err
+	}
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return fmt.Errorf("extractTarGz: Mkdir() failed: %w", err)
 	}
@@ -179,14 +173,12 @@ func tarXzFile(tr *tar.Reader, hdr *tar.Header, target string) error {
 	if err != nil {
 		return err
 	}
-	switch hdr.Typeflag {
-	case tar.TypeDir:
-		// create a directory
-		err = os.MkdirAll(path, 0o777)
+	if hdr.Typeflag == tar.TypeReg {
+		// create parent directory
+		err = os.MkdirAll(filepath.Dir(path), 0o755)
 		if err != nil {
 			return err
 		}
-	case tar.TypeReg:
 		// write a file
 		w, err := os.Create(path)
 		if err != nil {
