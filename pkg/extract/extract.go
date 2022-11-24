@@ -3,6 +3,7 @@ package extract
 import (
 	"archive/tar"
 	"archive/zip"
+	"compress/gzip"
 	"errors"
 	"fmt"
 	"io"
@@ -12,7 +13,6 @@ import (
 	"strings"
 
 	"github.com/bakito/toolbox/pkg/quietly"
-	"github.com/verybluebot/tarinator-go"
 	"github.com/xi2/xz"
 )
 
@@ -80,7 +80,57 @@ func sanitizeArchivePath(d, t string) (v string, err error) {
 }
 
 func tarGz(file, target string) error {
-	return tarinator.UnTarinate(target, file)
+	tarFile, err := os.Open(file)
+	if err != nil {
+		return err
+	}
+	defer quietly.Close(tarFile)
+
+	uncompressedStream, err := gzip.NewReader(tarFile)
+	if err != nil {
+		log.Fatal("ExtractTarGz: NewReader failed")
+	}
+
+	tarReader := tar.NewReader(uncompressedStream)
+
+	for true {
+		header, err := tarReader.Next()
+
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			return fmt.Errorf("extractTarGz: Next() failed: %s", err.Error())
+		}
+
+		switch header.Typeflag {
+		case tar.TypeDir:
+			if err := os.MkdirAll(filepath.Join(target, header.Name), 0o755); err != nil {
+				return fmt.Errorf("extractTarGz: Mkdir() failed: %s", err.Error())
+			}
+		case tar.TypeReg:
+			path := filepath.Join(target, header.Name)
+			if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+				return fmt.Errorf("extractTarGz: Mkdir() failed: %s", err.Error())
+				return fmt.Errorf("extractTarGz: Mkdir() failed: %s", err.Error())
+			}
+			outFile, err := os.Create(path)
+			if err != nil {
+				return fmt.Errorf("extractTarGz: Create() failed: %s", err.Error())
+			}
+			if _, err := io.Copy(outFile, tarReader); err != nil {
+				return fmt.Errorf("extractTarGz: Copy() failed: %s", err.Error())
+			}
+			outFile.Close()
+
+		default:
+			return fmt.Errorf("extractTarGz: uknown type: %d in %s",
+				header.Typeflag,
+				header.Name)
+		}
+	}
+	return nil
 }
 
 func tarXz(file, target string) error {

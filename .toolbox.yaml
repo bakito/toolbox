@@ -30,4 +30,6 @@ tools:
     github: kubernetes-sigs/kind
   minikube:
     github: kubernetes/minikube
+  gh:
+    github: cli/cli
 target: ./download

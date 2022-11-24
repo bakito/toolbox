@@ -118,8 +118,9 @@ func handleTool(client *resty.Client, ver map[string]string, tmp string, tb *typ
 	log.Printf("⚙️ Processing %s\n", tool.Name)
 	defer func() { println() }()
 	var ghr *types.GithubRelease
+	var err error
 	if tool.Github != "" {
-		ghr, err := github.LatestRelease(client, tool.Github, false)
+		ghr, err = github.LatestRelease(client, tool.Github, false)
 		if err != nil {
 			return err
 		}
