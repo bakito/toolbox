@@ -1,6 +1,6 @@
 //go:build !windows
 
-package main
+package cmd
 
 func binaryName(name string) string {
 	return name
