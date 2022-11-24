@@ -93,42 +93,50 @@ func tarGz(file, target string) error {
 
 	tarReader := tar.NewReader(uncompressedStream)
 
-	for true {
+	for {
 		header, err := tarReader.Next()
 
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		}
 
 		if err != nil {
-			return fmt.Errorf("extractTarGz: Next() failed: %s", err.Error())
+			return fmt.Errorf("extractTarGz: Next() failed: %w", err)
 		}
 
 		switch header.Typeflag {
 		case tar.TypeDir:
+			//nolint:gosec
 			if err := os.MkdirAll(filepath.Join(target, header.Name), 0o755); err != nil {
-				return fmt.Errorf("extractTarGz: Mkdir() failed: %s", err.Error())
+				return fmt.Errorf("extractTarGz: Mkdir() failed: %w", err)
 			}
 		case tar.TypeReg:
-			path := filepath.Join(target, header.Name)
-			if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-				return fmt.Errorf("extractTarGz: Mkdir() failed: %s", err.Error())
-				return fmt.Errorf("extractTarGz: Mkdir() failed: %s", err.Error())
+			if err := extractTarFile(target, header, tarReader); err != nil {
+				return err
 			}
-			outFile, err := os.Create(path)
-			if err != nil {
-				return fmt.Errorf("extractTarGz: Create() failed: %s", err.Error())
-			}
-			if _, err := io.Copy(outFile, tarReader); err != nil {
-				return fmt.Errorf("extractTarGz: Copy() failed: %s", err.Error())
-			}
-			outFile.Close()
 
 		default:
 			return fmt.Errorf("extractTarGz: uknown type: %d in %s",
 				header.Typeflag,
 				header.Name)
 		}
+	}
+	return nil
+}
+
+func extractTarFile(target string, header *tar.Header, tarReader *tar.Reader) error {
+	//nolint:gosec
+	path := filepath.Join(target, header.Name)
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return fmt.Errorf("extractTarGz: Mkdir() failed: %w", err)
+	}
+	outFile, err := os.Create(path)
+	if err != nil {
+		return fmt.Errorf("extractTarGz: Create() failed: %w", err)
+	}
+	defer quietly.Close(outFile)
+	if _, err := io.Copy(outFile, tarReader); err != nil {
+		return fmt.Errorf("extractTarGz: Copy() failed: %w", err)
 	}
 	return nil
 }
