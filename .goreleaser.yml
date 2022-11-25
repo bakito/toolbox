@@ -1,19 +1,21 @@
 # This is an example goreleaser.yaml file with some sane defaults.
 # Make sure to check the documentation at http://goreleaser.com
 builds:
-- env:
-  - CGO_ENABLED=0
-  ldflags:
-    - -s -w -X github.com/bakito/toolbox/version.Version=v{{.Version}}
-  goos:
-  - linux
-  - windows
-  #- darwin
-  goarch:
-   # - 386
-    - amd64
-  hooks:
-    post: upx {{ .Path }}
+  - env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X github.com/bakito/toolbox/version.Version=v{{.Version}}
+    goos:
+      - linux
+      - windows
+    #- darwin
+    goarch:
+      # - 386
+      - amd64
+    hooks:
+      post:
+        # don't upx windows binaries as they make trouble with virus scanners
+        - bash -c 'if [[ "{{ .Path }}" != *.exe ]]; then upx {{ .Path }}; fi'
 checksum:
   name_template: 'checksums.txt'
 snapshot:
@@ -22,5 +24,5 @@ changelog:
   sort: asc
   filters:
     exclude:
-    - '^docs:'
-    - '^test:'
+      - '^docs:'
+      - '^test:'
