@@ -3,6 +3,7 @@ package makefile
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"regexp"
 	"strings"
@@ -12,9 +13,12 @@ import (
 	"github.com/go-resty/resty/v2"
 )
 
-var pattern = regexp.MustCompile(`^github\.com\/([\w-]+\/[\w-]+).*$`)
+var (
+	pattern    = regexp.MustCompile(`^github\.com\/([\w-]+\/[\w-]+).*$`)
+	getRelease = github.LatestRelease
+)
 
-func Generate(client *resty.Client, makefile string, tools ...string) error {
+func Generate(client *resty.Client, writer io.Writer, makefile string, tools ...string) error {
 	var toolData []toolData
 
 	for _, t := range tools {
@@ -34,8 +38,8 @@ func Generate(client *resty.Client, makefile string, tools ...string) error {
 	}
 
 	if makefile == "" {
-		print(out.String())
-		return nil
+		_, err := writer.Write(out.Bytes())
+		return err
 	}
 
 	data, err := os.ReadFile(makefile)
@@ -69,7 +73,7 @@ func data(client *resty.Client, tool string) (toolData, error) {
 		return t, fmt.Errorf("invalid tool %q", tool)
 	}
 
-	ghr, err := github.LatestRelease(client, match[1], true)
+	ghr, err := getRelease(client, match[1], true)
 	if err != nil {
 		return t, err
 	}
@@ -89,39 +93,3 @@ type toolData struct {
 	Version   string `json:"Version"`
 	Tool      string `json:"Tool"`
 }
-
-const (
-	markerStart      = "## toolbox - start"
-	markerEnd        = "## toolbox - end"
-	makefileTemplate = markerStart + `
-## Location to install dependencies to
-LOCALBIN ?= $(shell pwd)/bin
-$(LOCALBIN):
-	mkdir -p $(LOCALBIN)
-
-## Tool Binaries
-{{- range .Tools }}
-{{.UpperName}} ?= $(LOCALBIN)/{{.Name}}
-{{- end }}
-
-## Tool Versions
-{{- range .Tools }}
-{{.UpperName}}_VERSION ?= {{.Version}}
-{{- end }}
-
-## Tool Installer
-{{- range .Tools }}
-.PHONY: {{.Name}}
-{{.Name}}: $({{.UpperName}}) ## Download {{.Name}} locally if necessary.
-$({{.UpperName}}): $(LOCALBIN)
-	test -s $(LOCALBIN)/{{.Name}} || GOBIN=$(LOCALBIN) go install {{.Tool}}@$({{.UpperName}}_VERSION)
-{{- end }}
-
-## Update Tools
-.PHONY: update-toolbox-tools
-update-toolbox-tools:
-	toolbox makefile -f $$(pwd)/Makefile{{- range .Tools }} \
-		{{.Tool}}
-{{- end }}
-` + markerEnd
-)

@@ -1,0 +1,28 @@
+...
+
+## toolbox - start
+## Location to install dependencies to
+LOCALBIN ?= $(shell pwd)/bin
+$(LOCALBIN):
+	mkdir -p $(LOCALBIN)
+
+## Tool Binaries
+TOOLBOX ?= $(LOCALBIN)/toolbox
+
+## Tool Versions
+TOOLBOX_VERSION ?= v0.2.1
+
+## Tool Installer
+.PHONY: toolbox
+toolbox: $(TOOLBOX) ## Download toolbox locally if necessary.
+$(TOOLBOX): $(LOCALBIN)
+	test -s $(LOCALBIN)/toolbox || GOBIN=$(LOCALBIN) go install github.com/bakito/toolbox@$(TOOLBOX_VERSION)
+
+## Update Tools
+.PHONY: update-toolbox-tools
+update-toolbox-tools:
+	toolbox makefile -f $$(pwd)/Makefile \
+		github.com/bakito/toolbox
+## toolbox - end
+
+...

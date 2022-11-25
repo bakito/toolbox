@@ -26,7 +26,7 @@ var makefileCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return makefile.Generate(client, mf, args...)
+		return makefile.Generate(client, cmd.OutOrStderr(), mf, args...)
 	},
 }
 

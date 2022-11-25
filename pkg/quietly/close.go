@@ -3,5 +3,7 @@ package quietly
 import "io"
 
 func Close(c io.Closer) {
-	_ = c.Close()
+	if c != nil {
+		_ = c.Close()
+	}
 }

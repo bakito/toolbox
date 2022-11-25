@@ -47,6 +47,11 @@ var _ = Describe("Extract", func() {
 			Entry("It should extract a simple tar.xz file", "testfile.tar.xz"),
 			Entry("It should extract a tar.xz file with directories", "testfile-dirs.tar.xz"),
 		)
+		It("should not know the extension", func() {
+			ok, err := extract.File("a.txt", tempDir)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(ok).Should(BeFalse())
+		})
 	})
 })
 

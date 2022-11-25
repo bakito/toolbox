@@ -30,7 +30,9 @@ func (t *Toolbox) GetTools() []*Tool {
 
 func (t *Toolbox) Versions() Versions {
 	v := Versions{Versions: map[string]string{}}
-	for _, t := range t.Tools {
+	tools := t.GetTools()
+	for i := range tools {
+		t := tools[i]
 		if !t.CouldNotBeFound {
 			v.Versions[t.Name] = t.Version
 		}
