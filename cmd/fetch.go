@@ -137,45 +137,55 @@ func handleTool(client *resty.Client, ver map[string]string, tmp string, tb *typ
 	}
 
 	if tool.DownloadURL != "" {
-		if strings.HasPrefix(tool.Version, "http") {
-			resp, err := client.R().
-				EnableTrace().
-				Get(tool.Version)
-			if err != nil {
-				return nil
-			}
-			tool.Version = string(resp.Body())
-			log.Printf("Latest Version: %s", tool.Version)
-		}
+		return downloadFromURL(client, ver, tmp, tb, tool)
+	} else if ghr != nil {
+		return downloadViaGithub(tool, ghr, tmp, tb)
+	}
+	return nil
+}
 
-		if tool.Version == ver[tool.Name] {
-			log.Printf("✅ Skipping since already latest version\n")
-			return nil
-		}
-		if err := fetchTool(tmp, tool.Name, tool.Name, parseTemplate(tool.DownloadURL, tool.Version), tb.Target); err != nil {
+func downloadViaGithub(tool *types.Tool, ghr *types.GithubRelease, tmp string, tb *types.Toolbox) error {
+	matching := findMatching(tool.Name, ghr.Assets)
+	tool.CouldNotBeFound = true
+	if matching != nil {
+		tool.CouldNotBeFound = false
+		if err := fetchTool(tmp, tool.Name, tool.Name, matching.BrowserDownloadURL, tb.Target); err != nil {
 			return err
 		}
-	} else if ghr != nil {
-		matching := findMatching(tool.Name, ghr.Assets)
-		tool.CouldNotBeFound = true
+	}
+	for _, add := range tool.Additional {
+		matching := findMatching(add, ghr.Assets)
 		if matching != nil {
 			tool.CouldNotBeFound = false
-			if err := fetchTool(tmp, tool.Name, tool.Name, matching.BrowserDownloadURL, tb.Target); err != nil {
+			if err := fetchTool(tmp, add, add, matching.BrowserDownloadURL, tb.Target); err != nil {
 				return err
 			}
 		}
-		for _, add := range tool.Additional {
-			matching := findMatching(add, ghr.Assets)
-			if matching != nil {
-				tool.CouldNotBeFound = false
-				if err := fetchTool(tmp, add, add, matching.BrowserDownloadURL, tb.Target); err != nil {
-					return err
-				}
-			}
+	}
+	if tool.CouldNotBeFound {
+		log.Printf("❌ Couldn't find a file here!\n")
+	}
+	return nil
+}
+
+func downloadFromURL(client *resty.Client, ver map[string]string, tmp string, tb *types.Toolbox, tool *types.Tool) error {
+	if strings.HasPrefix(tool.Version, "http") {
+		resp, err := client.R().
+			EnableTrace().
+			Get(tool.Version)
+		if err != nil {
+			return nil
 		}
-		if tool.CouldNotBeFound {
-			log.Printf("❌ Couldn't find a file here!\n")
-		}
+		tool.Version = string(resp.Body())
+		log.Printf("Latest Version: %s", tool.Version)
+	}
+
+	if tool.Version == ver[tool.Name] {
+		log.Printf("✅ Skipping since already latest version\n")
+		return nil
+	}
+	if err := fetchTool(tmp, tool.Name, tool.Name, parseTemplate(tool.DownloadURL, tool.Version), tb.Target); err != nil {
+		return err
 	}
 	return nil
 }
