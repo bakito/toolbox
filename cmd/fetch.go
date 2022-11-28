@@ -37,7 +37,8 @@ var (
 		"linux":   {"linux64"},
 	}
 	stopAliases = map[string][]string{
-		"amd64": {"arm"},
+		"amd64":   {"arm"},
+		"windows": {"darwin"},
 	}
 
 	// fetchCmd represents the fetch command
@@ -210,6 +211,11 @@ func findMatching(toolName string, assets []types.Asset) *types.Asset {
 			// prefer non archive files
 			mi = !strings.Contains(matching[i].Name, ".")
 			mj = !strings.Contains(matching[j].Name, ".")
+		}
+		if mi == mj {
+			// prefer non archive files
+			mi = strings.HasSuffix(matching[i].Name, defaultFileExtension())
+			mj = strings.HasSuffix(matching[j].Name, defaultFileExtension())
 		}
 		if mi == mj {
 			return true
