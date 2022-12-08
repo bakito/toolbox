@@ -26,6 +26,7 @@ import (
 )
 
 const (
+	flagConfig          = "config"
 	toolboxConfFile     = ".toolbox.yaml"
 	toolboxVersionsFile = ".toolbox-versions.yaml"
 )
@@ -46,19 +47,25 @@ var (
 		Use:   "fetch",
 		Short: "Fetch all tools",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return fetch()
+			cfg, err := cmd.Flags().GetString(flagConfig)
+			if err != nil {
+				return err
+			}
+			return fetch(cfg)
 		},
 	}
 )
 
 func init() {
 	rootCmd.AddCommand(fetchCmd)
+	fetchCmd.Flags().StringP(flagConfig, "c", "",
+		"The config file to be used. (default 1. '.toolbox.yaml' current dir, 2. '~/.toolbox.yaml')")
 }
 
-func fetch() error {
+func fetch(cfgFile string) error {
 	log.Printf("🧰 toolbox %s", version.Version)
 
-	tb, err := readToolbox()
+	tb, err := readToolbox(cfgFile)
 	if err != nil {
 		panic(err)
 	}
@@ -323,17 +330,25 @@ func copyFile(dir string, file os.DirEntry, targetDir string, targetName string)
 	return err
 }
 
-func readToolbox() (*types.Toolbox, error) {
-	tbFile := filepath.Join(".", toolboxConfFile)
-	if _, err := os.Stat(tbFile); errors.Is(err, os.ErrNotExist) {
-
-		userHomeDir, err := os.UserHomeDir()
-		if err != nil {
-			return nil, err
+func readToolbox(cfgFile string) (*types.Toolbox, error) {
+	var tbFile string
+	if cfgFile != "" {
+		if _, err := os.Stat(cfgFile); err == nil {
+			tbFile = cfgFile
 		}
-		homePath := filepath.Join(userHomeDir, toolboxConfFile)
-		if _, err := os.Stat(homePath); err == nil {
-			tbFile = homePath
+	}
+
+	if tbFile == "" {
+		tbFile = filepath.Join(".", toolboxConfFile)
+		if _, err := os.Stat(tbFile); errors.Is(err, os.ErrNotExist) {
+			userHomeDir, err := os.UserHomeDir()
+			if err != nil {
+				return nil, err
+			}
+			homePath := filepath.Join(userHomeDir, toolboxConfFile)
+			if _, err := os.Stat(homePath); err == nil {
+				tbFile = homePath
+			}
 		}
 	}
 	log.Printf("📒 Reading config %s\n\n", tbFile)
