@@ -21,6 +21,7 @@ $(TOOLBOX): $(LOCALBIN)
 ## Update Tools
 .PHONY: update-toolbox-tools
 update-toolbox-tools:
+	$rm -f $(LOCALBIN)/toolbox
 	toolbox makefile -f $$(pwd)/Makefile \
 		github.com/bakito/toolbox
 ## toolbox - end

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"sort"
 
 	"github.com/bakito/toolbox/pkg/makefile"
 	"github.com/go-resty/resty/v2"
@@ -26,6 +27,7 @@ var makefileCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		sort.Strings(args)
 		return makefile.Generate(client, cmd.OutOrStderr(), mf, args...)
 	},
 }

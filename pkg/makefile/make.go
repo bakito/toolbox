@@ -65,8 +65,11 @@ func Generate(client *resty.Client, writer io.Writer, makefile string, tools ...
 }
 
 func data(client *resty.Client, tool string) (toolData, error) {
-	match := pattern.FindStringSubmatch(tool)
+	toolRepo := strings.Split(tool, "@")
 
+	toolName := toolRepo[0]
+	repo := toolRepo[len(toolRepo)-1]
+	match := pattern.FindStringSubmatch(repo)
 	t := toolData{}
 
 	if len(match) != 2 {
@@ -78,9 +81,10 @@ func data(client *resty.Client, tool string) (toolData, error) {
 		return t, err
 	}
 
-	parts := strings.Split(tool, "/")
+	parts := strings.Split(toolName, "/")
 
 	t.Version = ghr.TagName
+	t.ToolName = toolName
 	t.Tool = tool
 	t.Name = parts[len(parts)-1]
 	t.UpperName = strings.ReplaceAll(strings.ToUpper(t.Name), "-", "_")
@@ -92,4 +96,5 @@ type toolData struct {
 	UpperName string `json:"UpperName"`
 	Version   string `json:"Version"`
 	Tool      string `json:"Tool"`
+	ToolName  string `json:"ToolName"`
 }
