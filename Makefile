@@ -8,7 +8,7 @@ tidy:
 
 # Run tests
 test: tidy lint
-	go test ./...  -coverprofile=coverage.out
+	go test ./... -coverprofile=coverage.out
 	go tool cover -func=coverage.out
 
 release: semver

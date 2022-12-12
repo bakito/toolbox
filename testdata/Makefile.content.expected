@@ -7,23 +7,40 @@ $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
 
 ## Tool Binaries
+SEMVER ?= $(LOCALBIN)/semver
 TOOLBOX ?= $(LOCALBIN)/toolbox
+CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 
 ## Tool Versions
+SEMVER_VERSION ?= v0.2.1
 TOOLBOX_VERSION ?= v0.2.1
+CONTROLLER_GEN_VERSION ?= v0.2.1
 
 ## Tool Installer
+.PHONY: semver
+semver: $(SEMVER) ## Download semver locally if necessary.
+$(SEMVER): $(LOCALBIN)
+	test -s $(LOCALBIN)/semver || GOBIN=$(LOCALBIN) go install github.com/bakito/semver@$(SEMVER_VERSION)
 .PHONY: toolbox
 toolbox: $(TOOLBOX) ## Download toolbox locally if necessary.
 $(TOOLBOX): $(LOCALBIN)
 	test -s $(LOCALBIN)/toolbox || GOBIN=$(LOCALBIN) go install github.com/bakito/toolbox@$(TOOLBOX_VERSION)
+.PHONY: controller-gen
+controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.
+$(CONTROLLER_GEN): $(LOCALBIN)
+	test -s $(LOCALBIN)/controller-gen || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_GEN_VERSION)
 
 ## Update Tools
 .PHONY: update-toolbox-tools
 update-toolbox-tools:
-	@rm -f $(LOCALBIN)/toolbox
+	@rm -f \
+		$(LOCALBIN)/semver \
+		$(LOCALBIN)/toolbox \
+		$(LOCALBIN)/controller-gen
 	toolbox makefile -f $$(pwd)/Makefile \
-		github.com/bakito/toolbox
+		github.com/bakito/semver \
+		github.com/bakito/toolbox \
+		sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools
 ## toolbox - end
 
 ...

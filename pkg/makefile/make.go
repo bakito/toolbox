@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -19,6 +20,7 @@ var (
 )
 
 func Generate(client *resty.Client, writer io.Writer, makefile string, tools ...string) error {
+	sort.Strings(tools)
 	var toolData []toolData
 
 	for _, t := range tools {

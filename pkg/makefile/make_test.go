@@ -31,14 +31,22 @@ var _ = Describe("Make", func() {
 	Context("Generate", func() {
 		It("should generate a correct output", func() {
 			out := &bytes.Buffer{}
-			err := Generate(resty.New(), out, "", "github.com/bakito/toolbox")
+			err := Generate(resty.New(), out, "",
+				"sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools",
+				"github.com/bakito/semver",
+				"github.com/bakito/toolbox",
+			)
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(out.String() + "\n").Should(Equal(readFile(testDataDir, "Makefile.expected")))
 		})
 		It("should generate a correct output", func() {
 			out := &bytes.Buffer{}
 			path := copyFile("Makefile.content", tempDir)
-			err := Generate(resty.New(), out, path, "github.com/bakito/toolbox")
+			err := Generate(resty.New(), out, path,
+				"sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools",
+				"github.com/bakito/semver",
+				"github.com/bakito/toolbox",
+			)
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(out.Bytes()).Should(BeEmpty())
 
