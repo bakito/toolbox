@@ -91,10 +91,12 @@ $(LOCALBIN):
 ## Tool Binaries
 SEMVER ?= $(LOCALBIN)/semver
 GOLANGCI_LINT ?= $(LOCALBIN)/golangci-lint
+CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 
 ## Tool Versions
 SEMVER_VERSION ?= v1.1.3
 GOLANGCI_LINT_VERSION ?= v1.50.1
+CONTROLLER_GEN_VERSION ?= v0.10.0
 
 ## Tool Installer
 .PHONY: semver
@@ -105,13 +107,18 @@ $(SEMVER): $(LOCALBIN)
 golangci-lint: $(GOLANGCI_LINT) ## Download golangci-lint locally if necessary.
 $(GOLANGCI_LINT): $(LOCALBIN)
 	test -s $(LOCALBIN)/golangci-lint || GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
+.PHONY: controller-gen
+controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.
+$(CONTROLLER_GEN): $(LOCALBIN)
+	test -s $(LOCALBIN)/controller-gen || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_GEN_VERSION)
 
 ## Update Tools
 .PHONY: update-toolbox-tools
 update-toolbox-tools:
 	toolbox makefile -f $$(pwd)/Makefile \
 		github.com/bakito/semver \
-		github.com/golangci/golangci-lint/cmd/golangci-lint
+		github.com/golangci/golangci-lint/cmd/golangci-lint\
+		sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools
 ## toolbox - end
 
 ```
