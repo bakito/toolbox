@@ -30,7 +30,7 @@ $({{.UpperName}}): $(LOCALBIN)
 ## Update Tools
 .PHONY: update-toolbox-tools
 update-toolbox-tools:
-	$rm -f{{ range .Tools }} $(LOCALBIN)/{{.Name}}{{ end }}
+	@rm -f{{ range .Tools }} $(LOCALBIN)/{{.Name}}{{ end }}
 	toolbox makefile -f $$(pwd)/Makefile{{- range .Tools }} \
 		{{.Tool}}
 {{- end }}
