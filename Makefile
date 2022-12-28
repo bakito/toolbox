@@ -46,6 +46,9 @@ $(GOLANGCI_LINT): $(LOCALBIN)
 ## Update Tools
 .PHONY: update-toolbox-tools
 update-toolbox-tools:
+	@rm -f \
+		$(LOCALBIN)/semver \
+		$(LOCALBIN)/golangci-lint
 	toolbox makefile -f $$(pwd)/Makefile \
 		github.com/bakito/semver \
 		github.com/golangci/golangci-lint/cmd/golangci-lint

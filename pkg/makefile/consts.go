@@ -5,7 +5,7 @@ const (
 	markerEnd        = "## toolbox - end"
 	makefileTemplate = markerStart + `
 ## Location to install dependencies to
-LOCALBIN ?= $(shell pwd)/bin
+LOCALBIN ?= $(shell test -s "cygpath -m $$(pwd)" || pwd)/bin
 $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
 
