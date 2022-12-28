@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	latestURLPattern = "https://api.github.com/repos/%s/releases/latest"
+	latestReleaseURLPattern = "https://api.github.com/repos/%s/releases/latest"
+	latestTagURLPattern     = "https://api.github.com/repos/%s/tags"
 )
 
 func LatestRelease(client *resty.Client, repo string, quiet bool) (*types.GithubRelease, error) {
@@ -26,16 +27,37 @@ func LatestRelease(client *resty.Client, repo string, quiet bool) (*types.Github
 		}
 		ghc = ghc.SetAuthToken(t)
 	}
-	_, err := ghc.Get(latestURL(repo))
+	_, err := ghc.Get(latestReleaseURL(repo))
 	if err != nil {
 		return nil, http.CheckError(err)
 	}
+
+	if ghr.TagName == "" {
+		ght := &types.GithubTags{}
+		ghc.SetResult(ght)
+		_, err := ghc.Get(latestTagURL(repo))
+		if err != nil {
+			return nil, http.CheckError(err)
+		}
+
+		if latest := ght.GetLatest(); latest != nil {
+			ghr.TagName = latest.Name
+		}
+	}
+
 	return ghr, nil
 }
 
-func latestURL(repo string) string {
+func latestReleaseURL(repo string) string {
 	if repo != "" {
-		return fmt.Sprintf(latestURLPattern, repo)
+		return fmt.Sprintf(latestReleaseURLPattern, repo)
+	}
+	return ""
+}
+
+func latestTagURL(repo string) string {
+	if repo != "" {
+		return fmt.Sprintf(latestTagURLPattern, repo)
 	}
 	return ""
 }

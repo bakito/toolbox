@@ -1,7 +1,11 @@
 package types
 
 import (
+	"sort"
+	"strings"
 	"time"
+
+	"golang.org/x/mod/semver"
 )
 
 type GithubRelease struct {
@@ -44,4 +48,30 @@ type Asset struct {
 	CreatedAt          time.Time `json:"created_at"`
 	UpdatedAt          time.Time `json:"updated_at"`
 	BrowserDownloadURL string    `json:"browser_download_url"`
+}
+
+type GithubTags []GithubTag
+
+func (ght GithubTags) GetLatest() *GithubTag {
+	sort.Slice(ght, func(i, j int) bool {
+		return semver.Compare(ght[i].Name, ght[j].Name) > 0
+	})
+
+	for _, tag := range ght {
+		if semver.IsValid(tag.Name) && !strings.Contains(tag.Name, "-") {
+			return &tag
+		}
+	}
+	return nil
+}
+
+type GithubTag struct {
+	Name       string `json:"name"`
+	ZipballURL string `json:"zipball_url"`
+	TarballURL string `json:"tarball_url"`
+	Commit     struct {
+		Sha string `json:"sha"`
+		URL string `json:"url"`
+	} `json:"commit"`
+	NodeID string `json:"node_id"`
 }
