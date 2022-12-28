@@ -1,40 +1,17 @@
 package makefile
 
+import (
+	_ "embed"
+	"fmt"
+)
+
 const (
-	markerStart      = "## toolbox - start"
-	markerEnd        = "## toolbox - end"
-	makefileTemplate = markerStart + `
-## Location to install dependencies to
-LOCALBIN ?= $(shell test -s "cygpath -m $$(pwd)" || pwd)/bin
-$(LOCALBIN):
-	mkdir -p $(LOCALBIN)
+	markerStart = "## toolbox - start"
+	markerEnd   = "## toolbox - end"
+)
 
-## Tool Binaries
-{{- range .Tools }}
-{{.UpperName}} ?= $(LOCALBIN)/{{.Name}}
-{{- end }}
-
-## Tool Versions
-{{- range .Tools }}
-{{.UpperName}}_VERSION ?= {{.Version}}
-{{- end }}
-
-## Tool Installer
-{{- range .Tools }}
-.PHONY: {{.Name}}
-{{.Name}}: $({{.UpperName}}) ## Download {{.Name}} locally if necessary.
-$({{.UpperName}}): $(LOCALBIN)
-	test -s $(LOCALBIN)/{{.Name}} || GOBIN=$(LOCALBIN) go install {{.ToolName}}@$({{.UpperName}}_VERSION)
-{{- end }}
-
-## Update Tools
-.PHONY: update-toolbox-tools
-update-toolbox-tools:
-	@rm -f{{- range .Tools }} \
-		$(LOCALBIN)/{{.Name}}
-{{- end }}
-	toolbox makefile -f $$(pwd)/Makefile{{- range .Tools }} \
-		{{.Tool}}
-{{- end }}
-` + markerEnd
+var (
+	//go:embed Makefile.tpl
+	tpl              string
+	makefileTemplate = fmt.Sprintf("%s\n%s%s", markerStart, tpl, markerEnd)
 )
