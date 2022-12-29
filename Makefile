@@ -20,8 +20,10 @@ test-release:
 	goreleaser --skip-publish --snapshot --rm-dist
 
 ## toolbox - start
+## Current working directory
+LOCALDIR ?= $(shell which cygpath > /dev/null 2>&1 && cygpath -m $$(pwd) || pwd)
 ## Location to install dependencies to
-LOCALBIN ?= $(shell test -s "cygpath -m $$(pwd)" || pwd)/bin
+LOCALBIN ?= $(LOCALDIR)/bin
 $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
 
@@ -56,7 +58,7 @@ update-toolbox-tools:
 		$(LOCALBIN)/semver \
 		$(LOCALBIN)/golangci-lint \
 		$(LOCALBIN)/deepcopy-gen
-	toolbox makefile -f $$(pwd)/Makefile \
+	toolbox makefile -f $(LOCALDIR)/Makefile \
 		github.com/bakito/semver \
 		github.com/golangci/golangci-lint/cmd/golangci-lint \
 		k8s.io/code-generator/cmd/deepcopy-gen@github.com/kubernetes/code-generator

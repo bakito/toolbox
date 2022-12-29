@@ -83,8 +83,10 @@ toolbox makefile -f ./Makefile \
 
 ```Makefile
 ## toolbox - start
+## Current working directory
+LOCALDIR ?= $(shell which cygpath > /dev/null 2>&1 && cygpath -m $$(pwd) || pwd)
 ## Location to install dependencies to
-LOCALBIN ?= $(shell test -s "cygpath -m $$(pwd)" || pwd)/bin
+LOCALBIN ?= $(LOCALDIR)/bin
 $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
 
@@ -119,7 +121,7 @@ update-toolbox-tools:
 		$(LOCALBIN)/semver \
 		$(LOCALBIN)/toolbox \
 		$(LOCALBIN)/controller-gen
-	toolbox makefile -f $$(pwd)/Makefile \
+	toolbox makefile -f $(LOCALDIR)/Makefile \
 		github.com/bakito/semver \
 		github.com/bakito/toolbox \
 		sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools

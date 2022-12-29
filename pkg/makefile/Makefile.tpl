@@ -1,5 +1,7 @@
+## Current working directory
+LOCALDIR ?= $(shell which cygpath > /dev/null 2>&1 && cygpath -m $$(pwd) || pwd)
 ## Location to install dependencies to
-LOCALBIN ?= $(shell test -s "cygpath -m $$(pwd)" || pwd)/bin
+LOCALBIN ?= $(LOCALDIR)/bin
 $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
 
@@ -27,6 +29,6 @@ update-toolbox-tools:
 	@rm -f{{- range .Tools }} \
 		$(LOCALBIN)/{{.Name}}
 {{- end }}
-	toolbox makefile -f $$(pwd)/Makefile{{- range .Tools }} \
+	toolbox makefile -f $(LOCALDIR)/Makefile{{- range .Tools }} \
 		{{.Tool}}
 {{- end }}
