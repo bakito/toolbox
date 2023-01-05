@@ -127,6 +127,7 @@ func handleTool(client *resty.Client, ver map[string]string, tmp string, tb *typ
 	defer func() { println() }()
 	var ghr *types.GithubRelease
 	var err error
+	currentVersion := ver[tool.Name]
 	if tool.Github != "" {
 		ghr, err = github.LatestRelease(client, tool.Github, false)
 		if err != nil {
@@ -135,11 +136,15 @@ func handleTool(client *resty.Client, ver map[string]string, tmp string, tb *typ
 
 		if tool.Version == "" {
 			tool.Version = ghr.TagName
-			log.Printf("Latest Version: %s", tool.Version)
+			if currentVersion != "" && tool.Version != currentVersion {
+				log.Printf("Latest Version: %s (current: %s)", tool.Version, currentVersion)
+			} else {
+				log.Printf("Latest Version: %s", tool.Version)
+			}
 		}
 	}
 
-	if tool.Version == ver[tool.Name] {
+	if tool.Version == currentVersion {
 		log.Printf("✅ Skipping since already latest version\n")
 		return nil
 	}
@@ -177,6 +182,7 @@ func downloadViaGithub(tool *types.Tool, ghr *types.GithubRelease, tmp string, t
 }
 
 func downloadFromURL(client *resty.Client, ver map[string]string, tmp string, tb *types.Toolbox, tool *types.Tool) error {
+	currentVersion := ver[tool.Name]
 	if strings.HasPrefix(tool.Version, "http") {
 		resp, err := client.R().
 			EnableTrace().
@@ -185,10 +191,15 @@ func downloadFromURL(client *resty.Client, ver map[string]string, tmp string, tb
 			return nil
 		}
 		tool.Version = string(resp.Body())
-		log.Printf("Latest Version: %s", tool.Version)
+
+		if currentVersion != "" && tool.Version != currentVersion {
+			log.Printf("Latest Version: %s (current: %s)", tool.Version, currentVersion)
+		} else {
+			log.Printf("Latest Version: %s", tool.Version)
+		}
 	}
 
-	if tool.Version == ver[tool.Name] {
+	if tool.Version == currentVersion {
 		log.Printf("✅ Skipping since already latest version\n")
 		return nil
 	}
