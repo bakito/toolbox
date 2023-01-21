@@ -18,9 +18,10 @@ var _ = Describe("Types", func() {
 				Ω(tools).Should(BeEmpty())
 			})
 			It("should return an a sorted slice", func() {
-				t1 := &types.Tool{Name: "xyz"}
-				t2 := &types.Tool{Name: "abc"}
-				tb.Tools = map[string]*types.Tool{t1.Name: t1, t2.Name: t2, "foo": {}}
+				t1 := &types.Tool{Name: "xyz", Github: "foo"}
+				t2 := &types.Tool{Name: "abc", Google: "bar"}
+				t3 := &types.Tool{Name: "no-source"}
+				tb.Tools = map[string]*types.Tool{t1.Name: t1, t2.Name: t2, t3.Name: t3, "foo": {DownloadURL: "url"}}
 				tools := tb.GetTools()
 				Ω(tools).Should(HaveLen(3))
 				Ω(tools[0].Name).Should(Equal("abc"))
@@ -34,9 +35,9 @@ var _ = Describe("Types", func() {
 				Ω(versions.Versions).Should(BeEmpty())
 			})
 			It("should return an a sorted slice", func() {
-				t1 := &types.Tool{Name: "xyz", CouldNotBeFound: true}
-				t2 := &types.Tool{Name: "abc", Version: "v1.0.0"}
-				tb.Tools = map[string]*types.Tool{t1.Name: t1, t2.Name: t2, "foo": {Version: "v1.2.3"}}
+				t1 := &types.Tool{Name: "xyz", CouldNotBeFound: true, Github: "foo"}
+				t2 := &types.Tool{Name: "abc", Version: "v1.0.0", Github: "foo"}
+				tb.Tools = map[string]*types.Tool{t1.Name: t1, t2.Name: t2, "foo": {Version: "v1.2.3", Github: "foo"}}
 				versions := tb.Versions()
 				Ω(versions.Versions).Should(HaveLen(2))
 				Ω(versions.Versions).Should(HaveKey("abc"))

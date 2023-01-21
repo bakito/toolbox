@@ -15,10 +15,13 @@ func (t *Toolbox) GetTools() []*Tool {
 	var tools []*Tool
 	for n := range t.Tools {
 		tool := t.Tools[n]
-		if tool.Name == "" {
-			tool.Name = n
+
+		if tool.Github != "" || tool.DownloadURL != "" || tool.Google != "" {
+			if tool.Name == "" {
+				tool.Name = n
+			}
+			tools = append(tools, tool)
 		}
-		tools = append(tools, tool)
 	}
 
 	sort.Slice(tools, func(i, j int) bool {
