@@ -67,8 +67,19 @@ func fetch(cfgFile string) error {
 
 	tb, err := readToolbox(cfgFile)
 	if err != nil {
-		panic(err)
+		return err
 	}
+
+	client := resty.New()
+
+	tbRel, err := github.LatestRelease(client, "bakito/toolbox", true)
+	if err != nil {
+		return err
+	}
+	if tbRel.TagName != version.Version {
+		log.Printf("🌟 A new toolbox version is available %s (current: %s)\n", tbRel.TagName, version.Version)
+	}
+	println()
 
 	if tb.Target == "" {
 		tb.Target = "./tools"
@@ -102,7 +113,6 @@ func fetch(cfgFile string) error {
 	defer func() { _ = os.RemoveAll(tmp) }()
 
 	tools := tb.GetTools()
-	client := resty.New()
 	for i := range tools {
 		tool := tools[i]
 		if err := handleTool(client, ver, tmp, tb, tool); err != nil {
@@ -362,7 +372,7 @@ func readToolbox(cfgFile string) (*types.Toolbox, error) {
 			}
 		}
 	}
-	log.Printf("📒 Reading config %s\n\n", tbFile)
+	log.Printf("📒 Reading config %s\n", tbFile)
 	b, err := os.ReadFile(tbFile)
 	if err != nil {
 		return nil, err
