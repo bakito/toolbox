@@ -135,9 +135,14 @@ func handleTool(client *resty.Client, ver map[string]string, tmp string, tb *typ
 	defer func() { println() }()
 	var ghr *types.GithubRelease
 	var err error
+	configVersion := tool.Version
 	currentVersion := ver[tool.Name]
 	if tool.Github != "" {
-		ghr, err = github.LatestRelease(client, tool.Github, false)
+		if configVersion == "" {
+			ghr, err = github.LatestRelease(client, tool.Github, false)
+		} else {
+			ghr, err = github.Release(client, tool.Github, configVersion, false)
+		}
 		if err != nil {
 			return err
 		}
@@ -151,9 +156,12 @@ func handleTool(client *resty.Client, ver map[string]string, tmp string, tb *typ
 			}
 		}
 	}
-
 	if tool.Version == currentVersion {
-		log.Printf("✅ Skipping since already latest version\n")
+		if configVersion != "" {
+			log.Printf("✅ Skipping since already configured version %s\n", configVersion)
+		} else {
+			log.Printf("✅ Skipping since already latest version\n")
+		}
 		return nil
 	}
 
