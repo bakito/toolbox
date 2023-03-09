@@ -2,6 +2,7 @@ package types
 
 import (
 	"sort"
+	"strings"
 )
 
 type Toolbox struct {
@@ -25,7 +26,7 @@ func (t *Toolbox) GetTools() []*Tool {
 	}
 
 	sort.Slice(tools, func(i, j int) bool {
-		return tools[i].Name < tools[j].Name
+		return strings.ToLower(tools[i].Name) < strings.ToLower(tools[j].Name)
 	})
 
 	return tools
