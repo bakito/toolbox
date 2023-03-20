@@ -219,10 +219,7 @@ func downloadFromURL(client *resty.Client, ver map[string]string, tmp string, tb
 		log.Printf("✅ Skipping since already latest version\n")
 		return nil
 	}
-	if err := fetchTool(tmp, tool.Name, tool.Name, parseTemplate(tool.DownloadURL, tool.Version), tb.Target); err != nil {
-		return err
-	}
-	return nil
+	return fetchTool(tmp, tool.Name, tool.Name, parseTemplate(tool.DownloadURL, tool.Version), tb.Target)
 }
 
 func findMatching(toolName string, assets []types.Asset) *types.Asset {
