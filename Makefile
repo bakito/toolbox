@@ -34,7 +34,7 @@ DEEPCOPY_GEN ?= $(LOCALBIN)/deepcopy-gen
 
 ## Tool Versions
 SEMVER_VERSION ?= v1.1.3
-GOLANGCI_LINT_VERSION ?= v1.52.0
+GOLANGCI_LINT_VERSION ?= v1.52.2
 DEEPCOPY_GEN_VERSION ?= v0.26.3
 
 ## Tool Installer

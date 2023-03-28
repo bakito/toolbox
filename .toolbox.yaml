@@ -32,5 +32,5 @@ tools:
     github: kubernetes/minikube
   gh:
     github: cli/cli
-  incompleteShouldNotBeConsidered: {}
+
 target: ./download
