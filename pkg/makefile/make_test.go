@@ -18,14 +18,14 @@ var _ = Describe("Make", func() {
 	var tempDir string
 	BeforeEach(func() {
 		var err error
-		tempDir, err = os.MkdirTemp("", "toolbox_extract_test_")
+		tempDir, err = os.MkdirTemp("", "toolbox_make_test_")
 		Ω(err).ShouldNot(HaveOccurred())
 		getRelease = func(client *resty.Client, repo string, quiet bool) (*types.GithubRelease, error) {
 			return &types.GithubRelease{TagName: "v0.2.1"}, nil
 		}
 	})
 	AfterEach(func() {
-		_ = os.Remove(tempDir)
+		_ = os.RemoveAll(tempDir)
 		getRelease = github.LatestRelease
 	})
 	Context("Generate", func() {

@@ -23,7 +23,7 @@ var _ = Describe("Extract", func() {
 		Ω(err).ShouldNot(HaveOccurred())
 	})
 	AfterEach(func() {
-		_ = os.Remove(tempDir)
+		_ = os.RemoveAll(tempDir)
 	})
 
 	Context("File", func() {
