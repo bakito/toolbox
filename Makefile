@@ -29,14 +29,16 @@ $(LOCALBIN):
 ## Tool Binaries
 SEMVER ?= $(LOCALBIN)/semver
 GOLANGCI_LINT ?= $(LOCALBIN)/golangci-lint
+GORELEASER ?= $(LOCALBIN)/goreleaser
 GINKGO ?= $(LOCALBIN)/ginkgo
 DEEPCOPY_GEN ?= $(LOCALBIN)/deepcopy-gen
 
 ## Tool Versions
 SEMVER_VERSION ?= v1.1.3
 GOLANGCI_LINT_VERSION ?= v1.52.2
+GORELEASER_VERSION ?= v1.17.2
 GINKGO_VERSION ?= v2.9.2
-DEEPCOPY_GEN_VERSION ?= v0.26.3
+DEEPCOPY_GEN_VERSION ?= v0.27.1
 
 ## Tool Installer
 .PHONY: semver
@@ -47,6 +49,10 @@ $(SEMVER): $(LOCALBIN)
 golangci-lint: $(GOLANGCI_LINT) ## Download golangci-lint locally if necessary.
 $(GOLANGCI_LINT): $(LOCALBIN)
 	test -s $(LOCALBIN)/golangci-lint || GOBIN=$(LOCALBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
+.PHONY: goreleaser
+goreleaser: $(GORELEASER) ## Download goreleaser locally if necessary.
+$(GORELEASER): $(LOCALBIN)
+	test -s $(LOCALBIN)/goreleaser || GOBIN=$(LOCALBIN) go install github.com/goreleaser/goreleaser@$(GORELEASER_VERSION)
 .PHONY: ginkgo
 ginkgo: $(GINKGO) ## Download ginkgo locally if necessary.
 $(GINKGO): $(LOCALBIN)
@@ -62,11 +68,13 @@ update-toolbox-tools:
 	@rm -f \
 		$(LOCALBIN)/semver \
 		$(LOCALBIN)/golangci-lint \
+		$(LOCALBIN)/goreleaser \
 		$(LOCALBIN)/ginkgo \
 		$(LOCALBIN)/deepcopy-gen
 	toolbox makefile -f $(LOCALDIR)/Makefile \
 		github.com/bakito/semver \
 		github.com/golangci/golangci-lint/cmd/golangci-lint \
+		github.com/goreleaser/goreleaser \
 		github.com/onsi/ginkgo/v2/ginkgo \
 		k8s.io/code-generator/cmd/deepcopy-gen@github.com/kubernetes/code-generator
 ## toolbox - end
