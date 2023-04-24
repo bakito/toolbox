@@ -10,13 +10,13 @@ tidy:
 test: ginkgo tidy lint
 	$(GINKGO) -r --cover --coverprofile=coverage.out
 
-release: semver
+release: goreleaser semver
 	@version=$$($(LOCALBIN)/semver); \
 	git tag -s $$version -m"Release $$version"
-	goreleaser --clean
+	$(GORELEASER)  --clean
 
 test-release:
-	goreleaser --skip-publish --snapshot --clean
+	$(GORELEASER) --skip-publish --snapshot --clean
 
 ## toolbox - start
 ## Current working directory
