@@ -32,5 +32,7 @@ tools:
     github: kubernetes/minikube
   gh:
     github: cli/cli
+  kubelogin:
+    github: Azure/kubelogin
 
 target: ./download

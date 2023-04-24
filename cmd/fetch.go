@@ -41,6 +41,7 @@ var (
 		"amd64":   {"arm"},
 		"windows": {"darwin"},
 	}
+	checksumSuffixes = []string{"sum", "sha256"}
 
 	// fetchCmd represents the fetch command
 	fetchCmd = &cobra.Command{
@@ -226,7 +227,9 @@ func findMatching(toolName string, assets []types.Asset) *types.Asset {
 	var matching []*types.Asset
 	for i := range assets {
 		a := assets[i]
-		if strings.Contains(a.Name, toolName) && matches(runtime.GOOS, a.Name) && !strings.HasSuffix(a.Name, "sum") {
+		if strings.Contains(a.Name, toolName) &&
+			matches(runtime.GOOS, a.Name) &&
+			!hasForbiddenSuffix(a) {
 			matching = append(matching, &a)
 		}
 	}
@@ -258,6 +261,15 @@ func findMatching(toolName string, assets []types.Asset) *types.Asset {
 		return nil
 	}
 	return matching[0]
+}
+
+func hasForbiddenSuffix(a types.Asset) bool {
+	for _, suffix := range checksumSuffixes {
+		if strings.HasSuffix(a.Name, suffix) {
+			return true
+		}
+	}
+	return false
 }
 
 func parseTemplate(templ string, version string) string {
