@@ -1,4 +1,6 @@
 tools:
+  toolbox:
+    github: bakito/toolbox
   kubexporter:
     github: bakito/kubexporter
   upx:

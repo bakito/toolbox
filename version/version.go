@@ -1,4 +1,9 @@
 package version
 
-// Version the module version
-var Version = "devel"
+var (
+	// Version the module version
+	Version = "devel"
+
+	// Name the name of this tool
+	Name = "bakito/toolbox"
+)

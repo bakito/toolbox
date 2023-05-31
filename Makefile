@@ -15,7 +15,7 @@ release: goreleaser semver
 	git tag -s $$version -m"Release $$version"
 	$(GORELEASER)  --clean
 
-test-release:
+test-release: goreleaser
 	$(GORELEASER) --skip-publish --snapshot --clean
 
 ## toolbox - start
