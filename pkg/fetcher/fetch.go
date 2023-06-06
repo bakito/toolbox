@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -54,7 +53,7 @@ type fetcher struct {
 	executablePath string
 }
 
-func (f fetcher) Fetch(cfgFile string) error {
+func (f *fetcher) Fetch(cfgFile string) error {
 	var err error
 	f.executablePath, err = os.Executable()
 	if err != nil {
@@ -244,18 +243,18 @@ func findMatching(toolName string, assets []types.Asset) *types.Asset {
 	for i := range assets {
 		a := assets[i]
 		if strings.Contains(a.Name, toolName) &&
-			matches(runtime.GOOS, a.Name) &&
+			(matches(goOs(), a.Name) || len(defaultFileExtension()) > 0) &&
 			!hasForbiddenSuffix(a) {
 			matching = append(matching, &a)
 		}
 	}
 	sort.Slice(matching, func(i, j int) bool {
-		mi := matches(runtime.GOARCH, matching[i].Name)
-		mj := matches(runtime.GOARCH, matching[j].Name)
+		mi := matches(goArch(), matching[i].Name)
+		mj := matches(goArch(), matching[j].Name)
 
 		if mi == mj {
-			mi = strings.Contains(matching[i].Name, runtime.GOARCH)
-			mj = strings.Contains(matching[j].Name, runtime.GOARCH)
+			mi = strings.Contains(matching[i].Name, goArch())
+			mj = strings.Contains(matching[j].Name, goArch())
 		}
 		if mi == mj {
 			// prefer non archive files
@@ -305,8 +304,8 @@ func templateData(version string) map[string]string {
 	return map[string]string{
 		"Version":    version,
 		"VersionNum": strings.TrimPrefix(version, "v"),
-		"OS":         runtime.GOOS,
-		"Arch":       runtime.GOARCH,
+		"OS":         goOs(),
+		"Arch":       goArch(),
 		"ArchBIT":    fmt.Sprintf("%d", strconv.IntSize),
 		"FileExt":    defaultFileExtension(),
 	}
@@ -361,7 +360,7 @@ func copyTool(dir string, fileName string, targetDir string, targetName string) 
 		if file.IsDir() {
 			dirs = append(dirs, file)
 		}
-		if file.Name() == binaryName(fileName) || file.Name() == binaryName(fmt.Sprintf("%s_%s_%s", fileName, runtime.GOOS, runtime.GOARCH)) {
+		if file.Name() == binaryName(fileName) || file.Name() == binaryName(fmt.Sprintf("%s_%s_%s", fileName, goOs(), goArch())) {
 
 			if err := copyFile(dir, file, targetDir, targetName); err != nil {
 				return false, err
