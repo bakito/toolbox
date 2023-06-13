@@ -1,40 +1,39 @@
 tools:
-  toolbox:
-    github: bakito/toolbox
-  kubexporter:
-    github: bakito/kubexporter
-  upx:
-    github: upx/upx
+  gh:
+    github: cli/cli
+  helm:
+    github: helm/helm
+    downloadURL: https://get.helm.sh/helm-{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
+  jf:
+    github: jfrog/jfrog-cli
+    downloadURL: https://releases.jfrog.io/artifactory/jfrog-cli/v2-jf/{{ .VersionNum }}/jfrog-cli-{{ .OS }}-{{ .Arch }}/jf{{ .FileExt }}
+  jq:
+    github: stedolan/jq
+  kind:
+    github: kubernetes-sigs/kind
+  kubectl:
+    downloadURL: https://dl.k8s.io/release/{{ .Version }}/bin/{{ .OS }}/{{ .Arch }}/kubectl{{ .FileExt }}
+    version: https://storage.googleapis.com/kubernetes-release/release/stable.txt
   kubectx:
     github: ahmetb/kubectx
     additional:
       - kubens
-  kubectl:
-    downloadURL: https://dl.k8s.io/release/{{ .Version }}/bin/{{ .OS }}/{{ .Arch }}/kubectl{{ .FileExt }}
-    version: https://storage.googleapis.com/kubernetes-release/release/stable.txt
-  helm:
-    github: helm/helm
-    downloadURL: https://get.helm.sh/helm-{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
-  jq:
-    github: stedolan/jq
-  yq:
-    github: mikefarah/yq
-  vault:
-    github: hashicorp/vault
-    downloadURL: https://releases.hashicorp.com/vault/{{ .VersionNum }}/vault_{{ .VersionNum }}_{{ .OS }}_{{ .Arch }}.zip
+  kubelogin:
+    github: Azure/kubelogin
+  kubexporter:
+    github: bakito/kubexporter
+  minikube:
+    github: kubernetes/minikube
   terraform:
     github: hashicorp/terraform
     downloadURL: https://releases.hashicorp.com/terraform/{{ .VersionNum }}/terraform_{{ .VersionNum }}_{{ .OS }}_{{ .Arch }}.zip
-  jf:
-    github: jfrog/jfrog-cli
-    downloadURL: https://releases.jfrog.io/artifactory/jfrog-cli/v2-jf/{{ .VersionNum }}/jfrog-cli-{{ .OS }}-{{ .Arch }}/jf{{ .FileExt }}
-  kind:
-    github: kubernetes-sigs/kind
-  minikube:
-    github: kubernetes/minikube
-  gh:
-    github: cli/cli
-  kubelogin:
-    github: Azure/kubelogin
-
+  toolbox:
+    github: bakito/toolbox
+  upx:
+    github: upx/upx
+  vault:
+    github: hashicorp/vault
+    downloadURL: https://releases.hashicorp.com/vault/{{ .VersionNum }}/vault_{{ .VersionNum }}_{{ .OS }}_{{ .Arch }}.zip
+  yq:
+    github: mikefarah/yq
 target: ./download

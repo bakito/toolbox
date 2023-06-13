@@ -54,7 +54,7 @@ type fetcher struct {
 	executablePath string
 }
 
-func (f fetcher) Fetch(cfgFile string) error {
+func (f *fetcher) Fetch(cfgFile string) error {
 	var err error
 	f.executablePath, err = os.Executable()
 	if err != nil {
@@ -73,7 +73,7 @@ func (f fetcher) Fetch(cfgFile string) error {
 		log.Printf("🌟 A new toolbox version is available %s (current: %s)\n", tbRel.TagName, version.Version)
 	}
 
-	tb, err := readToolbox(cfgFile)
+	tb, _, err := ReadToolbox(cfgFile)
 	if err != nil {
 		return err
 	}
@@ -136,15 +136,18 @@ func (f fetcher) Fetch(cfgFile string) error {
 	}
 
 	// save versions
-	tv := tb.Versions()
+	return SaveYamlFile(filepath.Join(tb.Target, toolboxVersionsFile), tb.Versions())
+}
+
+func SaveYamlFile(path string, obj interface{}) error {
 	var b bytes.Buffer
 	env := yaml.NewEncoder(&b)
 	env.SetIndent(2)
 
-	if err := env.Encode(&tv); err != nil {
+	if err := env.Encode(obj); err != nil {
 		return err
 	}
-	return os.WriteFile(filepath.Join(tb.Target, toolboxVersionsFile), b.Bytes(), 0o600)
+	return os.WriteFile(path, b.Bytes(), 0o600)
 }
 
 func (f *fetcher) handleTool(client *resty.Client, ver map[string]string, tmp string, tb *types.Toolbox, tool *types.Tool) error {
@@ -395,7 +398,7 @@ func copyFile(dir string, file os.DirEntry, targetDir string, targetName string)
 	return err
 }
 
-func readToolbox(cfgFile string) (*types.Toolbox, error) {
+func ReadToolbox(cfgFile string) (*types.Toolbox, string, error) {
 	var tbFile string
 	if cfgFile != "" {
 		if _, err := os.Stat(cfgFile); err == nil {
@@ -408,7 +411,7 @@ func readToolbox(cfgFile string) (*types.Toolbox, error) {
 		if _, err := os.Stat(tbFile); errors.Is(err, os.ErrNotExist) {
 			userHomeDir, err := os.UserHomeDir()
 			if err != nil {
-				return nil, err
+				return nil, "", err
 			}
 			homePath := filepath.Join(userHomeDir, toolboxConfFile)
 			if _, err := os.Stat(homePath); err == nil {
@@ -419,15 +422,15 @@ func readToolbox(cfgFile string) (*types.Toolbox, error) {
 	log.Printf("📒 Reading config %s\n", tbFile)
 	b, err := os.ReadFile(tbFile)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	tb := &types.Toolbox{}
 	err = yaml.Unmarshal(b, tb)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
-	return tb, nil
+	return tb, tbFile, nil
 }
 
 func readVersions(target string) (map[string]string, error) {

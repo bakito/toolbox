@@ -22,6 +22,10 @@ var fetchCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(fetchCmd)
-	fetchCmd.Flags().StringP(flagConfig, "c", "",
+	addConfigFlag(fetchCmd)
+}
+
+func addConfigFlag(cmd *cobra.Command) {
+	cmd.Flags().StringP(flagConfig, "c", "",
 		"The config file to be used. (default 1. '.toolbox.yaml' current dir, 2. '~/.toolbox.yaml')")
 }

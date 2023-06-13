@@ -6,10 +6,10 @@ import (
 )
 
 type Toolbox struct {
-	Tools        map[string]*Tool     `yaml:"tools"`
-	Target       string               `yaml:"target"`
-	CreateTarget *bool                `yaml:"createTarget"`
-	Aliases      *map[string][]string `yaml:"aliases"`
+	Tools        map[string]*Tool     `yaml:"tools,omitempty"`
+	Target       string               `yaml:"target,omitempty"`
+	CreateTarget *bool                `yaml:"createTarget,omitempty"`
+	Aliases      *map[string][]string `yaml:"aliases,omitempty"`
 }
 
 func (t *Toolbox) GetTools() []*Tool {
@@ -32,8 +32,8 @@ func (t *Toolbox) GetTools() []*Tool {
 	return tools
 }
 
-func (t *Toolbox) Versions() Versions {
-	v := Versions{Versions: map[string]string{}}
+func (t *Toolbox) Versions() *Versions {
+	v := &Versions{Versions: map[string]string{}}
 	tools := t.GetTools()
 	for i := range tools {
 		t := tools[i]
@@ -45,12 +45,12 @@ func (t *Toolbox) Versions() Versions {
 }
 
 type Tool struct {
-	Name            string   `yaml:"name"`
-	Github          string   `yaml:"github"`
-	Google          string   `yaml:"google"`
-	DownloadURL     string   `yaml:"downloadURL"`
-	Version         string   `yaml:"version"`
-	Additional      []string `yaml:"additional"`
+	Name            string   `yaml:"name,omitempty"`
+	Github          string   `yaml:"github,omitempty"`
+	Google          string   `yaml:"google,omitempty"`
+	DownloadURL     string   `yaml:"downloadURL,omitempty"`
+	Version         string   `yaml:"version,omitempty"`
+	Additional      []string `yaml:"additional,omitempty"`
 	CouldNotBeFound bool     `yaml:"-"`
 }
 
