@@ -40,7 +40,7 @@ var (
 		"amd64":   {"arm"},
 		"windows": {"darwin"},
 	}
-	checksumSuffixes = []string{"sum", "sha256"}
+	excludedSuffixes = []string{"sum", "sha256", "sbom"}
 )
 
 func New() Fetcher {
@@ -280,7 +280,7 @@ func findMatching(toolName string, assets []types.Asset) *types.Asset {
 }
 
 func hasForbiddenSuffix(a types.Asset) bool {
-	for _, suffix := range checksumSuffixes {
+	for _, suffix := range excludedSuffixes {
 		if strings.HasSuffix(a.Name, suffix) {
 			return true
 		}
