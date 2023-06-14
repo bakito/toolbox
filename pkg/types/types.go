@@ -6,10 +6,11 @@ import (
 )
 
 type Toolbox struct {
-	Tools        map[string]*Tool     `yaml:"tools,omitempty"`
-	Target       string               `yaml:"target,omitempty"`
-	CreateTarget *bool                `yaml:"createTarget,omitempty"`
-	Aliases      *map[string][]string `yaml:"aliases,omitempty"`
+	Tools            map[string]*Tool     `yaml:"tools,omitempty"`
+	Target           string               `yaml:"target,omitempty"`
+	CreateTarget     *bool                `yaml:"createTarget,omitempty"`
+	Aliases          *map[string][]string `yaml:"aliases,omitempty"`
+	ExcludedSuffixes []string             `yaml:"excludedSuffixes,omitempty"`
 }
 
 func (t *Toolbox) GetTools() []*Tool {

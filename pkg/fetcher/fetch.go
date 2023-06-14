@@ -188,13 +188,13 @@ func (f *fetcher) handleTool(client *resty.Client, ver map[string]string, tmp st
 	if tool.DownloadURL != "" {
 		return f.downloadFromURL(client, ver, tmp, tb, tool)
 	} else if ghr != nil {
-		return f.downloadViaGithub(tool, ghr, tmp, tb)
+		return f.downloadViaGithub(tb, tool, ghr, tmp)
 	}
 	return nil
 }
 
-func (f *fetcher) downloadViaGithub(tool *types.Tool, ghr *types.GithubRelease, tmp string, tb *types.Toolbox) error {
-	matching := findMatching(tool.Name, ghr.Assets)
+func (f *fetcher) downloadViaGithub(tb *types.Toolbox, tool *types.Tool, ghr *types.GithubRelease, tmp string) error {
+	matching := findMatching(tb, tool.Name, ghr.Assets)
 	tool.CouldNotBeFound = true
 	if matching != nil {
 		tool.CouldNotBeFound = false
@@ -203,7 +203,7 @@ func (f *fetcher) downloadViaGithub(tool *types.Tool, ghr *types.GithubRelease, 
 		}
 	}
 	for _, add := range tool.Additional {
-		matching := findMatching(add, ghr.Assets)
+		matching := findMatching(nil, add, ghr.Assets)
 		if matching != nil {
 			tool.CouldNotBeFound = false
 			if err := f.fetchTool(tmp, add, add, matching.BrowserDownloadURL, tb.Target); err != nil {
@@ -242,13 +242,13 @@ func (f *fetcher) downloadFromURL(client *resty.Client, ver map[string]string, t
 	return f.fetchTool(tmp, tool.Name, tool.Name, parseTemplate(tool.DownloadURL, tool.Version), tb.Target)
 }
 
-func findMatching(toolName string, assets []types.Asset) *types.Asset {
+func findMatching(tb *types.Toolbox, toolName string, assets []types.Asset) *types.Asset {
 	var matching []*types.Asset
 	for i := range assets {
 		a := assets[i]
 		if strings.Contains(a.Name, toolName) &&
 			matches(runtime.GOOS, a.Name) &&
-			!hasForbiddenSuffix(a) {
+			!hasForbiddenSuffix(tb, a) {
 			matching = append(matching, &a)
 		}
 	}
@@ -282,8 +282,12 @@ func findMatching(toolName string, assets []types.Asset) *types.Asset {
 	return matching[0]
 }
 
-func hasForbiddenSuffix(a types.Asset) bool {
-	for _, suffix := range excludedSuffixes {
+func hasForbiddenSuffix(tb *types.Toolbox, a types.Asset) bool {
+	excl := excludedSuffixes
+	if len(tb.ExcludedSuffixes) != 0 {
+		excl = tb.ExcludedSuffixes
+	}
+	for _, suffix := range excl {
 		if strings.HasSuffix(a.Name, suffix) {
 			return true
 		}
