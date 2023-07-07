@@ -353,7 +353,7 @@ func (f *fetcher) fetchTool(tmp string, remoteToolName string, trueToolName stri
 		return err
 	}
 	if !ok {
-		log.Printf("WARN: Could not find: %s", remoteToolName)
+		return fmt.Errorf("could not find: %s", remoteToolName)
 	}
 	return nil
 }
@@ -368,7 +368,9 @@ func copyTool(dir string, fileName string, targetDir string, targetName string) 
 		if file.IsDir() {
 			dirs = append(dirs, file)
 		}
-		if file.Name() == binaryName(fileName) || file.Name() == binaryName(fmt.Sprintf("%s_%s_%s", fileName, runtime.GOOS, runtime.GOARCH)) {
+		if file.Name() == binaryName(fileName) ||
+			file.Name() == fileName ||
+			file.Name() == binaryName(fmt.Sprintf("%s_%s_%s", fileName, runtime.GOOS, runtime.GOARCH)) {
 
 			if err := copyFile(dir, file, targetDir, targetName); err != nil {
 				return false, err
