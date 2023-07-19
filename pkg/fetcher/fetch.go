@@ -284,7 +284,7 @@ func findMatching(tb *types.Toolbox, toolName string, assets []types.Asset) *typ
 
 func hasForbiddenSuffix(tb *types.Toolbox, a types.Asset) bool {
 	excl := excludedSuffixes
-	if len(tb.ExcludedSuffixes) != 0 {
+	if tb != nil && len(tb.ExcludedSuffixes) != 0 {
 		excl = tb.ExcludedSuffixes
 	}
 	for _, suffix := range excl {
@@ -370,7 +370,8 @@ func copyTool(dir string, fileName string, targetDir string, targetName string) 
 		}
 		if file.Name() == binaryName(fileName) ||
 			file.Name() == fileName ||
-			file.Name() == binaryName(fmt.Sprintf("%s_%s_%s", fileName, runtime.GOOS, runtime.GOARCH)) {
+			file.Name() == binaryName(fmt.Sprintf("%s_%s_%s", fileName, runtime.GOOS, runtime.GOARCH)) ||
+			file.Name() == binaryName(fmt.Sprintf("%s-%s_%s", fileName, runtime.GOOS, runtime.GOARCH)) {
 
 			if err := copyFile(dir, file, targetDir, targetName); err != nil {
 				return false, err
