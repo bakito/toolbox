@@ -482,8 +482,15 @@ func matches(info string, name string) bool {
 }
 
 func downloadFile(path string, url string) (err error) {
-	resp, err := grab.Get(path, url)
+	req, err := grab.NewRequest(path, url)
 	if err != nil {
+		return err
+	}
+	client := grab.NewClient()
+	req.HTTPRequest.Header.Set("User-Agent", fmt.Sprintf("toolbox/%s", version.Version))
+
+	resp := client.Do(req)
+	if resp.Err() != nil {
 		return http.CheckError(err)
 	}
 
