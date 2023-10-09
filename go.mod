@@ -9,7 +9,7 @@ require (
 	github.com/onsi/gomega v1.28.0
 	github.com/spf13/cobra v1.7.0
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8
-	golang.org/x/mod v0.12.0
+	golang.org/x/mod v0.13.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -23,5 +23,5 @@ require (
 	golang.org/x/net v0.15.0 // indirect
 	golang.org/x/sys v0.12.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
-	golang.org/x/tools v0.12.0 // indirect
+	golang.org/x/tools v0.13.0 // indirect
 )
