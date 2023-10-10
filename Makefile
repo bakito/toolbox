@@ -11,12 +11,12 @@ test: ginkgo tidy lint
 	$(GINKGO) -r --cover --coverprofile=coverage.out
 
 release: goreleaser semver
-	@version=$$($(LOCALBIN)/semver); \
+	@version=$$($(SEMVER)); \
 	git tag -s $$version -m"Release $$version"
-	$(GORELEASER)  --clean
+	$(GORELEASER) --clean
 
 test-release: goreleaser
-	$(GORELEASER) --skip-publish --snapshot --clean
+	$(GORELEASER) --skip=publish --snapshot --clean
 
 ## toolbox - start
 ## Current working directory
@@ -35,10 +35,10 @@ DEEPCOPY_GEN ?= $(LOCALBIN)/deepcopy-gen
 
 ## Tool Versions
 SEMVER_VERSION ?= v1.1.3
-GOLANGCI_LINT_VERSION ?= v1.53.2
-GORELEASER_VERSION ?= v1.18.2
-GINKGO_VERSION ?= v2.10.0
-DEEPCOPY_GEN_VERSION ?= v0.27.2
+GOLANGCI_LINT_VERSION ?= v1.54.2
+GORELEASER_VERSION ?= v1.21.2
+GINKGO_VERSION ?= v2.13.0
+DEEPCOPY_GEN_VERSION ?= v0.28.2
 
 ## Tool Installer
 .PHONY: semver
