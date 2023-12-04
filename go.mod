@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/cavaliergopher/grab/v3 v3.0.1
 	github.com/go-resty/resty/v2 v2.10.0
-	github.com/onsi/ginkgo/v2 v2.13.1
+	github.com/onsi/ginkgo/v2 v2.13.2
 	github.com/onsi/gomega v1.30.0
 	github.com/spf13/cobra v1.8.0
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8
