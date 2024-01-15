@@ -19,11 +19,7 @@ var (
 	getRelease    = github.LatestRelease
 )
 
-func Generate(client *resty.Client, writer io.Writer, makefile string, tools ...string) error {
-	return generateWithToolsGo(client, writer, makefile, tools, "tools.go")
-}
-
-func generateWithToolsGo(client *resty.Client, writer io.Writer, makefile string, tools []string, toolsFile string) error {
+func Generate(client *resty.Client, writer io.Writer, makefile string, toolsFile string, tools ...string) error {
 	argTools, toolData := mergeWithToolsGo(toolsFile, tools)
 	return generate(client, writer, makefile, argTools, toolData)
 }

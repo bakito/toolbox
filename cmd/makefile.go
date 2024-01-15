@@ -9,32 +9,39 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const flagFile = "file"
+const (
+	flagFile    = "file"
+	flagToolsGo = "tools-go"
+)
 
-// makefileCmd represents the makefile command
-var makefileCmd = &cobra.Command{
-	Use:   "makefile [tools]",
-	Short: "Adds tools to a Makefile",
-	Args: func(_ *cobra.Command, args []string) error {
-		if _, err := os.Stat("tools.go"); err != nil {
-			if len(args) == 0 {
-				return errors.New("at least one tool must be provided")
+var (
+	toolsGo string
+	// makefileCmd represents the makefile command
+	makefileCmd = &cobra.Command{
+		Use:   "makefile [tools]",
+		Short: "Adds tools to a Makefile",
+		Args: func(_ *cobra.Command, args []string) error {
+			if _, err := os.Stat(toolsGo); err != nil {
+				if len(args) == 0 {
+					return errors.New("at least one tool must be provided")
+				}
 			}
-		}
-		return nil
-	},
-	RunE: func(cmd *cobra.Command, args []string) error {
-		client := resty.New()
-		mf, err := cmd.Flags().GetString(flagFile)
-		if err != nil {
-			return err
-		}
-		return makefile.Generate(client, cmd.OutOrStderr(), mf, args...)
-	},
-}
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			client := resty.New()
+			mf, err := cmd.Flags().GetString(flagFile)
+			if err != nil {
+				return err
+			}
+			return makefile.Generate(client, cmd.OutOrStderr(), mf, toolsGo, args...)
+		},
+	}
+)
 
 func init() {
 	rootCmd.AddCommand(makefileCmd)
 
 	makefileCmd.Flags().StringP(flagFile, "f", "", "The Makefile path to generate tools in")
+	makefileCmd.Flags().StringVar(&toolsGo, flagToolsGo, "tools.go", "The tools.go file to check for tools dependencies.")
 }
