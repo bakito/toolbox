@@ -15,21 +15,24 @@ import (
 )
 
 var (
-	pattern    = regexp.MustCompile(`^github\.com\/([\w-]+\/[\w-]+).*$`)
-	getRelease = github.LatestRelease
+	githubPattern = regexp.MustCompile(`^github\.com/([\w-]+/[\w-]+).*$`)
+	getRelease    = github.LatestRelease
 )
 
 func Generate(client *resty.Client, writer io.Writer, makefile string, tools ...string) error {
-	sort.Strings(tools)
-	var toolData []toolData
+	argTools, toolData := mergeWithToolsGo(tools)
 
-	for _, t := range tools {
-		td, err := data(client, t)
+	for _, t := range argTools {
+		td, err := dataForArg(client, t)
 		if err != nil {
 			return err
 		}
 		toolData = append(toolData, td)
 	}
+
+	sort.Slice(toolData, func(i, j int) bool {
+		return toolData[i].Name < toolData[j].Name
+	})
 
 	out := &bytes.Buffer{}
 	t := template.Must(template.New("Makefile").Parse(makefileTemplate))
@@ -66,37 +69,69 @@ func Generate(client *resty.Client, writer io.Writer, makefile string, tools ...
 	return os.WriteFile(makefile, []byte(file), 0o600)
 }
 
-func data(client *resty.Client, tool string) (toolData, error) {
+func dataForArg(client *resty.Client, tool string) (toolData, error) {
 	toolRepo := strings.Split(tool, "@")
-
 	toolName := toolRepo[0]
-	repo := toolRepo[len(toolRepo)-1]
-	match := pattern.FindStringSubmatch(repo)
-	t := toolData{}
 
+	td := dataForTool(toolName, false)
+
+	repo := toolRepo[len(toolRepo)-1]
+	match := githubPattern.FindStringSubmatch(repo)
+
+	t := toolData{}
 	if len(match) != 2 {
 		return t, fmt.Errorf("invalid tool %q", tool)
 	}
-
 	ghr, err := getRelease(client, match[1], true)
 	if err != nil {
 		return t, err
 	}
-
-	parts := strings.Split(toolName, "/")
-
 	t.Version = ghr.TagName
-	t.ToolName = toolName
-	t.Tool = tool
-	t.Name = parts[len(parts)-1]
-	t.UpperName = strings.ReplaceAll(strings.ToUpper(t.Name), "-", "_")
-	return t, nil
+
+	return td, nil
+}
+
+func dataForTool(toolName string, withDependency bool) (td toolData) {
+	parts := strings.Split(toolName, "/")
+	td.ToolName = toolName
+	td.Tool = toolName
+	td.Name = parts[len(parts)-1]
+	td.UpperName = strings.ReplaceAll(strings.ToUpper(td.Name), "-", "_")
+	td.WithDependency = withDependency
+	return
 }
 
 type toolData struct {
-	Name      string `json:"Name"`
-	UpperName string `json:"UpperName"`
-	Version   string `json:"Version"`
-	Tool      string `json:"Tool"`
-	ToolName  string `json:"ToolName"`
+	Name           string `json:"Name"`
+	UpperName      string `json:"UpperName"`
+	Version        string `json:"Version"`
+	Tool           string `json:"Tool"`
+	ToolName       string `json:"ToolName"`
+	WithDependency bool   `json:"WithDependency"`
+}
+
+func mergeWithToolsGo(inTools []string) ([]string, []toolData) {
+	content, err := os.ReadFile("tools.go")
+	if err != nil {
+		return inTools, nil
+	}
+
+	t := make(map[string]bool)
+	for _, tool := range inTools {
+		t[tool] = true
+	}
+
+	r := regexp.MustCompile(`"(.*)"`)
+	var goTools []toolData
+	for _, m := range r.FindAllStringSubmatch(string(content), -1) {
+		goTools = append(goTools, dataForTool(m[1], true))
+		delete(t, m[1])
+	}
+
+	var argTools []string
+	for t := range t {
+		argTools = append(argTools, t)
+	}
+
+	return argTools, goTools
 }

@@ -12,7 +12,9 @@ $(LOCALBIN):
 
 ## Tool Versions
 {{- range .Tools }}
+{{- if .Version }}
 {{.UpperName}}_VERSION ?= {{.Version}}
+{{- end }}
 {{- end }}
 
 ## Tool Installer
@@ -20,7 +22,7 @@ $(LOCALBIN):
 .PHONY: {{.Name}}
 {{.Name}}: $({{.UpperName}}) ## Download {{.Name}} locally if necessary.
 $({{.UpperName}}): $(LOCALBIN)
-	test -s $(LOCALBIN)/{{.Name}} || GOBIN=$(LOCALBIN) go install {{.ToolName}}@$({{.UpperName}}_VERSION)
+	test -s $(LOCALBIN)/{{.Name}} || GOBIN=$(LOCALBIN) go install {{.ToolName}}{{- if .Version }}@$({{.UpperName}}_VERSION){{- end }}
 {{- end }}
 
 ## Update Tools
@@ -29,6 +31,6 @@ update-toolbox-tools:
 	@rm -f{{- range .Tools }} \
 		$(LOCALBIN)/{{.Name}}
 {{- end }}
-	toolbox makefile -f $(LOCALDIR)/Makefile{{- range .Tools }} \
-		{{.Tool}}
+	toolbox makefile -f $(LOCALDIR)/Makefile{{- range .Tools }}{{- if not .WithDependency }} \
+		{{.Tool}}{{- end }}
 {{- end }}
