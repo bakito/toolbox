@@ -9,16 +9,20 @@ $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
 
 ## Tool Binaries
+CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 SEMVER ?= $(LOCALBIN)/semver
 TOOLBOX ?= $(LOCALBIN)/toolbox
-CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 
 ## Tool Versions
+CONTROLLER_GEN_VERSION ?= v0.2.1
 SEMVER_VERSION ?= v0.2.1
 TOOLBOX_VERSION ?= v0.2.1
-CONTROLLER_GEN_VERSION ?= v0.2.1
 
 ## Tool Installer
+.PHONY: controller-gen
+controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.
+$(CONTROLLER_GEN): $(LOCALBIN)
+	test -s $(LOCALBIN)/controller-gen || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_GEN_VERSION)
 .PHONY: semver
 semver: $(SEMVER) ## Download semver locally if necessary.
 $(SEMVER): $(LOCALBIN)
@@ -27,22 +31,18 @@ $(SEMVER): $(LOCALBIN)
 toolbox: $(TOOLBOX) ## Download toolbox locally if necessary.
 $(TOOLBOX): $(LOCALBIN)
 	test -s $(LOCALBIN)/toolbox || GOBIN=$(LOCALBIN) go install github.com/bakito/toolbox@$(TOOLBOX_VERSION)
-.PHONY: controller-gen
-controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.
-$(CONTROLLER_GEN): $(LOCALBIN)
-	test -s $(LOCALBIN)/controller-gen || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(CONTROLLER_GEN_VERSION)
 
 ## Update Tools
 .PHONY: update-toolbox-tools
 update-toolbox-tools:
 	@rm -f \
+		$(LOCALBIN)/controller-gen \
 		$(LOCALBIN)/semver \
-		$(LOCALBIN)/toolbox \
-		$(LOCALBIN)/controller-gen
+		$(LOCALBIN)/toolbox
 	toolbox makefile -f $(LOCALDIR)/Makefile \
+		sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools \
 		github.com/bakito/semver \
-		github.com/bakito/toolbox \
-		sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools
+		github.com/bakito/toolbox
 ## toolbox - end
 
 ...
