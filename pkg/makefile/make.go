@@ -73,28 +73,27 @@ func dataForArg(client *resty.Client, tool string) (toolData, error) {
 	toolRepo := strings.Split(tool, "@")
 	toolName := toolRepo[0]
 
-	td := dataForTool(toolName, false)
+	td := dataForTool(toolName, tool, false)
 
 	repo := toolRepo[len(toolRepo)-1]
 	match := githubPattern.FindStringSubmatch(repo)
 
-	t := toolData{}
 	if len(match) != 2 {
-		return t, fmt.Errorf("invalid tool %q", tool)
+		return td, fmt.Errorf("invalid tool %q", tool)
 	}
 	ghr, err := getRelease(client, match[1], true)
 	if err != nil {
-		return t, err
+		return td, err
 	}
-	t.Version = ghr.TagName
+	td.Version = ghr.TagName
 
 	return td, nil
 }
 
-func dataForTool(toolName string, withDependency bool) (td toolData) {
+func dataForTool(toolName string, fullTool string, withDependency bool) (td toolData) {
 	parts := strings.Split(toolName, "/")
 	td.ToolName = toolName
-	td.Tool = toolName
+	td.Tool = fullTool
 	td.Name = parts[len(parts)-1]
 	td.UpperName = strings.ReplaceAll(strings.ToUpper(td.Name), "-", "_")
 	td.WithDependency = withDependency
@@ -124,8 +123,9 @@ func mergeWithToolsGo(inTools []string) ([]string, []toolData) {
 	r := regexp.MustCompile(`"(.*)"`)
 	var goTools []toolData
 	for _, m := range r.FindAllStringSubmatch(string(content), -1) {
-		goTools = append(goTools, dataForTool(m[1], true))
-		delete(t, m[1])
+		tool := m[1]
+		goTools = append(goTools, dataForTool(tool, tool, true))
+		delete(t, tool)
 	}
 
 	var argTools []string
