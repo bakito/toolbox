@@ -67,6 +67,21 @@ var _ = Describe("Make", func() {
 			Ω(out.String() + "\n").Should(Equal(readFile(testDataDir, "Makefile.tools.go.expected")))
 		})
 	})
+	Context("generateWithToolsGo", func() {
+		It("should generate a correct output", func() {
+			out := &bytes.Buffer{}
+
+			err := generateWithToolsGo(resty.New(), out, "",
+				[]string{
+					"sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools",
+					"github.com/bakito/toolbox",
+				},
+				filepath.Join(testDataDir, "tools.go.tst"),
+			)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(out.String() + "\n").Should(Equal(readFile(testDataDir, "Makefile.hybrid.expected")))
+		})
+	})
 })
 
 func readFile(path ...string) string {

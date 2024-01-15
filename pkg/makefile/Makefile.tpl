@@ -9,11 +9,13 @@ $(LOCALBIN):
 {{- range .Tools }}
 {{.UpperName}} ?= $(LOCALBIN)/{{.Name}}
 {{- end }}
+{{- if .WithVersions }}
 
 ## Tool Versions
 {{- range .Tools }}
 {{- if .Version }}
 {{.UpperName}}_VERSION ?= {{.Version}}
+{{- end }}
 {{- end }}
 {{- end }}
 

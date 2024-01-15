@@ -9,9 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	flagFile = "file"
-)
+const flagFile = "file"
 
 // makefileCmd represents the makefile command
 var makefileCmd = &cobra.Command{

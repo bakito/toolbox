@@ -20,7 +20,11 @@ var (
 )
 
 func Generate(client *resty.Client, writer io.Writer, makefile string, tools ...string) error {
-	argTools, toolData := mergeWithToolsGo(tools)
+	return generateWithToolsGo(client, writer, makefile, tools, "tools.go")
+}
+
+func generateWithToolsGo(client *resty.Client, writer io.Writer, makefile string, tools []string, toolsFile string) error {
+	argTools, toolData := mergeWithToolsGo(toolsFile, tools)
 	return generate(client, writer, makefile, argTools, toolData)
 }
 
@@ -37,10 +41,18 @@ func generate(client *resty.Client, writer io.Writer, makefile string, argTools 
 		return toolData[i].Name < toolData[j].Name
 	})
 
+	withVersions := false
+	for _, td := range toolData {
+		if !withVersions && td.Version != "" {
+			withVersions = true
+		}
+	}
+
 	out := &bytes.Buffer{}
 	t := template.Must(template.New("Makefile").Parse(makefileTemplate))
 	if err := t.Execute(out, map[string]interface{}{
-		"Tools": toolData,
+		"Tools":        toolData,
+		"WithVersions": withVersions,
 	}); err != nil {
 		return err
 	}
@@ -116,8 +128,8 @@ type toolData struct {
 	FromToolsGo bool   `json:"FromToolsGo"`
 }
 
-func mergeWithToolsGo(inTools []string) ([]string, []toolData) {
-	content, err := os.ReadFile("tools.go")
+func mergeWithToolsGo(fileName string, inTools []string) ([]string, []toolData) {
+	content, err := os.ReadFile(fileName)
 	if err != nil {
 		return inTools, nil
 	}
