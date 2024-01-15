@@ -20,7 +20,6 @@ var (
 )
 
 func Generate(client *resty.Client, writer io.Writer, makefile string, tools ...string) error {
-	sort.Strings(tools)
 	var toolData []toolData
 
 	for _, t := range tools {
@@ -30,6 +29,10 @@ func Generate(client *resty.Client, writer io.Writer, makefile string, tools ...
 		}
 		toolData = append(toolData, td)
 	}
+
+	sort.Slice(toolData, func(i, j int) bool {
+		return toolData[i].Name < toolData[j].Name
+	})
 
 	out := &bytes.Buffer{}
 	t := template.Must(template.New("Makefile").Parse(makefileTemplate))
