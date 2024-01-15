@@ -21,7 +21,10 @@ var (
 
 func Generate(client *resty.Client, writer io.Writer, makefile string, tools ...string) error {
 	argTools, toolData := mergeWithToolsGo(tools)
+	return generate(client, writer, makefile, argTools, toolData)
+}
 
+func generate(client *resty.Client, writer io.Writer, makefile string, argTools []string, toolData []toolData) error {
 	for _, t := range argTools {
 		td, err := dataForArg(client, t)
 		if err != nil {
@@ -73,7 +76,7 @@ func dataForArg(client *resty.Client, tool string) (toolData, error) {
 	toolRepo := strings.Split(tool, "@")
 	toolName := toolRepo[0]
 
-	td := dataForTool(toolName, tool, false)
+	td := dataForTool(false, toolName, tool)
 
 	repo := toolRepo[len(toolRepo)-1]
 	match := githubPattern.FindStringSubmatch(repo)
@@ -90,23 +93,27 @@ func dataForArg(client *resty.Client, tool string) (toolData, error) {
 	return td, nil
 }
 
-func dataForTool(toolName string, fullTool string, withDependency bool) (td toolData) {
+func dataForTool(fromToolsGo bool, toolName string, fullTool ...string) (td toolData) {
 	parts := strings.Split(toolName, "/")
 	td.ToolName = toolName
-	td.Tool = fullTool
+	if len(fullTool) == 1 {
+		td.Tool = fullTool[0]
+	} else {
+		td.Tool = toolName
+	}
 	td.Name = parts[len(parts)-1]
 	td.UpperName = strings.ReplaceAll(strings.ToUpper(td.Name), "-", "_")
-	td.WithDependency = withDependency
+	td.FromToolsGo = fromToolsGo
 	return
 }
 
 type toolData struct {
-	Name           string `json:"Name"`
-	UpperName      string `json:"UpperName"`
-	Version        string `json:"Version"`
-	Tool           string `json:"Tool"`
-	ToolName       string `json:"ToolName"`
-	WithDependency bool   `json:"WithDependency"`
+	Name        string `json:"Name"`
+	UpperName   string `json:"UpperName"`
+	Version     string `json:"Version"`
+	Tool        string `json:"Tool"`
+	ToolName    string `json:"ToolName"`
+	FromToolsGo bool   `json:"FromToolsGo"`
 }
 
 func mergeWithToolsGo(inTools []string) ([]string, []toolData) {
@@ -124,7 +131,7 @@ func mergeWithToolsGo(inTools []string) ([]string, []toolData) {
 	var goTools []toolData
 	for _, m := range r.FindAllStringSubmatch(string(content), -1) {
 		tool := m[1]
-		goTools = append(goTools, dataForTool(tool, tool, true))
+		goTools = append(goTools, dataForTool(true, tool))
 		delete(t, tool)
 	}
 

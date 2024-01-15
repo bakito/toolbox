@@ -53,6 +53,20 @@ var _ = Describe("Make", func() {
 			Ω(readFile(path)).Should(Equal(readFile(testDataDir, "Makefile.content.expected")))
 		})
 	})
+	Context("generate", func() {
+		It("should generate a correct output", func() {
+			out := &bytes.Buffer{}
+
+			td := []toolData{
+				dataForTool(true, "sigs.k8s.io/controller-tools/cmd/controller-gen"),
+				dataForTool(true, "github.com/bakito/semver"),
+				dataForTool(true, "github.com/bakito/toolbox"),
+			}
+			err := generate(resty.New(), out, "", nil, td)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(out.String() + "\n").Should(Equal(readFile(testDataDir, "Makefile.tools.go.expected")))
+		})
+	})
 })
 
 func readFile(path ...string) string {

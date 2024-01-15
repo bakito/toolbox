@@ -31,6 +31,6 @@ update-toolbox-tools:
 	@rm -f{{- range .Tools }} \
 		$(LOCALBIN)/{{.Name}}
 {{- end }}
-	toolbox makefile -f $(LOCALDIR)/Makefile{{- range .Tools }}{{- if not .WithDependency }} \
+	toolbox makefile -f $(LOCALDIR)/Makefile{{- range .Tools }}{{- if not .FromToolsGo }} \
 		{{.Tool}}{{- end }}
 {{- end }}
