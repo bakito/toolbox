@@ -5,8 +5,8 @@ go 1.21
 require (
 	github.com/cavaliergopher/grab/v3 v3.0.1
 	github.com/go-resty/resty/v2 v2.11.0
-	github.com/onsi/ginkgo/v2 v2.14.0
-	github.com/onsi/gomega v1.30.0
+	github.com/onsi/ginkgo/v2 v2.15.0
+	github.com/onsi/gomega v1.31.1
 	github.com/spf13/cobra v1.8.0
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8
 	golang.org/x/mod v0.14.0
