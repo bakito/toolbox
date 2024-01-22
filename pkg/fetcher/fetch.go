@@ -48,13 +48,13 @@ func New() Fetcher {
 }
 
 type Fetcher interface {
-	Fetch(string) error
+	Fetch(string, ...string) error
 }
 type fetcher struct {
 	executablePath string
 }
 
-func (f *fetcher) Fetch(cfgFile string) error {
+func (f *fetcher) Fetch(cfgFile string, selectedTools ...string) error {
 	var err error
 	f.executablePath, err = os.Executable()
 	if err != nil {
@@ -130,8 +130,10 @@ func (f *fetcher) Fetch(cfgFile string) error {
 	tools := tb.GetTools()
 	for i := range tools {
 		tool := tools[i]
-		if err := f.handleTool(client, ver, tmp, tb, tool); err != nil {
-			return err
+		if contains(selectedTools, tool.Name) {
+			if err := f.handleTool(client, ver, tmp, tb, tool); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -496,4 +498,13 @@ func downloadFile(path string, url string) (err error) {
 
 	log.Printf("Download saved to %s", resp.Filename)
 	return nil
+}
+
+func contains(list []string, v string) bool {
+	for _, s := range list {
+		if s == v {
+			return true
+		}
+	}
+	return len(list) == 0
 }

@@ -16,7 +16,7 @@ var fetchCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		return fetcher.New().Fetch(cfg)
+		return fetcher.New().Fetch(cfg, args...)
 	},
 }
 
