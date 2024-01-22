@@ -9,7 +9,7 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
-        groups:
+    groups:
       onsi:
         patterns:
           - "github.com/onsi/*"
