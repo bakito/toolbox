@@ -40,7 +40,7 @@ var (
 		"amd64":   {"arm"},
 		"windows": {"darwin"},
 	}
-	excludedSuffixes = []string{"sum", "sha256", "sbom", "pem", "sig"}
+	excludedSuffixes = []string{"sum", "sha256", "sbom", "pem", "sig", "rpm"}
 )
 
 func New() Fetcher {
