@@ -14,7 +14,7 @@ require (
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8
 	golang.org/x/mod v0.15.0
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/code-generator v0.29.1
+	k8s.io/code-generator v0.29.2
 )
 
 require (
