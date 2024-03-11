@@ -8,7 +8,7 @@ require (
 	github.com/go-resty/resty/v2 v2.11.0
 	github.com/golangci/golangci-lint v1.56.2
 	github.com/goreleaser/goreleaser v1.24.0
-	github.com/onsi/ginkgo/v2 v2.15.0
+	github.com/onsi/ginkgo/v2 v2.16.0
 	github.com/onsi/gomega v1.31.1
 	github.com/spf13/cobra v1.8.0
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8
