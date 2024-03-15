@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
 	"sort"
@@ -52,6 +53,7 @@ type Fetcher interface {
 }
 type fetcher struct {
 	executablePath string
+	upx            bool
 }
 
 func (f *fetcher) Fetch(cfgFile string, selectedTools ...string) error {
@@ -79,6 +81,15 @@ func (f *fetcher) Fetch(cfgFile string, selectedTools ...string) error {
 	}
 	if tb.Target == "" {
 		tb.Target = "./tools"
+	}
+
+	if tb.Upx {
+		cmd := exec.Command("upx", "--version")
+		_, err := cmd.Output()
+		if err == nil {
+			log.Printf("🗜️ upx is available")
+			f.upx = true
+		}
 	}
 
 	err = filepath.Walk(tb.Target, func(path string, f os.FileInfo, _ error) error {
@@ -188,7 +199,7 @@ func (f *fetcher) handleTool(client *resty.Client, ver map[string]string, tmp st
 	}
 
 	if tool.DownloadURL != "" {
-		return f.downloadFromURL(client, ver, tmp, tb, tool)
+		return f.downloadFromURL(client, tb, ver, tmp, tool)
 	} else if ghr != nil {
 		return f.downloadViaGithub(tb, tool, ghr, tmp)
 	}
@@ -200,7 +211,7 @@ func (f *fetcher) downloadViaGithub(tb *types.Toolbox, tool *types.Tool, ghr *ty
 	tool.CouldNotBeFound = true
 	if matching != nil {
 		tool.CouldNotBeFound = false
-		if err := f.fetchTool(tmp, tool.Name, tool.Name, matching.BrowserDownloadURL, tb.Target); err != nil {
+		if err := f.fetchTool(tmp, tool.Name, tool.Name, matching.BrowserDownloadURL, tb.Target, tool.Check); err != nil {
 			return err
 		}
 	}
@@ -208,7 +219,7 @@ func (f *fetcher) downloadViaGithub(tb *types.Toolbox, tool *types.Tool, ghr *ty
 		matching := findMatching(nil, add, ghr.Assets)
 		if matching != nil {
 			tool.CouldNotBeFound = false
-			if err := f.fetchTool(tmp, add, add, matching.BrowserDownloadURL, tb.Target); err != nil {
+			if err := f.fetchTool(tmp, add, add, matching.BrowserDownloadURL, tb.Target, tool.Check); err != nil {
 				return err
 			}
 		}
@@ -219,7 +230,7 @@ func (f *fetcher) downloadViaGithub(tb *types.Toolbox, tool *types.Tool, ghr *ty
 	return nil
 }
 
-func (f *fetcher) downloadFromURL(client *resty.Client, ver map[string]string, tmp string, tb *types.Toolbox, tool *types.Tool) error {
+func (f *fetcher) downloadFromURL(client *resty.Client, tb *types.Toolbox, ver map[string]string, tmp string, tool *types.Tool) error {
 	currentVersion := ver[tool.Name]
 	if strings.HasPrefix(tool.Version, "http") {
 		resp, err := client.R().
@@ -241,7 +252,7 @@ func (f *fetcher) downloadFromURL(client *resty.Client, ver map[string]string, t
 		log.Printf("✅ Skipping since already latest version\n")
 		return nil
 	}
-	return f.fetchTool(tmp, tool.Name, tool.Name, parseTemplate(tool.DownloadURL, tool.Version), tb.Target)
+	return f.fetchTool(tmp, tool.Name, tool.Name, parseTemplate(tool.DownloadURL, tool.Version), tb.Target, tool.Check)
 }
 
 func findMatching(tb *types.Toolbox, toolName string, assets []types.Asset) *types.Asset {
@@ -321,7 +332,7 @@ func templateData(version string) map[string]string {
 	}
 }
 
-func (f *fetcher) fetchTool(tmp string, remoteToolName string, trueToolName string, url string, targetDir string) error {
+func (f *fetcher) fetchTool(tmp string, remoteToolName string, trueToolName string, url string, targetDir string, check string) error {
 	dir := fmt.Sprintf("%s/%s", tmp, remoteToolName)
 	paths := strings.Split(url, "/")
 	fileName := paths[len(paths)-1]
@@ -350,7 +361,7 @@ func (f *fetcher) fetchTool(tmp string, remoteToolName string, trueToolName stri
 		}
 		log.Printf("🔀 Rename current executable to %s", renameTo)
 	}
-	ok, err := copyTool(dir, remoteToolName, targetDir, trueToolName)
+	ok, err := f.copyTool(dir, remoteToolName, targetDir, trueToolName, check)
 	if err != nil {
 		return err
 	}
@@ -360,7 +371,7 @@ func (f *fetcher) fetchTool(tmp string, remoteToolName string, trueToolName stri
 	return nil
 }
 
-func copyTool(dir string, fileName string, targetDir string, targetName string) (bool, error) {
+func (f *fetcher) copyTool(dir string, fileName string, targetDir string, targetName string, check string) (bool, error) {
 	files, err := os.ReadDir(dir)
 	if err != nil {
 		return false, err
@@ -375,14 +386,45 @@ func copyTool(dir string, fileName string, targetDir string, targetName string) 
 			file.Name() == binaryName(fmt.Sprintf("%s_%s_%s", fileName, runtime.GOOS, runtime.GOARCH)) ||
 			file.Name() == binaryName(fmt.Sprintf("%s-%s_%s", fileName, runtime.GOOS, runtime.GOARCH)) {
 
-			if err := copyFile(dir, file, targetDir, targetName); err != nil {
+			sourcePath := filepath.Join(dir, file.Name())
+			targetPath := filepath.Join(targetDir, binaryName(targetName))
+
+			if err := copyFile(sourcePath, targetPath); err != nil {
 				return false, err
 			}
+			if f.upx {
+				log.Printf("🗜️ Compressing with upx")
+				cmd := exec.Command("upx", "-q", "-q", targetPath)
+				stdout, err := cmd.Output()
+				if err == nil {
+					parts := strings.Fields(string(stdout))
+					size, _ := strconv.Atoi(parts[2])
+					log.Printf("\tCompressed to %s (%s)", parts[3], formatBytes(int64(size)))
+				} else {
+					var ee *exec.ExitError
+					if errors.As(err, &ee) && ee.ExitCode() == 2 {
+						log.Printf("\tAlready Compressed")
+					} else {
+						log.Printf("\tCompression error: %v", err)
+					}
+				}
+			}
+
+			if len(check) > 0 {
+				cmd := exec.Command(targetPath, strings.Fields(check)...)
+				if _, err := cmd.Output(); err != nil {
+					log.Printf("⚠️ Check failed: %v", err)
+				} else {
+					log.Printf("👍 Check was successful")
+				}
+
+			}
+
 			return true, nil
 		}
 	}
 	for _, d := range dirs {
-		ok, err := copyTool(filepath.Join(dir, d.Name()), fileName, targetDir, targetName)
+		ok, err := f.copyTool(filepath.Join(dir, d.Name()), fileName, targetDir, targetName, check)
 		if ok || err != nil {
 			return ok, err
 		}
@@ -390,18 +432,19 @@ func copyTool(dir string, fileName string, targetDir string, targetName string) 
 	return false, nil
 }
 
-func copyFile(dir string, file os.DirEntry, targetDir string, targetName string) error {
-	from, err := os.Open(filepath.Join(dir, file.Name()))
+func copyFile(sourcePath string, targetPath string) error {
+	from, err := os.Open(sourcePath)
 	if err != nil {
 		return err
 	}
+
 	fromStat, err := from.Stat()
 	if err != nil {
 		return err
 	}
 	defer quietly.Close(from)
 
-	to, err := os.OpenFile(filepath.Join(targetDir, binaryName(targetName)), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o755)
+	to, err := os.OpenFile(targetPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o755)
 	if err != nil {
 		return err
 	}

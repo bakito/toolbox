@@ -1,39 +1,55 @@
 tools:
   gh:
     github: cli/cli
+    check: version
   helm:
     github: helm/helm
     downloadURL: https://get.helm.sh/helm-{{ .Version }}-{{ .OS }}-{{ .Arch }}.tar.gz
+    check: version
   jf:
     github: jfrog/jfrog-cli
     downloadURL: https://releases.jfrog.io/artifactory/jfrog-cli/v2-jf/{{ .VersionNum }}/jfrog-cli-{{ .OS }}-{{ .Arch }}/jf{{ .FileExt }}
+    check: --version
   jq:
     github: stedolan/jq
+    check: --version
   kind:
     github: kubernetes-sigs/kind
+    check: version
   kubectl:
     downloadURL: https://dl.k8s.io/release/{{ .Version }}/bin/{{ .OS }}/{{ .Arch }}/kubectl{{ .FileExt }}
     version: https://storage.googleapis.com/kubernetes-release/release/stable.txt
+    check: version
   kubectx:
     github: ahmetb/kubectx
+    check: --version
     additional:
       - kubens
   kubelogin:
     github: Azure/kubelogin
+    check: --version
   kubexporter:
     github: bakito/kubexporter
+    check: --version
   minikube:
     github: kubernetes/minikube
+    check: version
   terraform:
     github: hashicorp/terraform
     downloadURL: https://releases.hashicorp.com/terraform/{{ .VersionNum }}/terraform_{{ .VersionNum }}_{{ .OS }}_{{ .Arch }}.zip
+    check: --version
   toolbox:
     github: bakito/toolbox
+    check: --version
   upx:
     github: upx/upx
+    check: --version
   vault:
     github: hashicorp/vault
     downloadURL: https://releases.hashicorp.com/vault/{{ .VersionNum }}/vault_{{ .VersionNum }}_{{ .OS }}_{{ .Arch }}.zip
+    check: --version
   yq:
     github: mikefarah/yq
+    check: --version
 target: ./download
+#upx: true

@@ -8,6 +8,7 @@ import (
 type Toolbox struct {
 	Tools            map[string]*Tool     `yaml:"tools,omitempty"`
 	Target           string               `yaml:"target,omitempty"`
+	Upx              bool                 `yaml:"upx,omitempty"`
 	CreateTarget     *bool                `yaml:"createTarget,omitempty"`
 	Aliases          *map[string][]string `yaml:"aliases,omitempty"`
 	ExcludedSuffixes []string             `yaml:"excludedSuffixes,omitempty"`
@@ -52,6 +53,7 @@ type Tool struct {
 	DownloadURL     string   `yaml:"downloadURL,omitempty"`
 	Version         string   `yaml:"version,omitempty"`
 	Additional      []string `yaml:"additional,omitempty"`
+	Check           string   `yaml:"check,omitempty"`
 	CouldNotBeFound bool     `yaml:"-"`
 }
 
