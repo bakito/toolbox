@@ -395,6 +395,10 @@ func copyFile(dir string, file os.DirEntry, targetDir string, targetName string)
 	if err != nil {
 		return err
 	}
+	fromStat, err := from.Stat()
+	if err != nil {
+		return err
+	}
 	defer quietly.Close(from)
 
 	to, err := os.OpenFile(filepath.Join(targetDir, binaryName(targetName)), os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o755)
@@ -402,7 +406,7 @@ func copyFile(dir string, file os.DirEntry, targetDir string, targetName string)
 		return err
 	}
 	defer quietly.Close(to)
-	log.Printf("Copy %s to %s", from.Name(), to.Name())
+	log.Printf("Copy %s to %s (%v)", from.Name(), to.Name(), formatBytes(fromStat.Size()))
 	_, err = to.ReadFrom(from)
 	return err
 }
@@ -507,4 +511,17 @@ func contains(list []string, v string) bool {
 		}
 	}
 	return len(list) == 0
+}
+
+func formatBytes(b int64) string {
+	const unit = 1024
+	if b < unit {
+		return fmt.Sprintf("%d B", b)
+	}
+	div, exp := int64(unit), 0
+	for n := b / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.1f %ciB", float64(b)/float64(div), "KMGTPE"[exp])
 }
