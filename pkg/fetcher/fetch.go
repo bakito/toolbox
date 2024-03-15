@@ -41,7 +41,7 @@ var (
 		"amd64":   {"arm"},
 		"windows": {"darwin"},
 	}
-	excludedSuffixes = []string{"sum", "sha256", "sbom", "pem", "sig", "rpm"}
+	excludedSuffixes = []string{"sum", "sha256", "sbom", "pem", "sig", "rpm", "txt"}
 )
 
 func New() Fetcher {
@@ -413,7 +413,7 @@ func (f *fetcher) copyTool(dir string, fileName string, targetDir string, target
 			if len(check) > 0 {
 				cmd := exec.Command(targetPath, strings.Fields(check)...)
 				if _, err := cmd.Output(); err != nil {
-					log.Printf("⚠️ Check failed: %v", err)
+					log.Printf("🚫 Check failed: %v", err)
 				} else {
 					log.Printf("👍 Check was successful")
 				}
