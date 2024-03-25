@@ -38,9 +38,10 @@ var (
 		"linux":   {"linux64"},
 	}
 	stopAliases = map[string][]string{
-		"amd64":   {"arm"},
+		"amd64":   {"arm", "mips", "ppc", "risc", "s390"},
 		"windows": {"darwin"},
 	}
+
 	excludedSuffixes = []string{"sum", "sha256", "sbom", "pem", "sig", "rpm", "txt"}
 )
 
