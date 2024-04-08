@@ -64,5 +64,6 @@ update-toolbox-tools:
 		$(LOCALBIN)/golangci-lint \
 		$(LOCALBIN)/goreleaser \
 		$(LOCALBIN)/semver
-	toolbox makefile -f $(LOCALDIR)/Makefile
+	toolbox makefile -f $(LOCALDIR)/Makefile \
+		github.com/goreleaser/goreleaser
 ## toolbox - end
