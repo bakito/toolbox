@@ -1,7 +1,6 @@
 module github.com/bakito/toolbox
 
-go 1.22
-toolchain go1.22.2
+go 1.22.2
 
 require (
 	github.com/bakito/semver v1.1.3
@@ -14,7 +13,6 @@ require (
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8
 	golang.org/x/mod v0.17.0
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/code-generator v0.30.0
 )
 
 require (
@@ -195,8 +193,6 @@ require (
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	honnef.co/go/tools v0.4.7 // indirect
-	k8s.io/gengo/v2 v2.0.0-20240228010128-51d4e06bde70 // indirect
-	k8s.io/klog/v2 v2.120.1 // indirect
 	mvdan.cc/gofumpt v0.6.0 // indirect
 	mvdan.cc/unparam v0.0.0-20240104100049-c549a3470d14 // indirect
 )
