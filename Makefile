@@ -33,7 +33,7 @@ GORELEASER ?= $(LOCALBIN)/goreleaser
 SEMVER ?= $(LOCALBIN)/semver
 
 ## Tool Versions
-GORELEASER_VERSION ?= v1.25.1
+GORELEASER_VERSION ?= v2.0.1
 
 ## Tool Installer
 .PHONY: ginkgo
@@ -47,7 +47,7 @@ $(GOLANGCI_LINT): $(LOCALBIN)
 .PHONY: goreleaser
 goreleaser: $(GORELEASER) ## Download goreleaser locally if necessary.
 $(GORELEASER): $(LOCALBIN)
-	test -s $(LOCALBIN)/goreleaser || GOBIN=$(LOCALBIN) go install github.com/goreleaser/goreleaser@$(GORELEASER_VERSION)
+	test -s $(LOCALBIN)/goreleaser || GOBIN=$(LOCALBIN) go install github.com/goreleaser/goreleaser/v2@$(GORELEASER_VERSION)
 .PHONY: semver
 semver: $(SEMVER) ## Download semver locally if necessary.
 $(SEMVER): $(LOCALBIN)
@@ -62,5 +62,5 @@ update-toolbox-tools:
 		$(LOCALBIN)/goreleaser \
 		$(LOCALBIN)/semver
 	toolbox makefile -f $(LOCALDIR)/Makefile \
-		github.com/goreleaser/goreleaser
+		github.com/goreleaser/goreleaser/v2
 ## toolbox - end

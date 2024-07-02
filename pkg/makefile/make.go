@@ -103,13 +103,18 @@ func dataForArg(client *resty.Client, tool string) (toolData, error) {
 
 func dataForTool(fromToolsGo bool, toolName string, fullTool ...string) (td toolData) {
 	parts := strings.Split(toolName, "/")
+
 	td.ToolName = toolName
 	if len(fullTool) == 1 {
 		td.Tool = fullTool[0]
 	} else {
 		td.Tool = toolName
 	}
-	td.Name = parts[len(parts)-1]
+	if match, _ := regexp.MatchString(`v\d+`, parts[len(parts)-1]); match {
+		td.Name = parts[len(parts)-2]
+	} else {
+		td.Name = parts[len(parts)-1]
+	}
 	td.UpperName = strings.ReplaceAll(strings.ToUpper(td.Name), "-", "_")
 	td.FromToolsGo = fromToolsGo
 	return
