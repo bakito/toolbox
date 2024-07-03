@@ -20,7 +20,7 @@ var (
 )
 
 func Generate(client *resty.Client, writer io.Writer, makefile string, toolsFile string, tools ...string) error {
-	argTools, toolData := mergeWithToolsGo(toolsFile, tools)
+	argTools, toolData := mergeWithToolsGo(toolsFile, unique(tools))
 	return generate(client, writer, makefile, argTools, toolData)
 }
 
@@ -154,4 +154,19 @@ func mergeWithToolsGo(fileName string, inTools []string) ([]string, []toolData) 
 	}
 
 	return argTools, goTools
+}
+
+func unique(slice []string) []string {
+	// create a map with all the values as key
+	uniqMap := make(map[string]struct{})
+	for _, v := range slice {
+		uniqMap[v] = struct{}{}
+	}
+
+	// turn the map keys into a slice
+	uniqSlice := make([]string, 0, len(uniqMap))
+	for v := range uniqMap {
+		uniqSlice = append(uniqSlice, v)
+	}
+	return uniqSlice
 }
