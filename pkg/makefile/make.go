@@ -110,7 +110,7 @@ func dataForTool(fromToolsGo bool, toolName string, fullTool ...string) (td tool
 	} else {
 		td.Tool = toolName
 	}
-	if match, _ := regexp.MatchString(`v\d+`, parts[len(parts)-1]); match {
+	if match, _ := regexp.MatchString(`^v\d+$`, parts[len(parts)-1]); match {
 		td.Name = parts[len(parts)-2]
 	} else {
 		td.Name = parts[len(parts)-1]
