@@ -39,7 +39,7 @@ func (t *Toolbox) Versions() *Versions {
 	tools := t.GetTools()
 	for i := range tools {
 		t := tools[i]
-		if !t.CouldNotBeFound {
+		if !t.CouldNotBeFound && !t.Invalid {
 			v.Versions[t.Name] = t.Version
 		}
 	}
@@ -55,6 +55,7 @@ type Tool struct {
 	Additional      []string `yaml:"additional,omitempty"`
 	Check           string   `yaml:"check,omitempty"`
 	CouldNotBeFound bool     `yaml:"-"`
+	Invalid         bool     `yaml:"-"`
 }
 
 type ToolVersion struct {

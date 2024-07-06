@@ -53,5 +53,6 @@ tools:
     check: --version
   oras:
     github: oras-project/oras
+    check: version
 target: ./download
 #upx: true
