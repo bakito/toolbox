@@ -22,6 +22,7 @@ import (
 	"github.com/bakito/toolbox/version"
 	"github.com/cavaliergopher/grab/v3"
 	"github.com/go-resty/resty/v2"
+	"golang.org/x/mod/semver"
 	"gopkg.in/yaml.v3"
 )
 
@@ -190,6 +191,12 @@ func (f *fetcher) handleTool(client *resty.Client, ver map[string]string, tmp st
 			}
 		}
 	}
+
+	if isNewer(currentVersion, tool.Version) {
+		log.Printf("✅ Skipping since newer version is instlled\n")
+		return nil
+	}
+
 	if tool.Version == currentVersion {
 		if configVersion != "" {
 			log.Printf("✅ Skipping since already configured version %s\n", configVersion)
@@ -205,6 +212,13 @@ func (f *fetcher) handleTool(client *resty.Client, ver map[string]string, tmp st
 		return f.downloadViaGithub(tb, tool, ghr, tmp)
 	}
 	return nil
+}
+
+func isNewer(toolVersion string, currentVersion string) bool {
+	if !semver.IsValid(toolVersion) || !semver.IsValid(currentVersion) {
+		return true
+	}
+	return semver.Compare(toolVersion, currentVersion) > 0
 }
 
 func (f *fetcher) downloadViaGithub(tb *types.Toolbox, tool *types.Tool, ghr *types.GithubRelease, tmp string) error {
