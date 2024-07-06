@@ -19,7 +19,7 @@ tools:
   kubectl:
     downloadURL: https://dl.k8s.io/release/{{ .Version }}/bin/{{ .OS }}/{{ .Arch }}/kubectl{{ .FileExt }}
     version: https://storage.googleapis.com/kubernetes-release/release/stable.txt
-    check: version
+    check: version --client
   kubectx:
     github: ahmetb/kubectx
     check: --version
@@ -51,5 +51,7 @@ tools:
   yq:
     github: mikefarah/yq
     check: --version
+  oras:
+    github: oras-project/oras
 target: ./download
 #upx: true
