@@ -14,6 +14,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/bakito/toolbox/pkg/arch"
 	"github.com/bakito/toolbox/pkg/extract"
 	"github.com/bakito/toolbox/pkg/github"
 	"github.com/bakito/toolbox/pkg/http"
@@ -141,11 +142,14 @@ func (f *fetcher) Fetch(cfgFile string, selectedTools ...string) error {
 	defer func() { _ = os.RemoveAll(tmp) }()
 
 	tools := tb.GetTools()
-	for i := range tools {
-		tool := tools[i]
+	for _, tool := range tools {
 		if contains(selectedTools, tool.Name) {
 			if err := f.handleTool(client, ver, tmp, tb, tool); err != nil {
-				return err
+				var validationError *validationError
+				if !errors.As(err, &validationError) {
+					return err
+				}
+				tool.Invalid = true
 			}
 		}
 	}
@@ -364,6 +368,36 @@ func (f *fetcher) fetchTool(tmp string, remoteToolName string, trueToolName stri
 		remoteToolName = fileName
 	}
 
+	return f.moveToTarget(targetDir, trueToolName, dir, remoteToolName, check)
+}
+
+func (f *fetcher) validate(targetPath string, check string) error {
+	match, err := arch.DoesBinaryMatchCurrentOSArch(targetPath)
+	if err != nil {
+		log.Printf("🏛🚫 Arch check failed: %v", err)
+		return ValidationError("arch check failed %v", err)
+	}
+	if match {
+		log.Printf("🏛 Arch matches")
+	} else {
+		log.Printf("🏛🚫 Arch doesn't match system")
+		return ValidationError("arch doesn't match system")
+	}
+
+	if len(check) > 0 {
+		// #nosec G204:
+		cmd := exec.Command(targetPath, strings.Fields(check)...)
+		if _, err := cmd.Output(); err != nil {
+			log.Printf("🚫 Check failed: %v", err)
+			return ValidationError("check failed %v", err)
+		} else {
+			log.Printf("👍 Check successful")
+		}
+	}
+	return nil
+}
+
+func (f *fetcher) moveToTarget(targetDir string, trueToolName string, dir string, remoteToolName string, check string) error {
 	targetFilePath, err := filepath.Abs(filepath.Join(targetDir, trueToolName))
 	if err != nil {
 		return err
@@ -425,14 +459,8 @@ func (f *fetcher) copyTool(dir string, fileName string, targetDir string, target
 				}
 			}
 
-			if len(check) > 0 {
-				cmd := exec.Command(targetPath, strings.Fields(check)...)
-				if _, err := cmd.Output(); err != nil {
-					log.Printf("🚫 Check failed: %v", err)
-				} else {
-					log.Printf("👍 Check was successful")
-				}
-
+			if err := f.validate(targetPath, check); err != nil {
+				return true, err
 			}
 
 			return true, nil
