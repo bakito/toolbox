@@ -216,7 +216,7 @@ func (f *fetcher) handleTool(client *resty.Client, ver map[string]string, tmp st
 
 func isNewer(toolVersion string, currentVersion string) bool {
 	if !semver.IsValid(toolVersion) || !semver.IsValid(currentVersion) {
-		return true
+		return false
 	}
 	return semver.Compare(toolVersion, currentVersion) > 0
 }
