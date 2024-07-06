@@ -193,7 +193,7 @@ func (f *fetcher) handleTool(client *resty.Client, ver map[string]string, tmp st
 	}
 
 	if isNewer(currentVersion, tool.Version) {
-		log.Printf("✅ Skipping since newer version is instlled\n")
+		log.Printf("✅ Skipping since newer version is installed\n")
 		return nil
 	}
 
