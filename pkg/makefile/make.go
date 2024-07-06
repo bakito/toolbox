@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 	"text/template"
@@ -168,5 +169,6 @@ func unique(slice []string) []string {
 	for v := range uniqMap {
 		uniqSlice = append(uniqSlice, v)
 	}
+	slices.Sort(uniqSlice)
 	return uniqSlice
 }
