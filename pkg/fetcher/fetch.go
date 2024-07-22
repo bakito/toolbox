@@ -151,6 +151,9 @@ func (f *fetcher) Fetch(cfgFile string, selectedTools ...string) error {
 				}
 				tool.Invalid = true
 			}
+		} else {
+			// keep current version
+			tool.Version = ver[tool.Name]
 		}
 	}
 
