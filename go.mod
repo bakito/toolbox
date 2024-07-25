@@ -8,7 +8,7 @@ require (
 	github.com/go-resty/resty/v2 v2.13.1
 	github.com/golangci/golangci-lint v1.59.1
 	github.com/onsi/ginkgo/v2 v2.19.0
-	github.com/onsi/gomega v1.33.1
+	github.com/onsi/gomega v1.34.0
 	github.com/spf13/cobra v1.8.1
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8
 	golang.org/x/mod v0.19.0
@@ -193,7 +193,7 @@ require (
 	golang.org/x/sys v0.21.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
 	golang.org/x/tools v0.22.0 // indirect
-	google.golang.org/protobuf v1.33.0 // indirect
+	google.golang.org/protobuf v1.34.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	honnef.co/go/tools v0.4.7 // indirect
