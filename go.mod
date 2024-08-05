@@ -5,7 +5,7 @@ go 1.22.4
 require (
 	github.com/bakito/semver v1.1.3
 	github.com/cavaliergopher/grab/v3 v3.0.1
-	github.com/go-resty/resty/v2 v2.13.1
+	github.com/go-resty/resty/v2 v2.14.0
 	github.com/golangci/golangci-lint v1.59.1
 	github.com/onsi/ginkgo/v2 v2.19.1
 	github.com/onsi/gomega v1.34.1
