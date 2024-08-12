@@ -28,9 +28,10 @@ import (
 )
 
 const (
-	toolboxConfFile     = ".toolbox.yaml"
-	toolboxVersionsFile = ".toolbox-versions.yaml"
-	oldExecutablePrefix = ".toolbox-old."
+	toolboxConfFile      = ".toolbox.yaml"
+	toolboxDocConfigFile = ".config/toolbox.yaml"
+	toolboxVersionsFile  = ".toolbox-versions.yaml"
+	oldExecutablePrefix  = ".toolbox-old."
 )
 
 var (
@@ -515,9 +516,15 @@ func ReadToolbox(cfgFile string) (*types.Toolbox, string, error) {
 			if err != nil {
 				return nil, "", err
 			}
-			homePath := filepath.Join(userHomeDir, toolboxConfFile)
+
+			homePath := filepath.Join(userHomeDir, toolboxDocConfigFile)
 			if _, err := os.Stat(homePath); err == nil {
 				tbFile = homePath
+			} else {
+				homePath = filepath.Join(userHomeDir, toolboxConfFile)
+				if _, err := os.Stat(homePath); err == nil {
+					tbFile = homePath
+				}
 			}
 		}
 	}
