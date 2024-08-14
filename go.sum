@@ -156,6 +156,8 @@ github.com/golangci/golangci-lint v1.59.1 h1:CRRLu1JbhK5avLABFJ/OHVSQ0Ie5c4ulsOI
 github.com/golangci/golangci-lint v1.59.1/go.mod h1:jX5Oif4C7P0j9++YB2MMJmoNrb01NJ8ITqKWNLewThg=
 github.com/golangci/golangci-lint v1.60.0 h1:MgoGnQcKdStp+lOhqQM79cQpI29j0ZQugNBC9sDg6h8=
 github.com/golangci/golangci-lint v1.60.0/go.mod h1:jDIPN1rYaIA+ijp9OZcUmUCoQOtZ76pOlFbi15FlLJY=
+github.com/golangci/golangci-lint v1.60.1 h1:DRKNqNTQRLBJZ1il5u4fvgLQCjQc7QFs0DbhksJtVJE=
+github.com/golangci/golangci-lint v1.60.1/go.mod h1:jDIPN1rYaIA+ijp9OZcUmUCoQOtZ76pOlFbi15FlLJY=
 github.com/golangci/misspell v0.6.0 h1:JCle2HUTNWirNlDIAUO44hUsKhOFqGPoC4LZxlaSXDs=
 github.com/golangci/misspell v0.6.0/go.mod h1:keMNyY6R9isGaSAu+4Q8NMBwMPkh15Gtc8UCVoDtAWo=
 github.com/golangci/modinfo v0.3.4 h1:oU5huX3fbxqQXdfspamej74DFX0kyGLkw1ppvXoJ8GA=

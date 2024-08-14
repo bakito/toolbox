@@ -6,7 +6,7 @@ require (
 	github.com/bakito/semver v1.1.3
 	github.com/cavaliergopher/grab/v3 v3.0.1
 	github.com/go-resty/resty/v2 v2.14.0
-	github.com/golangci/golangci-lint v1.60.0
+	github.com/golangci/golangci-lint v1.60.1
 	github.com/onsi/ginkgo/v2 v2.20.0
 	github.com/onsi/gomega v1.34.1
 	github.com/spf13/cobra v1.8.1
