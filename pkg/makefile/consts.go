@@ -16,7 +16,7 @@ const (
       "customType": "regex",
       "description": "Update toolbox _VERSION variables in Makefile",
       "fileMatch": [
-        "Makefile"
+        "^Makefile$"
       ],
       "matchStrings": [
         "# renovate: packageName=(?<packageName>.+?)\\s+.+?_VERSION \\?= (?<currentValue>.+?)\\s"

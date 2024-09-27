@@ -78,6 +78,13 @@ var _ = Describe("Make", func() {
 			Ω(out.String() + "\n").Should(Equal(readFile(testDataDir, "Makefile.tools.go.expected")))
 		})
 	})
+	Context("PrintRenovateConfig", func() {
+		It("should generate a correct output", func() {
+			out := &bytes.Buffer{}
+			PrintRenovateConfig(out)
+			Ω(out.String()).Should(Equal(renovateConfig))
+		})
+	})
 })
 
 func readFile(path ...string) string {
