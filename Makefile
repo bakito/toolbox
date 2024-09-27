@@ -31,13 +31,13 @@ DEEPCOPY_GEN ?= $(LOCALBIN)/deepcopy-gen
 GINKGO ?= $(LOCALBIN)/ginkgo
 GOLANGCI_LINT ?= $(LOCALBIN)/golangci-lint
 GORELEASER ?= $(LOCALBIN)/goreleaser
-OAPI_CODEGEN ?= $(LOCALBIN)/oapi-codegen
 SEMVER ?= $(LOCALBIN)/semver
 
 ## Tool Versions
-DEEPCOPY_GEN_VERSION ?= v0.30.3
-GORELEASER_VERSION ?= v2.1.0
-OAPI_CODEGEN_VERSION ?= v2.3.0
+# renovate: packageName=k8s.io/code-generator/cmd/deepcopy-gen
+DEEPCOPY_GEN_VERSION ?= v0.31.1
+# renovate: packageName=github.com/goreleaser/goreleaser/v2
+GORELEASER_VERSION ?= v2.3.2
 
 ## Tool Installer
 .PHONY: deepcopy-gen
@@ -56,10 +56,6 @@ $(GOLANGCI_LINT): $(LOCALBIN)
 goreleaser: $(GORELEASER) ## Download goreleaser locally if necessary.
 $(GORELEASER): $(LOCALBIN)
 	test -s $(LOCALBIN)/goreleaser || GOBIN=$(LOCALBIN) go install github.com/goreleaser/goreleaser/v2@$(GORELEASER_VERSION)
-.PHONY: oapi-codegen
-oapi-codegen: $(OAPI_CODEGEN) ## Download oapi-codegen locally if necessary.
-$(OAPI_CODEGEN): $(LOCALBIN)
-	test -s $(LOCALBIN)/oapi-codegen || GOBIN=$(LOCALBIN) go install github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen@$(OAPI_CODEGEN_VERSION)
 .PHONY: semver
 semver: $(SEMVER) ## Download semver locally if necessary.
 $(SEMVER): $(LOCALBIN)
@@ -73,10 +69,8 @@ update-toolbox-tools:
 		$(LOCALBIN)/ginkgo \
 		$(LOCALBIN)/golangci-lint \
 		$(LOCALBIN)/goreleaser \
-		$(LOCALBIN)/oapi-codegen \
 		$(LOCALBIN)/semver
 	toolbox makefile -f $(LOCALDIR)/Makefile \
 		k8s.io/code-generator/cmd/deepcopy-gen@github.com/kubernetes/code-generator \
-		github.com/goreleaser/goreleaser/v2 \
-		github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen
+		github.com/goreleaser/goreleaser/v2
 ## toolbox - end

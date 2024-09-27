@@ -8,6 +8,24 @@ import (
 const (
 	markerStart = "## toolbox - start"
 	markerEnd   = "## toolbox - end"
+
+	renovateConfig = `{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Update toolbox _VERSION variables in Makefile",
+      "fileMatch": [
+        "Makefile"
+      ],
+      "matchStrings": [
+        "# renovate: packageName=(?<packageName>.+?)\\s+.+?_VERSION \\?= (?<currentValue>.+?)\\s"
+      ],
+      "datasourceTemplate": "go"
+    }
+  ]
+}
+`
 )
 
 var (

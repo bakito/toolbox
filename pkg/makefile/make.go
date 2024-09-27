@@ -172,3 +172,7 @@ func unique(slice []string) []string {
 	slices.Sort(uniqSlice)
 	return uniqSlice
 }
+
+func PrintRenovateConfig(out io.Writer) {
+	_, _ = out.Write([]byte(renovateConfig))
+}

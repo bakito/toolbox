@@ -14,8 +14,11 @@ SEMVER ?= $(LOCALBIN)/semver
 TOOLBOX ?= $(LOCALBIN)/toolbox
 
 ## Tool Versions
+# renovate: packageName=sigs.k8s.io/controller-tools/cmd/controller-gen
 CONTROLLER_GEN_VERSION ?= v0.2.1
+# renovate: packageName=github.com/bakito/semver
 SEMVER_VERSION ?= v0.2.1
+# renovate: packageName=github.com/bakito/toolbox
 TOOLBOX_VERSION ?= v0.2.1
 
 ## Tool Installer

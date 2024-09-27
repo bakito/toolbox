@@ -14,6 +14,7 @@ $(LOCALBIN):
 ## Tool Versions
 {{- range .Tools }}
 {{- if .Version }}
+# renovate: packageName={{.ToolName}}
 {{.UpperName}}_VERSION ?= {{.Version}}
 {{- end }}
 {{- end }}
