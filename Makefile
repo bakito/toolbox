@@ -38,7 +38,7 @@ SEMVER ?= $(LOCALBIN)/semver
 # renovate: packageName=k8s.io/code-generator/cmd/deepcopy-gen
 DEEPCOPY_GEN_VERSION ?= v0.30.3
 # renovate: packageName=github.com/goreleaser/goreleaser/v2
-GORELEASER_VERSION ?= v2.1.0
+GORELEASER_VERSION ?= v2.3.2
 OAPI_CODEGEN_VERSION ?= v2.3.0
 
 ## Tool Installer
