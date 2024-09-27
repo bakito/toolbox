@@ -35,7 +35,9 @@ OAPI_CODEGEN ?= $(LOCALBIN)/oapi-codegen
 SEMVER ?= $(LOCALBIN)/semver
 
 ## Tool Versions
+# renovate: packageName=k8s.io/code-generator/cmd/deepcopy-gen
 DEEPCOPY_GEN_VERSION ?= v0.30.3
+# renovate: packageName=github.com/goreleaser/goreleaser/v2
 GORELEASER_VERSION ?= v2.1.0
 OAPI_CODEGEN_VERSION ?= v2.3.0
 
@@ -77,6 +79,5 @@ update-toolbox-tools:
 		$(LOCALBIN)/semver
 	toolbox makefile -f $(LOCALDIR)/Makefile \
 		k8s.io/code-generator/cmd/deepcopy-gen@github.com/kubernetes/code-generator \
-		github.com/goreleaser/goreleaser/v2 \
-		github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen
+		github.com/goreleaser/goreleaser/v2
 ## toolbox - end
