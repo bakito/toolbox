@@ -9,6 +9,7 @@ import (
 	"github.com/go-resty/resty/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/format"
 )
 
 const testDataDir = "../../testdata"
@@ -28,10 +29,13 @@ var _ = Describe("Make", func() {
 		}
 		makeFilePath = copyFile("Makefile.content", tempDir)
 		includeFilePath = filepath.Join(tempDir, includeFileName)
+
+		format.TruncatedDiff = false
 	})
 	AfterEach(func() {
 		_ = os.RemoveAll(tempDir)
 		getRelease = github.LatestRelease
+		format.TruncatedDiff = true
 	})
 	Context("Generate", func() {
 		It("should generate a correct output", func() {
