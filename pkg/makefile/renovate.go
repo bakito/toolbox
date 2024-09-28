@@ -89,6 +89,7 @@ func prettyPrint(renovateConfig map[string]interface{}) ([]byte, error) {
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	enc.SetIndent("", "  ")
+	enc.SetEscapeHTML(false)
 	if err := enc.Encode(renovateConfig); err != nil {
 		return nil, err
 	}

@@ -4,7 +4,7 @@ const (
 	CustomType         = "regex"
 	Description        = "Update toolbox tools in Makefile"
 	FileMatch          = "^Makefile$"
-	MatchString        = "# renovate: packageName=(?<packageName>.+?)\\s+.+?_VERSION \\?= (?<currentValue>.+?)\\s"
+	MatchString        = `# renovate: packageName=(?<packageName>.+?)\s+.+?_VERSION \?= (?<currentValue>.+?)\s`
 	DatasourceTemplate = "go"
 )
 
