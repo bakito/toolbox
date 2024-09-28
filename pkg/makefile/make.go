@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"regexp"
 	"slices"
 	"sort"
@@ -60,6 +61,13 @@ func generate(client *resty.Client, writer io.Writer, makefile string, renovate 
 		return err
 	}
 
+	makefile, err := filepath.Abs(makefile)
+	if err != nil {
+		return err
+	}
+
+	includeFile := filepath.Join(filepath.Dir(makefile), includeFile)
+
 	data, err := os.ReadFile(makefile)
 	if err != nil {
 		return err
@@ -76,7 +84,6 @@ func generate(client *resty.Client, writer io.Writer, makefile string, renovate 
 		}
 	}
 	file := start
-	file += out.String()
 	file += end
 
 	if renovate {
@@ -84,6 +91,10 @@ func generate(client *resty.Client, writer io.Writer, makefile string, renovate 
 			return err
 		}
 	}
+	if err := os.WriteFile(includeFile, out.Bytes(), 0o600); err != nil {
+		return err
+	}
+
 	return os.WriteFile(makefile, []byte(file), 0o600)
 }
 

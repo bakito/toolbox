@@ -8,6 +8,7 @@ import (
 const (
 	markerStart = "## toolbox - start"
 	markerEnd   = "## toolbox - end"
+	includeFile = ".toolbox.mk"
 )
 
 var (
