@@ -69,11 +69,21 @@ Usage:
   toolbox makefile [tools] [flags]
 
 Flags:
-  -f, --file string   The Makefile path to generate tools in
-  -h, --help          help for makefile
+  -f, --file string       The Makefile path to generate tools in (default "Makefile")
+  -h, --help              help for makefile
+      --renovate          If enables, renovate config is added to the Makefile (renovate.json file, if existing)
+      --tools-go string   The tools.go file to check for tools dependencies (default "tools.go")
 ```
 
-Example:
+### Initialize
+
+Run the following to prepare the initial setup.
+
+```bash
+toolbox makefile -f Makefile
+```
+
+### Example:
 
 ```bash
 toolbox makefile -f ./Makefile \
