@@ -3,7 +3,6 @@ package makefile
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -21,12 +20,12 @@ var (
 	getRelease    = github.LatestRelease
 )
 
-func Generate(client *resty.Client, writer io.Writer, makefile string, renovate bool, toolsFile string, tools ...string) error {
+func Generate(client *resty.Client, makefile string, renovate bool, toolsFile string, tools ...string) error {
 	argTools, toolData := mergeWithToolsGo(toolsFile, unique(tools))
-	return generate(client, writer, makefile, renovate, argTools, toolData)
+	return generate(client, makefile, renovate, argTools, toolData)
 }
 
-func generate(client *resty.Client, writer io.Writer, makefile string, renovate bool, argTools []string, toolData []toolData) error {
+func generate(client *resty.Client, makefile string, renovate bool, argTools []string, toolData []toolData) error {
 	for _, t := range argTools {
 		td, err := dataForArg(client, t)
 		if err != nil {
@@ -53,11 +52,6 @@ func generate(client *resty.Client, writer io.Writer, makefile string, renovate 
 		"WithVersions": withVersions,
 		"Renovate":     renovate,
 	}); err != nil {
-		return err
-	}
-
-	if makefile == "" {
-		_, err := writer.Write(out.Bytes())
 		return err
 	}
 
@@ -90,7 +84,7 @@ func generate(client *resty.Client, writer io.Writer, makefile string, renovate 
 	}
 
 	file += start
-	file += end
+	file += strings.TrimSpace(end)
 
 	if renovate {
 		if err := updateRenovateConf(); err != nil {

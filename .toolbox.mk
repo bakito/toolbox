@@ -53,8 +53,8 @@ $(TB_SEMVER): $(TB_LOCALBIN)
 	test -s $(TB_LOCALBIN)/semver || GOBIN=$(TB_LOCALBIN) go install github.com/bakito/semver@$(TB_SEMVER_VERSION)
 
 ## Update Tools
-.PHONY: tb.update-toolbox-tools
-tb.update-toolbox-tools:
+.PHONY: tb.update
+tb.update:
 	@rm -f \
 		$(TB_LOCALBIN)/deepcopy-gen \
 		$(TB_LOCALBIN)/ginkgo \

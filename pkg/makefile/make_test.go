@@ -1,7 +1,6 @@
 package makefile
 
 import (
-	"bytes"
 	"os"
 	"path/filepath"
 
@@ -15,7 +14,11 @@ import (
 const testDataDir = "../../testdata"
 
 var _ = Describe("Make", func() {
-	var tempDir string
+	var (
+		tempDir         string
+		makeFilePath    string
+		includeFilePath string
+	)
 	BeforeEach(func() {
 		var err error
 		tempDir, err = os.MkdirTemp("", "toolbox_make_test_")
@@ -23,6 +26,8 @@ var _ = Describe("Make", func() {
 		getRelease = func(client *resty.Client, repo string, quiet bool) (*types.GithubRelease, error) {
 			return &types.GithubRelease{TagName: "v0.2.1"}, nil
 		}
+		makeFilePath = copyFile("Makefile.content", tempDir)
+		includeFilePath = filepath.Join(tempDir, includeFileName)
 	})
 	AfterEach(func() {
 		_ = os.RemoveAll(tempDir)
@@ -30,78 +35,79 @@ var _ = Describe("Make", func() {
 	})
 	Context("Generate", func() {
 		It("should generate a correct output", func() {
-			out := &bytes.Buffer{}
-			err := Generate(resty.New(), out, "", false, "",
+			err := Generate(resty.New(), makeFilePath, false, "",
 				"sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools",
 				"github.com/bakito/semver",
 				"github.com/bakito/toolbox",
 			)
 			Ω(err).ShouldNot(HaveOccurred())
-			Ω(out.String() + "\n").Should(Equal(readFile(testDataDir, "Makefile.expected")))
-		})
-		It("should generate a correct output", func() {
-			out := &bytes.Buffer{}
-			path := copyFile("Makefile.content", tempDir)
-			err := Generate(resty.New(), out, path, false, "",
-				"sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools",
-				"github.com/bakito/semver",
-				"github.com/bakito/toolbox",
-			)
-			Ω(err).ShouldNot(HaveOccurred())
-			Ω(out.Bytes()).Should(BeEmpty())
 
-			Ω(readFile(path)).Should(Equal(readFile(testDataDir, "Makefile.content.expected")))
+			Ω(readFile(makeFilePath)).Should(Equal(readFile(testDataDir, "Makefile.content.expected")))
+			Ω(readFile(includeFilePath) + "\n").Should(Equal(readFile(testDataDir, ".toolbox.mk.content.expected")))
+		})
+		It("should migrate to include correct output", func() {
+			makeFilePath = copyFile("Makefile.content.migrate", tempDir)
+			err := Generate(resty.New(), makeFilePath, false, "",
+				"sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools",
+				"github.com/bakito/semver",
+				"github.com/bakito/toolbox",
+			)
+			Ω(err).ShouldNot(HaveOccurred())
+
+			Ω(readFile(makeFilePath)).Should(Equal(readFile(testDataDir, "Makefile.content.expected")))
+			Ω(readFile(includeFilePath) + "\n").Should(Equal(readFile(testDataDir, ".toolbox.mk.content.expected")))
 		})
 		It("should generate a correct output wit hybrid tools", func() {
-			out := &bytes.Buffer{}
-
-			err := Generate(resty.New(), out, "", false,
+			err := Generate(resty.New(), makeFilePath, false,
 				filepath.Join(testDataDir, "tools.go.tst"),
 				"sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools",
 				"github.com/bakito/toolbox",
 			)
 			Ω(err).ShouldNot(HaveOccurred())
-			Ω(out.String() + "\n").Should(Equal(readFile(testDataDir, "Makefile.hybrid.expected")))
+			Ω(readFile(makeFilePath)).Should(Equal(readFile(testDataDir, "Makefile.content.expected")))
+			Ω(readFile(includeFilePath) + "\n").Should(Equal(readFile(testDataDir, ".toolbox.mk.hybrid.expected")))
 		})
 		It("should generate a correct output with renovate enabled", func() {
-			out := &bytes.Buffer{}
-			err := Generate(resty.New(), out, "", true, "",
+			err := Generate(resty.New(), makeFilePath, true, "",
 				"sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools",
 				"github.com/bakito/semver",
 				"github.com/bakito/toolbox",
 			)
 			Ω(err).ShouldNot(HaveOccurred())
-			Ω(out.String() + "\n").Should(Equal(readFile(testDataDir, "Makefile.renovate.expected")))
+			Ω(readFile(makeFilePath)).Should(Equal(readFile(testDataDir, "Makefile.content.expected")))
+			Ω(readFile(includeFilePath) + "\n").Should(Equal(readFile(testDataDir, ".toolbox.mk.renovate.expected")))
 		})
 	})
 	Context("generate", func() {
 		It("should generate a correct output", func() {
-			out := &bytes.Buffer{}
-
 			td := []toolData{
 				dataForTool(true, "sigs.k8s.io/controller-tools/cmd/controller-gen"),
 				dataForTool(true, "github.com/bakito/semver"),
 				dataForTool(true, "github.com/bakito/toolbox"),
 			}
-			err := generate(resty.New(), out, "", false, nil, td)
+			err := generate(resty.New(), makeFilePath, false, nil, td)
 			Ω(err).ShouldNot(HaveOccurred())
-			Ω(out.String() + "\n").Should(Equal(readFile(testDataDir, "Makefile.tools.go.expected")))
+			Ω(readFile(makeFilePath)).Should(Equal(readFile(testDataDir, "Makefile.content.expected")))
+			Ω(readFile(includeFilePath) + "\n").Should(Equal(readFile(testDataDir, ".toolbox.mk.tools.go.expected")))
 		})
 	})
 	Context("updateRenovateConfInternal", func() {
 		It("should add a customManagers section", func() {
-			cfg, err := updateRenovateConfInternal(filepath.Join(testDataDir, "renovate.no-managers.json"))
+			withRenovate, cfg, err := updateRenovateConfInternal(filepath.Join(testDataDir, "renovate.no-managers.json"))
 			Ω(err).ShouldNot(HaveOccurred())
+			Ω(withRenovate).Should(BeTrue())
 			Ω(string(cfg)).Should(Equal(readFile(testDataDir, "renovate.no-managers.expected.json")))
 		})
 		It("should add the toolbox customManager", func() {
-			cfg, err := updateRenovateConfInternal(filepath.Join(testDataDir, "renovate.other-managers.json"))
+			withRenovate, cfg, err := updateRenovateConfInternal(filepath.Join(testDataDir, "renovate.other-managers.json"))
 			Ω(err).ShouldNot(HaveOccurred())
+			Ω(withRenovate).Should(BeTrue())
 			Ω(string(cfg)).Should(Equal(readFile(testDataDir, "renovate.other-managers.expected.json")))
 		})
 		It("should update the toolbox customManager", func() {
-			cfg, err := updateRenovateConfInternal(filepath.Join(testDataDir, "renovate.incorrect-managers.json"))
+			withRenovate, cfg, err := updateRenovateConfInternal(filepath.Join(testDataDir, "renovate.incorrect-managers.json"))
 			Ω(err).ShouldNot(HaveOccurred())
+			Ω(withRenovate).Should(BeTrue())
 			Ω(string(cfg)).Should(Equal(readFile(testDataDir, "renovate.incorrect-managers.expected.json")))
 		})
 	})

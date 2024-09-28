@@ -26,8 +26,8 @@ $(TB_TOOLBOX): $(TB_LOCALBIN)
 	test -s $(TB_LOCALBIN)/toolbox || GOBIN=$(TB_LOCALBIN) go install github.com/bakito/toolbox
 
 ## Update Tools
-.PHONY: tb.update-toolbox-tools
-tb.update-toolbox-tools:
+.PHONY: tb.update
+tb.update:
 	@rm -f \
 		$(TB_LOCALBIN)/controller-gen \
 		$(TB_LOCALBIN)/semver \

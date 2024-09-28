@@ -31,8 +31,8 @@ $(TB_{{.UpperName}}): $(TB_LOCALBIN)
 {{- end }}
 
 ## Update Tools
-.PHONY: tb.update-toolbox-tools
-tb.update-toolbox-tools:
+.PHONY: tb.update
+tb.update:
 	@rm -f{{- range .Tools }} \
 		$(TB_LOCALBIN)/{{.Name}}
 {{- end }}
