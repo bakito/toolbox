@@ -1,36 +1,36 @@
 ## toolbox - start
 ## Current working directory
-LOCALDIR ?= $(shell which cygpath > /dev/null 2>&1 && cygpath -m $$(pwd) || pwd)
+TB_LOCALDIR ?= $(shell which cygpath > /dev/null 2>&1 && cygpath -m $$(pwd) || pwd)
 ## Location to install dependencies to
-LOCALBIN ?= $(LOCALDIR)/bin
-$(LOCALBIN):
-	mkdir -p $(LOCALBIN)
+TB_LOCALBIN ?= $(TB_LOCALDIR)/bin
+$(TB_LOCALBIN):
+	mkdir -p $(TB_LOCALBIN)
 
 ## Tool Binaries
-CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
-SEMVER ?= $(LOCALBIN)/semver
-TOOLBOX ?= $(LOCALBIN)/toolbox
+TB_CONTROLLER_GEN ?= $(TB_LOCALBIN)/controller-gen
+TB_SEMVER ?= $(TB_LOCALBIN)/semver
+TB_TOOLBOX ?= $(TB_LOCALBIN)/toolbox
 
 ## Tool Installer
-.PHONY: controller-gen
-controller-gen: $(CONTROLLER_GEN) ## Download controller-gen locally if necessary.
-$(CONTROLLER_GEN): $(LOCALBIN)
-	test -s $(LOCALBIN)/controller-gen || GOBIN=$(LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen
-.PHONY: semver
-semver: $(SEMVER) ## Download semver locally if necessary.
-$(SEMVER): $(LOCALBIN)
-	test -s $(LOCALBIN)/semver || GOBIN=$(LOCALBIN) go install github.com/bakito/semver
-.PHONY: toolbox
-toolbox: $(TOOLBOX) ## Download toolbox locally if necessary.
-$(TOOLBOX): $(LOCALBIN)
-	test -s $(LOCALBIN)/toolbox || GOBIN=$(LOCALBIN) go install github.com/bakito/toolbox
+.PHONY: tb.controller-gen
+tb.controller-gen: $(TB_CONTROLLER_GEN) ## Download controller-gen locally if necessary.
+$(TB_CONTROLLER_GEN): $(TB_LOCALBIN)
+	test -s $(TB_LOCALBIN)/controller-gen || GOBIN=$(TB_LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen
+.PHONY: tb.semver
+tb.semver: $(TB_SEMVER) ## Download semver locally if necessary.
+$(TB_SEMVER): $(TB_LOCALBIN)
+	test -s $(TB_LOCALBIN)/semver || GOBIN=$(TB_LOCALBIN) go install github.com/bakito/semver
+.PHONY: tb.toolbox
+tb.toolbox: $(TB_TOOLBOX) ## Download toolbox locally if necessary.
+$(TB_TOOLBOX): $(TB_LOCALBIN)
+	test -s $(TB_LOCALBIN)/toolbox || GOBIN=$(TB_LOCALBIN) go install github.com/bakito/toolbox
 
 ## Update Tools
-.PHONY: update-toolbox-tools
-update-toolbox-tools:
+.PHONY: tb.update-toolbox-tools
+tb.update-toolbox-tools:
 	@rm -f \
-		$(LOCALBIN)/controller-gen \
-		$(LOCALBIN)/semver \
-		$(LOCALBIN)/toolbox
-	toolbox makefile -f $(LOCALDIR)/Makefile
+		$(TB_LOCALBIN)/controller-gen \
+		$(TB_LOCALBIN)/semver \
+		$(TB_LOCALBIN)/toolbox
+	toolbox makefile -f $(TB_LOCALDIR)/Makefile
 ## toolbox - end

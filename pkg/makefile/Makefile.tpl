@@ -1,13 +1,13 @@
 ## Current working directory
-LOCALDIR ?= $(shell which cygpath > /dev/null 2>&1 && cygpath -m $$(pwd) || pwd)
+TB_LOCALDIR ?= $(shell which cygpath > /dev/null 2>&1 && cygpath -m $$(pwd) || pwd)
 ## Location to install dependencies to
-LOCALBIN ?= $(LOCALDIR)/bin
-$(LOCALBIN):
-	mkdir -p $(LOCALBIN)
+TB_LOCALBIN ?= $(TB_LOCALDIR)/bin
+$(TB_LOCALBIN):
+	mkdir -p $(TB_LOCALBIN)
 
 ## Tool Binaries
 {{- range .Tools }}
-{{.UpperName}} ?= $(LOCALBIN)/{{.Name}}
+TB_{{.UpperName}} ?= $(TB_LOCALBIN)/{{.Name}}
 {{- end }}
 {{- if .WithVersions }}
 
@@ -17,25 +17,25 @@ $(LOCALBIN):
 {{- if $.Renovate }}
 # renovate: packageName={{.ToolName}}
 {{- end }}
-{{.UpperName}}_VERSION ?= {{.Version}}
+TB_{{.UpperName}}_VERSION ?= {{.Version}}
 {{- end }}
 {{- end }}
 {{- end }}
 
 ## Tool Installer
 {{- range .Tools }}
-.PHONY: {{.Name}}
-{{.Name}}: $({{.UpperName}}) ## Download {{.Name}} locally if necessary.
-$({{.UpperName}}): $(LOCALBIN)
-	test -s $(LOCALBIN)/{{.Name}} || GOBIN=$(LOCALBIN) go install {{.ToolName}}{{- if .Version }}@$({{.UpperName}}_VERSION){{- end }}
+.PHONY: tb.{{.Name}}
+tb.{{.Name}}: $(TB_{{.UpperName}}) ## Download {{.Name}} locally if necessary.
+$(TB_{{.UpperName}}): $(TB_LOCALBIN)
+	test -s $(TB_LOCALBIN)/{{.Name}} || GOBIN=$(TB_LOCALBIN) go install {{.ToolName}}{{- if .Version }}@$(TB_{{.UpperName}}_VERSION){{- end }}
 {{- end }}
 
 ## Update Tools
-.PHONY: update-toolbox-tools
-update-toolbox-tools:
+.PHONY: tb.update-toolbox-tools
+tb.update-toolbox-tools:
 	@rm -f{{- range .Tools }} \
-		$(LOCALBIN)/{{.Name}}
+		$(TB_LOCALBIN)/{{.Name}}
 {{- end }}
-	toolbox makefile {{ if $.Renovate }}--renovate {{ end }}-f $(LOCALDIR)/Makefile{{- range .Tools }}{{- if not .FromToolsGo }} \
+	toolbox makefile {{ if $.Renovate }}--renovate {{ end }}-f $(TB_LOCALDIR)/Makefile{{- range .Tools }}{{- if not .FromToolsGo }} \
 		{{.Tool}}{{- end }}
 {{- end }}
