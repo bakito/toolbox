@@ -1,11 +1,12 @@
 package renovate
 
 const (
-	CustomType         = "regex"
-	Description        = "Update toolbox tools in Makefile"
-	FileMatch          = "^Makefile$"
-	MatchString        = `# renovate: packageName=(?<packageName>.+?)\s+.+?_VERSION \?= (?<currentValue>.+?)\s`
-	DatasourceTemplate = "go"
+	CustomType            = "regex"
+	DescriptionDeprecated = "Update toolbox tools in Makefile"
+	Description           = "Update toolbox tools in .toolbox.mk"
+	FileMatch             = `^\.toolbox\.mk$`
+	MatchString           = `# renovate: packageName=(?<packageName>.+?)\s+.+?_VERSION \?= (?<currentValue>.+?)\s`
+	DatasourceTemplate    = "go"
 )
 
 func Config() CustomManager {
@@ -29,11 +30,12 @@ type CustomManager struct {
 }
 
 func (m *CustomManager) UpdateParams() {
+	m.Description = Description
 	m.FileMatch = []string{FileMatch}
 	m.MatchStrings = []string{MatchString}
 	m.DatasourceTemplate = DatasourceTemplate
 }
 
 func (m *CustomManager) IsToolbox() bool {
-	return m.CustomType == CustomType && m.Description == Description
+	return m.CustomType == CustomType && (m.Description == Description || m.Description == DescriptionDeprecated)
 }
