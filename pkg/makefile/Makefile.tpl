@@ -1,3 +1,5 @@
+## Generated with https://github.com/bakito/toolbox
+
 ## Current working directory
 TB_LOCALDIR ?= $(shell which cygpath > /dev/null 2>&1 && cygpath -m $$(pwd) || pwd)
 ## Location to install dependencies to
