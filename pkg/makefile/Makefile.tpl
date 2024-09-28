@@ -14,7 +14,9 @@ $(LOCALBIN):
 ## Tool Versions
 {{- range .Tools }}
 {{- if .Version }}
+{{- if $.Renovate }}
 # renovate: packageName={{.ToolName}}
+{{- end }}
 {{.UpperName}}_VERSION ?= {{.Version}}
 {{- end }}
 {{- end }}
@@ -34,6 +36,6 @@ update-toolbox-tools:
 	@rm -f{{- range .Tools }} \
 		$(LOCALBIN)/{{.Name}}
 {{- end }}
-	toolbox makefile -f $(LOCALDIR)/Makefile{{- range .Tools }}{{- if not .FromToolsGo }} \
+	toolbox makefile {{ if $.Renovate }}--renovate {{ end }}-f $(LOCALDIR)/Makefile{{- range .Tools }}{{- if not .FromToolsGo }} \
 		{{.Tool}}{{- end }}
 {{- end }}

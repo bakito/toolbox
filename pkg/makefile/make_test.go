@@ -31,7 +31,7 @@ var _ = Describe("Make", func() {
 	Context("Generate", func() {
 		It("should generate a correct output", func() {
 			out := &bytes.Buffer{}
-			err := Generate(resty.New(), out, "", "",
+			err := Generate(resty.New(), out, "", false, "",
 				"sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools",
 				"github.com/bakito/semver",
 				"github.com/bakito/toolbox",
@@ -42,7 +42,7 @@ var _ = Describe("Make", func() {
 		It("should generate a correct output", func() {
 			out := &bytes.Buffer{}
 			path := copyFile("Makefile.content", tempDir)
-			err := Generate(resty.New(), out, path, "",
+			err := Generate(resty.New(), out, path, false, "",
 				"sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools",
 				"github.com/bakito/semver",
 				"github.com/bakito/toolbox",
@@ -52,16 +52,26 @@ var _ = Describe("Make", func() {
 
 			Ω(readFile(path)).Should(Equal(readFile(testDataDir, "Makefile.content.expected")))
 		})
-		It("should generate a correct output", func() {
+		It("should generate a correct output wit hybrid tools", func() {
 			out := &bytes.Buffer{}
 
-			err := Generate(resty.New(), out, "",
+			err := Generate(resty.New(), out, "", false,
 				filepath.Join(testDataDir, "tools.go.tst"),
 				"sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools",
 				"github.com/bakito/toolbox",
 			)
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(out.String() + "\n").Should(Equal(readFile(testDataDir, "Makefile.hybrid.expected")))
+		})
+		It("should generate a correct output with renovate enabled", func() {
+			out := &bytes.Buffer{}
+			err := Generate(resty.New(), out, "", true, "",
+				"sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools",
+				"github.com/bakito/semver",
+				"github.com/bakito/toolbox",
+			)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(out.String() + "\n").Should(Equal(readFile(testDataDir, "Makefile.renovate.expected")))
 		})
 	})
 	Context("generate", func() {
@@ -73,16 +83,26 @@ var _ = Describe("Make", func() {
 				dataForTool(true, "github.com/bakito/semver"),
 				dataForTool(true, "github.com/bakito/toolbox"),
 			}
-			err := generate(resty.New(), out, "", nil, td)
+			err := generate(resty.New(), out, "", false, nil, td)
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(out.String() + "\n").Should(Equal(readFile(testDataDir, "Makefile.tools.go.expected")))
 		})
 	})
-	Context("PrintRenovateConfig", func() {
-		It("should generate a correct output", func() {
-			out := &bytes.Buffer{}
-			PrintRenovateConfig(out)
-			Ω(out.String()).Should(Equal(renovateConfig))
+	Context("updateRenovateConfInternal", func() {
+		It("should add a customManagers section", func() {
+			cfg, err := updateRenovateConfInternal(filepath.Join(testDataDir, "renovate.no-managers.json"))
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(string(cfg)).Should(Equal(readFile(testDataDir, "renovate.no-managers.expected.json")))
+		})
+		It("should add the toolbox customManager", func() {
+			cfg, err := updateRenovateConfInternal(filepath.Join(testDataDir, "renovate.other-managers.json"))
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(string(cfg)).Should(Equal(readFile(testDataDir, "renovate.other-managers.expected.json")))
+		})
+		It("should update the toolbox customManager", func() {
+			cfg, err := updateRenovateConfInternal(filepath.Join(testDataDir, "renovate.incorrect-managers.json"))
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(string(cfg)).Should(Equal(readFile(testDataDir, "renovate.incorrect-managers.expected.json")))
 		})
 	})
 })

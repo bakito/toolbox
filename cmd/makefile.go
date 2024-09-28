@@ -22,7 +22,7 @@ var (
 		Use:   "makefile [tools]",
 		Short: "Adds tools to a Makefile",
 		Args: func(_ *cobra.Command, args []string) error {
-			if _, err := os.Stat(toolsGo); err != nil && !renovate {
+			if _, err := os.Stat(toolsGo); err != nil {
 				if len(args) == 0 {
 					return errors.New("at least one tool must be provided")
 				}
@@ -30,17 +30,12 @@ var (
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if renovate {
-				makefile.PrintRenovateConfig(cmd.OutOrStderr())
-				return nil
-			}
-
 			client := resty.New()
 			mf, err := cmd.Flags().GetString(flagFile)
 			if err != nil {
 				return err
 			}
-			return makefile.Generate(client, cmd.OutOrStderr(), mf, toolsGo, args...)
+			return makefile.Generate(client, cmd.OutOrStderr(), mf, renovate, toolsGo, args...)
 		},
 	}
 )
@@ -50,5 +45,5 @@ func init() {
 
 	makefileCmd.Flags().StringP(flagFile, "f", "", "The Makefile path to generate tools in")
 	makefileCmd.Flags().StringVar(&toolsGo, flagToolsGo, "tools.go", "The tools.go file to check for tools dependencies")
-	makefileCmd.Flags().BoolVar(&renovate, "renovate", false, "Print sample renovate config for Makefile")
+	makefileCmd.Flags().BoolVar(&renovate, "renovate", false, "If enables, renovate config is added to the Makefile (renovate.json file, if existing)")
 }

@@ -20,12 +20,12 @@ var (
 	getRelease    = github.LatestRelease
 )
 
-func Generate(client *resty.Client, writer io.Writer, makefile string, toolsFile string, tools ...string) error {
+func Generate(client *resty.Client, writer io.Writer, makefile string, renovate bool, toolsFile string, tools ...string) error {
 	argTools, toolData := mergeWithToolsGo(toolsFile, unique(tools))
-	return generate(client, writer, makefile, argTools, toolData)
+	return generate(client, writer, makefile, renovate, argTools, toolData)
 }
 
-func generate(client *resty.Client, writer io.Writer, makefile string, argTools []string, toolData []toolData) error {
+func generate(client *resty.Client, writer io.Writer, makefile string, renovate bool, argTools []string, toolData []toolData) error {
 	for _, t := range argTools {
 		td, err := dataForArg(client, t)
 		if err != nil {
@@ -50,6 +50,7 @@ func generate(client *resty.Client, writer io.Writer, makefile string, argTools 
 	if err := t.Execute(out, map[string]interface{}{
 		"Tools":        toolData,
 		"WithVersions": withVersions,
+		"Renovate":     renovate,
 	}); err != nil {
 		return err
 	}
@@ -78,6 +79,11 @@ func generate(client *resty.Client, writer io.Writer, makefile string, argTools 
 	file += out.String()
 	file += end
 
+	if renovate {
+		if err := updateRenovateConf(); err != nil {
+			return err
+		}
+	}
 	return os.WriteFile(makefile, []byte(file), 0o600)
 }
 
@@ -171,8 +177,4 @@ func unique(slice []string) []string {
 	}
 	slices.Sort(uniqSlice)
 	return uniqSlice
-}
-
-func PrintRenovateConfig(out io.Writer) {
-	_, _ = out.Write([]byte(renovateConfig))
 }

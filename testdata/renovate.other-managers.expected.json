@@ -4,6 +4,17 @@
     {
       "customType": "regex",
       "datasourceTemplate": "go",
+      "description": "this is an existing manager and should not be touched",
+      "fileMatch": [
+        "^Dockerfile"
+      ],
+      "matchStrings": [
+        "..."
+      ]
+    },
+    {
+      "customType": "regex",
+      "datasourceTemplate": "go",
       "description": "Update toolbox tools in Makefile",
       "fileMatch": [
         "^Makefile$"
@@ -12,6 +23,5 @@
         "# renovate: packageName=(?\u003cpackageName\u003e.+?)\\s+.+?_VERSION \\?= (?\u003ccurrentValue\u003e.+?)\\s"
       ]
     }
-  ],
-  "dependencyDashboard": true
+  ]
 }
