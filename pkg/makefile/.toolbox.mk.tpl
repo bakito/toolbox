@@ -32,12 +32,16 @@ $(TB_{{.UpperName}}): $(TB_LOCALBIN)
 	test -s $(TB_LOCALBIN)/{{.Name}} || GOBIN=$(TB_LOCALBIN) go install {{.ToolName}}{{- if .Version }}@$(TB_{{.UpperName}}_VERSION){{- end }}
 {{- end }}
 
-## Update Tools
-.PHONY: tb.update
-tb.update:
+## Reset Tools
+.PHONY: tb.reset
+tb.reset:
 	@rm -f{{- range .Tools }} \
 		$(TB_LOCALBIN)/{{.Name}}
 {{- end }}
+
+## Update Tools
+.PHONY: tb.update
+tb.update: tb.reset
 	toolbox makefile {{ if $.Renovate }}--renovate {{ end }}-f $(TB_LOCALDIR)/Makefile{{- range .Tools }}{{- if not .FromToolsGo }} \
 		{{.Tool}}{{- end }}
 {{- end }}

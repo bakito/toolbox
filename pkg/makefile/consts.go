@@ -12,7 +12,7 @@ const (
 )
 
 var (
-	//go:embed Makefile.tpl
+	//go:embed .toolbox.mk.tpl
 	tpl              string
 	makefileTemplate = fmt.Sprintf("%s\n%s%s", markerStart, tpl, markerEnd)
 )

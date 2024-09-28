@@ -31,13 +31,17 @@ tb.toolbox: $(TB_TOOLBOX) ## Download toolbox locally if necessary.
 $(TB_TOOLBOX): $(TB_LOCALBIN)
 	test -s $(TB_LOCALBIN)/toolbox || GOBIN=$(TB_LOCALBIN) go install github.com/bakito/toolbox@$(TB_TOOLBOX_VERSION)
 
-## Update Tools
-.PHONY: tb.update
-tb.update:
+## Reset Tools
+.PHONY: tb.reset
+tb.reset:
 	@rm -f \
 		$(TB_LOCALBIN)/controller-gen \
 		$(TB_LOCALBIN)/semver \
 		$(TB_LOCALBIN)/toolbox
+
+## Update Tools
+.PHONY: tb.update
+tb.update: tb.reset
 	toolbox makefile -f $(TB_LOCALDIR)/Makefile \
 		sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools \
 		github.com/bakito/toolbox

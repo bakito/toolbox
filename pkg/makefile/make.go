@@ -46,7 +46,7 @@ func generate(client *resty.Client, makefile string, renovate bool, argTools []s
 	}
 
 	out := &bytes.Buffer{}
-	t := template.Must(template.New("Makefile").Parse(makefileTemplate))
+	t := template.Must(template.New("toolbox.mk").Parse(makefileTemplate))
 	if err := t.Execute(out, map[string]interface{}{
 		"Tools":        toolData,
 		"WithVersions": withVersions,
