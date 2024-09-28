@@ -1,6 +1,2 @@
-...
-
-## toolbox - start
-## toolbox - end
-
-...
+foo:
+    @echo "bar"

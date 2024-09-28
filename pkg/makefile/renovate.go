@@ -12,28 +12,28 @@ import (
 const renovateJson = "renovate.json"
 
 func updateRenovateConf() error {
-	cfg, err := updateRenovateConfInternal(renovateJson)
-	if err != nil {
+	withRenovate, cfg, err := updateRenovateConfInternal(renovateJson)
+	if err != nil || !withRenovate {
 		return err
 	}
 	return os.WriteFile(renovateJson, cfg, 0o600)
 }
 
-func updateRenovateConfInternal(renovateCfgFile string) ([]byte, error) {
+func updateRenovateConfInternal(renovateCfgFile string) (bool, []byte, error) {
 	if _, err := os.Stat(renovateCfgFile); errors.Is(err, os.ErrNotExist) {
 		// no renovate config found, abort
-		return nil, nil
+		return false, nil, nil
 	}
 
 	renovateCfg, err := readRenovateConfig(renovateCfgFile)
 	if err != nil {
-		return nil, err
+		return false, nil, err
 	}
 
 	cms := renovate.CustomManagers{}
 	if cm, ok := renovateCfg["customManagers"]; ok {
 		if err := covert(&cm, &cms); err != nil {
-			return nil, err
+			return false, nil, err
 		}
 
 		found := false
@@ -55,11 +55,12 @@ func updateRenovateConfInternal(renovateCfgFile string) ([]byte, error) {
 
 	var merged []map[string]interface{}
 	if err := covert(&cms, &merged); err != nil {
-		return nil, err
+		return false, nil, err
 	}
 
 	renovateCfg["customManagers"] = merged
-	return prettyPrint(renovateCfg)
+	pp, err := prettyPrint(renovateCfg)
+	return true, pp, err
 }
 
 func covert(from interface{}, to interface{}) error {

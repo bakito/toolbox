@@ -3,8 +3,8 @@ package makefile
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"os"
+	"path/filepath"
 	"regexp"
 	"slices"
 	"sort"
@@ -20,12 +20,12 @@ var (
 	getRelease    = github.LatestRelease
 )
 
-func Generate(client *resty.Client, writer io.Writer, makefile string, renovate bool, toolsFile string, tools ...string) error {
+func Generate(client *resty.Client, makefile string, renovate bool, toolsFile string, tools ...string) error {
 	argTools, toolData := mergeWithToolsGo(toolsFile, unique(tools))
-	return generate(client, writer, makefile, renovate, argTools, toolData)
+	return generate(client, makefile, renovate, argTools, toolData)
 }
 
-func generate(client *resty.Client, writer io.Writer, makefile string, renovate bool, argTools []string, toolData []toolData) error {
+func generate(client *resty.Client, makefile string, renovate bool, argTools []string, toolData []toolData) error {
 	for _, t := range argTools {
 		td, err := dataForArg(client, t)
 		if err != nil {
@@ -55,10 +55,12 @@ func generate(client *resty.Client, writer io.Writer, makefile string, renovate 
 		return err
 	}
 
-	if makefile == "" {
-		_, err := writer.Write(out.Bytes())
+	makefile, err := filepath.Abs(makefile)
+	if err != nil {
 		return err
 	}
+
+	includeFile := filepath.Join(filepath.Dir(makefile), includeFileName)
 
 	data, err := os.ReadFile(makefile)
 	if err != nil {
@@ -75,15 +77,24 @@ func generate(client *resty.Client, writer io.Writer, makefile string, renovate 
 			end = parts[1]
 		}
 	}
-	file := start
-	file += out.String()
-	file += end
+
+	var file string
+	if !strings.Contains(string(data), fmt.Sprintf("include ./%s", includeFileName)) {
+		file = fmt.Sprintf("# Include toolbox tasks\ninclude ./%s\n\n", includeFileName)
+	}
+
+	file += start
+	file += strings.TrimSpace(end)
 
 	if renovate {
 		if err := updateRenovateConf(); err != nil {
 			return err
 		}
 	}
+	if err := os.WriteFile(includeFile, out.Bytes(), 0o600); err != nil {
+		return err
+	}
+
 	return os.WriteFile(makefile, []byte(file), 0o600)
 }
 

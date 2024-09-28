@@ -1,0 +1,47 @@
+## toolbox - start
+## Current working directory
+TB_LOCALDIR ?= $(shell which cygpath > /dev/null 2>&1 && cygpath -m $$(pwd) || pwd)
+## Location to install dependencies to
+TB_LOCALBIN ?= $(TB_LOCALDIR)/bin
+$(TB_LOCALBIN):
+	mkdir -p $(TB_LOCALBIN)
+
+## Tool Binaries
+TB_CONTROLLER_GEN ?= $(TB_LOCALBIN)/controller-gen
+TB_SEMVER ?= $(TB_LOCALBIN)/semver
+TB_TOOLBOX ?= $(TB_LOCALBIN)/toolbox
+
+## Tool Versions
+# renovate: packageName=sigs.k8s.io/controller-tools/cmd/controller-gen
+TB_CONTROLLER_GEN_VERSION ?= v0.2.1
+# renovate: packageName=github.com/bakito/semver
+TB_SEMVER_VERSION ?= v0.2.1
+# renovate: packageName=github.com/bakito/toolbox
+TB_TOOLBOX_VERSION ?= v0.2.1
+
+## Tool Installer
+.PHONY: tb.controller-gen
+tb.controller-gen: $(TB_CONTROLLER_GEN) ## Download controller-gen locally if necessary.
+$(TB_CONTROLLER_GEN): $(TB_LOCALBIN)
+	test -s $(TB_LOCALBIN)/controller-gen || GOBIN=$(TB_LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(TB_CONTROLLER_GEN_VERSION)
+.PHONY: tb.semver
+tb.semver: $(TB_SEMVER) ## Download semver locally if necessary.
+$(TB_SEMVER): $(TB_LOCALBIN)
+	test -s $(TB_LOCALBIN)/semver || GOBIN=$(TB_LOCALBIN) go install github.com/bakito/semver@$(TB_SEMVER_VERSION)
+.PHONY: tb.toolbox
+tb.toolbox: $(TB_TOOLBOX) ## Download toolbox locally if necessary.
+$(TB_TOOLBOX): $(TB_LOCALBIN)
+	test -s $(TB_LOCALBIN)/toolbox || GOBIN=$(TB_LOCALBIN) go install github.com/bakito/toolbox@$(TB_TOOLBOX_VERSION)
+
+## Update Tools
+.PHONY: tb.update
+tb.update:
+	@rm -f \
+		$(TB_LOCALBIN)/controller-gen \
+		$(TB_LOCALBIN)/semver \
+		$(TB_LOCALBIN)/toolbox
+	toolbox makefile --renovate -f $(TB_LOCALDIR)/Makefile \
+		sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools \
+		github.com/bakito/semver \
+		github.com/bakito/toolbox
+## toolbox - end
