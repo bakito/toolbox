@@ -6,9 +6,9 @@ import (
 )
 
 const (
-	markerStart = "## toolbox - start"
-	markerEnd   = "## toolbox - end"
-	includeFile = ".toolbox.mk"
+	markerStart     = "## toolbox - start"
+	markerEnd       = "## toolbox - end"
+	includeFileName = ".toolbox.mk"
 )
 
 var (

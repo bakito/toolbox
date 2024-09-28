@@ -66,7 +66,7 @@ func generate(client *resty.Client, writer io.Writer, makefile string, renovate 
 		return err
 	}
 
-	includeFile := filepath.Join(filepath.Dir(makefile), includeFile)
+	includeFile := filepath.Join(filepath.Dir(makefile), includeFileName)
 
 	data, err := os.ReadFile(makefile)
 	if err != nil {
@@ -83,7 +83,13 @@ func generate(client *resty.Client, writer io.Writer, makefile string, renovate 
 			end = parts[1]
 		}
 	}
-	file := start
+
+	var file string
+	if !strings.Contains(string(data), fmt.Sprintf("include ./%s", includeFileName)) {
+		file = fmt.Sprintf("# Include toolbox tasks\ninclude ./%s\n\n", includeFileName)
+	}
+
+	file += start
 	file += end
 
 	if renovate {
