@@ -88,46 +88,18 @@ func (f *fetcher) Fetch(cfgFile string, selectedTools ...string) error {
 	}
 
 	if tb.Upx {
-		cmd := exec.Command("upx", "--version")
-		_, err := cmd.Output()
-		if err == nil {
-			log.Printf("🗜️ upx is available")
-			f.upx = true
-		}
+		f.checkUpxAvailable()
 	}
 
-	err = filepath.Walk(tb.Target, func(path string, f os.FileInfo, _ error) error {
-		if !f.IsDir() {
-			if strings.HasPrefix(f.Name(), oldExecutablePrefix) {
-				toolPath := filepath.Join(tb.Target, f.Name())
-				if err := os.Remove(toolPath); err != nil {
-					return err
-				}
-				log.Printf("🗑️  Delete old tool %s\n", toolPath)
-			}
-		}
-		return nil
-	})
-	if err != nil {
+	if err := f.deleteOldBinary(tb); err != nil {
 		return err
 	}
-
-	println()
 
 	if tb.Aliases != nil {
 		aliases = *tb.Aliases
 	}
-	if _, err := os.Stat(tb.Target); err != nil {
-		if os.IsNotExist(err) {
-			if tb.CreateTarget == nil || *tb.CreateTarget {
-				log.Printf("Creating target dir %q\n", tb.Target)
-				_ = os.MkdirAll(tb.Target, 0o700)
-			} else {
-				return fmt.Errorf("target dir %q does not exist and may not be created", tb.Target)
-			}
-		} else {
-			return err
-		}
+	if err := f.assureTargetDirAvailable(tb); err != nil {
+		return err
 	}
 
 	ver, err := readVersions(tb.Target)
@@ -160,6 +132,46 @@ func (f *fetcher) Fetch(cfgFile string, selectedTools ...string) error {
 
 	// save versions
 	return SaveYamlFile(filepath.Join(tb.Target, toolboxVersionsFile), tb.Versions())
+}
+
+func (f *fetcher) assureTargetDirAvailable(tb *types.Toolbox) error {
+	if _, err := os.Stat(tb.Target); err != nil {
+		if os.IsNotExist(err) {
+			if tb.CreateTarget == nil || *tb.CreateTarget {
+				log.Printf("Creating target dir %q\n", tb.Target)
+				_ = os.MkdirAll(tb.Target, 0o700)
+			} else {
+				return fmt.Errorf("target dir %q does not exist and may not be created", tb.Target)
+			}
+		} else {
+			return err
+		}
+	}
+	return nil
+}
+
+func (f *fetcher) deleteOldBinary(tb *types.Toolbox) error {
+	return filepath.Walk(tb.Target, func(path string, f os.FileInfo, _ error) error {
+		if !f.IsDir() {
+			if strings.HasPrefix(f.Name(), oldExecutablePrefix) {
+				toolPath := filepath.Join(tb.Target, f.Name())
+				if err := os.Remove(toolPath); err != nil {
+					return err
+				}
+				log.Printf("🗑️  Delete old tool %s\n", toolPath)
+			}
+		}
+		return nil
+	})
+}
+
+func (f *fetcher) checkUpxAvailable() {
+	cmd := exec.Command("upx", "--version")
+	_, err := cmd.Output()
+	if err == nil {
+		log.Printf("🗜️ upx is available")
+		f.upx = true
+	}
 }
 
 func SaveYamlFile(path string, obj interface{}) error {
@@ -434,10 +446,7 @@ func (f *fetcher) copyTool(dir string, fileName string, targetDir string, target
 		if file.IsDir() {
 			dirs = append(dirs, file)
 		}
-		if file.Name() == binaryName(fileName) ||
-			file.Name() == fileName ||
-			file.Name() == binaryName(fmt.Sprintf("%s_%s_%s", fileName, runtime.GOOS, runtime.GOARCH)) ||
-			file.Name() == binaryName(fmt.Sprintf("%s-%s_%s", fileName, runtime.GOOS, runtime.GOARCH)) {
+		if fileMatches(file, fileName) {
 
 			sourcePath := filepath.Join(dir, file.Name())
 			targetPath := filepath.Join(targetDir, binaryName(targetName))
@@ -450,21 +459,7 @@ func (f *fetcher) copyTool(dir string, fileName string, targetDir string, target
 			}
 
 			if f.upx {
-				log.Printf("🗜️ Compressing with upx")
-				cmd := exec.Command("upx", "-q", "-q", targetPath)
-				stdout, err := cmd.Output()
-				if err == nil {
-					parts := strings.Fields(string(stdout))
-					size, _ := strconv.Atoi(parts[2])
-					log.Printf("\tCompressed to %s (%s)", parts[3], formatBytes(int64(size)))
-				} else {
-					var ee *exec.ExitError
-					if errors.As(err, &ee) && ee.ExitCode() == 2 {
-						log.Printf("\tAlready Compressed")
-					} else {
-						log.Printf("\tCompression error: %v", err)
-					}
-				}
+				f.upxCompress(targetPath)
 			}
 
 			return true, nil
@@ -477,6 +472,31 @@ func (f *fetcher) copyTool(dir string, fileName string, targetDir string, target
 		}
 	}
 	return false, nil
+}
+
+func (f *fetcher) upxCompress(targetPath string) {
+	log.Printf("🗜️ Compressing with upx")
+	cmd := exec.Command("upx", "-q", "-q", targetPath)
+	stdout, err := cmd.Output()
+	if err == nil {
+		parts := strings.Fields(string(stdout))
+		size, _ := strconv.Atoi(parts[2])
+		log.Printf("\tCompressed to %s (%s)", parts[3], formatBytes(int64(size)))
+	} else {
+		var ee *exec.ExitError
+		if errors.As(err, &ee) && ee.ExitCode() == 2 {
+			log.Printf("\tAlready Compressed")
+		} else {
+			log.Printf("\tCompression error: %v", err)
+		}
+	}
+}
+
+func fileMatches(file os.DirEntry, fileName string) bool {
+	return file.Name() == binaryName(fileName) ||
+		file.Name() == fileName ||
+		file.Name() == binaryName(fmt.Sprintf("%s_%s_%s", fileName, runtime.GOOS, runtime.GOARCH)) ||
+		file.Name() == binaryName(fmt.Sprintf("%s-%s_%s", fileName, runtime.GOOS, runtime.GOARCH))
 }
 
 func copyFile(sourcePath string, targetPath string) error {
