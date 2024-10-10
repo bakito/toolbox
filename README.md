@@ -14,12 +14,11 @@ Usage:
   toolbox fetch [flags]
 
 Flags:
-  -c, --config string   The config file to be used. (default 1. '.toolbox.yaml' current dir, 2. '~/.toolbox.yaml')
+  -c, --config string   The config file to be used. (default 1. '.toolbox.yaml' current dir, 2. '~/.config/toolbox.yaml', 3. '~/.toolbox.yaml')
   -h, --help            help for fetch
-
 ```
 
-### .toolbox.yaml
+### ~/.config/toolbox.yaml / ~/.toolbox.yaml
 
 ```yaml
 tools:
@@ -47,6 +46,8 @@ tools:
   terraform:
     github: hashicorp/terraform
     downloadURL: https://releases.hashicorp.com/terraform/{{ .VersionNum }}/terraform_{{ .VersionNum }}_{{ .OS }}_{{ .Arch }}.zip
+    version: 1.8.5 # pin to version 1.8.5
+    check: --version # use a check command to verify the tool is working correctly
   jf:
     github: jfrog/jfrog-cli
     downloadURL: https://releases.jfrog.io/artifactory/jfrog-cli/v2-jf/{{ .VersionNum }}/jfrog-cli-{{ .OS }}-{{ .Arch }}/jf{{ .FileExt }}
@@ -57,7 +58,7 @@ tools:
   gh:
     github: cli/cli
 target: /home/xyz/bin
-
+upx: false # if enabled and upx is installed, the tools will be upx compressed.
 ```
 
 ## Generate Makefile go tool install tasks
