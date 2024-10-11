@@ -22,12 +22,7 @@ func LatestRelease(client *resty.Client, repo string, quiet bool) (*types.Github
 	ghc := client.R().
 		SetResult(ghr).
 		SetHeader("Accept", "application/json")
-	if t, ok := os.LookupEnv("GITHUB_TOKEN"); ok {
-		if !quiet {
-			log.Printf("🔑 Using github token\n")
-		}
-		ghc = ghc.SetAuthToken(t)
-	}
+	handleGithubToken(ghc, quiet)
 	_, err := ghc.Get(latestReleaseURL(repo))
 	if err != nil {
 		return nil, http.CheckError(err)
@@ -49,18 +44,26 @@ func LatestRelease(client *resty.Client, repo string, quiet bool) (*types.Github
 	return ghr, nil
 }
 
+func handleGithubToken(ghc *resty.Request, quiet bool) {
+	if t, ok := os.LookupEnv("GITHUB_TOKEN"); ok {
+		if !quiet {
+			log.Printf("🔑 Using github token\n")
+		}
+		ghc.SetAuthToken(t)
+	} else if !quiet {
+		log.Printf("⚠️ github token 'GITHUB_TOKEN' is not set.\n")
+	}
+}
+
 func Release(client *resty.Client, repo string, version string, quiet bool) (*types.GithubRelease, error) {
 	ghr := &types.GithubRelease{}
 
 	ghc := client.R().
 		SetResult(ghr).
 		SetHeader("Accept", "application/json")
-	if t, ok := os.LookupEnv("GITHUB_TOKEN"); ok {
-		if !quiet {
-			log.Printf("🔑 Using github token\n")
-		}
-		ghc = ghc.SetAuthToken(t)
-	}
+
+	handleGithubToken(ghc, quiet)
+
 	_, err := ghc.Get(releaseURL(repo, version))
 	if err != nil {
 		return nil, http.CheckError(err)
