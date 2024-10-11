@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/user"
 	"path/filepath"
 	"runtime"
 	"sort"
@@ -83,9 +84,7 @@ func (f *fetcher) Fetch(cfgFile string, selectedTools ...string) error {
 	if err != nil {
 		return err
 	}
-	if tb.Target == "" {
-		tb.Target = "./tools"
-	}
+	sanitizeTargetDir(tb)
 
 	if tb.Upx {
 		f.checkUpxAvailable()
@@ -132,6 +131,16 @@ func (f *fetcher) Fetch(cfgFile string, selectedTools ...string) error {
 
 	// save versions
 	return SaveYamlFile(filepath.Join(tb.Target, toolboxVersionsFile), tb.Versions())
+}
+
+func sanitizeTargetDir(tb *types.Toolbox) {
+	if tb.Target == "" {
+		tb.Target = "./tools"
+	} else if strings.HasPrefix(tb.Target, "~/") {
+		usr, _ := user.Current()
+		dir := usr.HomeDir
+		tb.Target = filepath.Join(dir, tb.Target[2:])
+	}
 }
 
 func (f *fetcher) assureTargetDirAvailable(tb *types.Toolbox) error {
