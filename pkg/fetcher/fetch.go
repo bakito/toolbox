@@ -93,15 +93,16 @@ func (f *fetcher) Fetch(cfgFile string, selectedTools ...string) error {
 		f.checkUpxAvailable()
 	}
 
+	if err := f.assureTargetDirAvailable(tb); err != nil {
+		return err
+	}
+
 	if err := f.deleteOldBinary(tb); err != nil {
 		return err
 	}
 
 	if tb.Aliases != nil {
 		aliases = *tb.Aliases
-	}
-	if err := f.assureTargetDirAvailable(tb); err != nil {
-		return err
 	}
 
 	ver, err := readVersions(tb.Target)
