@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/bakito/toolbox/pkg/http"
 	"github.com/bakito/toolbox/pkg/types"
 	"github.com/go-resty/resty/v2"
 )
+
+const EnvGithubToken = "GITHUB_TOKEN" // #nosec G101: variable name for token
 
 var (
 	releaseURLPattern       = "https://api.github.com/repos/%s/releases/tags/%s"
@@ -18,14 +21,18 @@ var (
 
 func LatestRelease(client *resty.Client, repo string, quiet bool) (*types.GithubRelease, error) {
 	ghr := &types.GithubRelease{}
-
+	ghErr := &types.GithubError{}
 	ghc := client.R().
 		SetResult(ghr).
+		SetError(ghErr).
 		SetHeader("Accept", "application/json")
 	handleGithubToken(ghc, quiet)
-	_, err := ghc.Get(latestReleaseURL(repo))
+	resp, err := ghc.Get(latestReleaseURL(repo))
 	if err != nil {
 		return nil, http.CheckError(err)
+	}
+	if resp.IsError() {
+		return nil, fmt.Errorf("github request was not successful: %s", ghErr.Message)
 	}
 
 	if ghr.TagName == "" {
@@ -44,29 +51,37 @@ func LatestRelease(client *resty.Client, repo string, quiet bool) (*types.Github
 	return ghr, nil
 }
 
+func TokenSet() bool {
+	t, ok := os.LookupEnv(EnvGithubToken)
+	return ok && strings.TrimSpace(t) != ""
+}
+
 func handleGithubToken(ghc *resty.Request, quiet bool) {
-	if t, ok := os.LookupEnv("GITHUB_TOKEN"); ok {
+	if t, ok := os.LookupEnv(EnvGithubToken); ok && strings.TrimSpace(t) != "" {
 		if !quiet {
 			log.Printf("🔑 Using github token\n")
 		}
 		ghc.SetAuthToken(t)
-	} else if !quiet {
-		log.Printf("⚠️ github token 'GITHUB_TOKEN' is not set.\n")
 	}
 }
 
 func Release(client *resty.Client, repo string, version string, quiet bool) (*types.GithubRelease, error) {
 	ghr := &types.GithubRelease{}
+	ghErr := &types.GithubError{}
 
 	ghc := client.R().
 		SetResult(ghr).
+		SetError(ghErr).
 		SetHeader("Accept", "application/json")
 
 	handleGithubToken(ghc, quiet)
 
-	_, err := ghc.Get(releaseURL(repo, version))
+	resp, err := ghc.Get(releaseURL(repo, version))
 	if err != nil {
 		return nil, http.CheckError(err)
+	}
+	if resp.IsError() {
+		return nil, fmt.Errorf("github request was not successful: %s", ghErr.Message)
 	}
 
 	if ghr.TagName == "" {

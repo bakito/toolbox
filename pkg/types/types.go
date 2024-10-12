@@ -46,6 +46,15 @@ func (t *Toolbox) Versions() *Versions {
 	return v
 }
 
+func (t *Toolbox) HasGithubTools() bool {
+	for _, tool := range t.Tools {
+		if tool.Github != "" {
+			return true
+		}
+	}
+	return false
+}
+
 type Tool struct {
 	Name            string   `yaml:"name,omitempty"`
 	Github          string   `yaml:"github,omitempty"`

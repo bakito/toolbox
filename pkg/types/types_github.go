@@ -8,6 +8,11 @@ import (
 	"golang.org/x/mod/semver"
 )
 
+type GithubError struct {
+	Message          string `json:"message"`
+	DocumentationUrl string `json:"documentation_url"`
+}
+
 type GithubRelease struct {
 	TagName string  `json:"tag_name"`
 	Name    string  `json:"name"`

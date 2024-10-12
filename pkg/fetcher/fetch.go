@@ -81,6 +81,9 @@ func (f *fetcher) Fetch(cfgFile string, selectedTools ...string) error {
 	}
 
 	tb, _, err := ReadToolbox(cfgFile)
+	if tb.HasGithubTools() && !github.TokenSet() {
+		log.Printf("⚠️ when using github tools, defining a github token 'GITHUB_TOKEN' is recommended")
+	}
 	if err != nil {
 		return err
 	}
