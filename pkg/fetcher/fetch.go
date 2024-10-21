@@ -260,7 +260,7 @@ func (f *fetcher) downloadViaGithub(tb *types.Toolbox, tool *types.Tool, ghr *ty
 	tool.CouldNotBeFound = true
 	if matching != nil {
 		tool.CouldNotBeFound = false
-		if err := f.fetchTool(tmp, tool.Name, tool.Name, matching.BrowserDownloadURL, tb.Target, tool.Check); err != nil {
+		if err := f.fetchTool(tool, tool.Name, matching.BrowserDownloadURL, tmp, tb.Target); err != nil {
 			return err
 		}
 	}
@@ -268,7 +268,7 @@ func (f *fetcher) downloadViaGithub(tb *types.Toolbox, tool *types.Tool, ghr *ty
 		matching := findMatching(nil, add, ghr.Assets)
 		if matching != nil {
 			tool.CouldNotBeFound = false
-			if err := f.fetchTool(tmp, add, add, matching.BrowserDownloadURL, tb.Target, tool.Check); err != nil {
+			if err := f.fetchTool(tool, add, matching.BrowserDownloadURL, tmp, tb.Target); err != nil {
 				return err
 			}
 		}
@@ -301,7 +301,7 @@ func (f *fetcher) downloadFromURL(client *resty.Client, tb *types.Toolbox, ver m
 		log.Printf("✅ Skipping since already latest version\n")
 		return nil
 	}
-	return f.fetchTool(tmp, tool.Name, tool.Name, parseTemplate(tool.DownloadURL, tool.Version), tb.Target, tool.Check)
+	return f.fetchTool(tool, tool.Name, parseTemplate(tool.DownloadURL, tool.Version), tmp, tb.Target)
 }
 
 func findMatching(tb *types.Toolbox, toolName string, assets []types.Asset) *types.Asset {
@@ -381,8 +381,8 @@ func templateData(version string) map[string]string {
 	}
 }
 
-func (f *fetcher) fetchTool(tmp string, remoteToolName string, trueToolName string, url string, targetDir string, check string) error {
-	dir := fmt.Sprintf("%s/%s", tmp, remoteToolName)
+func (f *fetcher) fetchTool(tool *types.Tool, toolName string, url string, tmpDir string, targetDir string) error {
+	dir := fmt.Sprintf("%s/%s", tmpDir, toolName)
 	paths := strings.Split(url, "/")
 	fileName := paths[len(paths)-1]
 	path := fmt.Sprintf("%s/%s", dir, fileName)
@@ -395,10 +395,10 @@ func (f *fetcher) fetchTool(tmp string, remoteToolName string, trueToolName stri
 		return err
 	}
 	if !extracted {
-		remoteToolName = fileName
+		toolName = fileName
 	}
 
-	return f.moveToTarget(targetDir, trueToolName, dir, remoteToolName, check)
+	return f.moveToTarget(tool, toolName, targetDir, dir, toolName)
 }
 
 func (f *fetcher) validate(targetPath string, check string) error {
@@ -427,7 +427,7 @@ func (f *fetcher) validate(targetPath string, check string) error {
 	return nil
 }
 
-func (f *fetcher) moveToTarget(targetDir string, trueToolName string, dir string, remoteToolName string, check string) error {
+func (f *fetcher) moveToTarget(tool *types.Tool, trueToolName string, targetDir string, dir string, remoteToolName string) error {
 	targetFilePath, err := filepath.Abs(filepath.Join(targetDir, trueToolName))
 	if err != nil {
 		return err
@@ -440,7 +440,7 @@ func (f *fetcher) moveToTarget(targetDir string, trueToolName string, dir string
 		}
 		log.Printf("🔀 Rename current executable to %s", renameTo)
 	}
-	ok, err := f.copyTool(dir, remoteToolName, targetDir, trueToolName, check)
+	ok, err := f.copyTool(tool, dir, remoteToolName, targetDir, trueToolName)
 	if err != nil {
 		return err
 	}
@@ -450,7 +450,7 @@ func (f *fetcher) moveToTarget(targetDir string, trueToolName string, dir string
 	return nil
 }
 
-func (f *fetcher) copyTool(dir string, fileName string, targetDir string, targetName string, check string) (bool, error) {
+func (f *fetcher) copyTool(tool *types.Tool, dir string, fileName string, targetDir string, targetName string) (bool, error) {
 	files, err := os.ReadDir(dir)
 	if err != nil {
 		return false, err
@@ -468,11 +468,11 @@ func (f *fetcher) copyTool(dir string, fileName string, targetDir string, target
 			if err := copyFile(sourcePath, targetPath); err != nil {
 				return false, err
 			}
-			if err := f.validate(targetPath, check); err != nil {
+			if err := f.validate(targetPath, tool.Check); err != nil {
 				return true, err
 			}
 
-			if f.upx {
+			if f.upx && !tool.SkipUpx {
 				f.upxCompress(targetPath)
 			}
 
@@ -480,7 +480,7 @@ func (f *fetcher) copyTool(dir string, fileName string, targetDir string, target
 		}
 	}
 	for _, d := range dirs {
-		ok, err := f.copyTool(filepath.Join(dir, d.Name()), fileName, targetDir, targetName, check)
+		ok, err := f.copyTool(tool, filepath.Join(dir, d.Name()), fileName, targetDir, targetName)
 		if ok || err != nil {
 			return ok, err
 		}

@@ -63,6 +63,7 @@ type Tool struct {
 	Version         string   `yaml:"version,omitempty"`
 	Additional      []string `yaml:"additional,omitempty"`
 	Check           string   `yaml:"check,omitempty"`
+	SkipUpx         bool     `yaml:"skipUpx,omitempty"`
 	CouldNotBeFound bool     `yaml:"-"`
 	Invalid         bool     `yaml:"-"`
 }
