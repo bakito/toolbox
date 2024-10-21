@@ -27,12 +27,13 @@ func LatestRelease(client *resty.Client, repo string, quiet bool) (*types.Github
 		SetError(ghErr).
 		SetHeader("Accept", "application/json")
 	handleGithubToken(ghc, quiet)
-	resp, err := ghc.Get(latestReleaseURL(repo))
+	url := latestReleaseURL(repo)
+	resp, err := ghc.Get(url)
 	if err != nil {
 		return nil, http.CheckError(err)
 	}
 	if resp.IsError() {
-		return nil, fmt.Errorf("github request was not successful: %s", ghErr.Message)
+		return nil, fmt.Errorf("github request was not successful: %s (%d) %s", url, resp.StatusCode(), ghErr.Message)
 	}
 
 	if ghr.TagName == "" {
@@ -76,12 +77,13 @@ func Release(client *resty.Client, repo string, version string, quiet bool) (*ty
 
 	handleGithubToken(ghc, quiet)
 
+	url := releaseURL(repo, version)
 	resp, err := ghc.Get(releaseURL(repo, version))
 	if err != nil {
 		return nil, http.CheckError(err)
 	}
 	if resp.IsError() {
-		return nil, fmt.Errorf("github request was not successful: %s", ghErr.Message)
+		return nil, fmt.Errorf("github request was not successful: %s (%d) %s", url, resp.StatusCode(), ghErr.Message)
 	}
 
 	if ghr.TagName == "" {

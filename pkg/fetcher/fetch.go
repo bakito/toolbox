@@ -118,6 +118,7 @@ func (f *fetcher) Fetch(cfgFile string, selectedTools ...string) error {
 	defer func() { _ = os.RemoveAll(tmp) }()
 
 	tools := tb.GetTools()
+	println()
 	for _, tool := range tools {
 		if contains(selectedTools, tool.Name) {
 			if err := f.handleTool(client, ver, tmp, tb, tool); err != nil {

@@ -38,6 +38,7 @@ tools:
     github: hashicorp/terraform
     downloadURL: https://releases.hashicorp.com/terraform/{{ .VersionNum }}/terraform_{{ .VersionNum }}_{{ .OS }}_{{ .Arch }}.zip
     check: --version
+    version: v1.8.5
   toolbox:
     github: bakito/toolbox
     check: --version
