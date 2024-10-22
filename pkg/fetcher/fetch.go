@@ -418,10 +418,10 @@ func (f *fetcher) validate(targetPath string, check string) error {
 		// #nosec G204:
 		cmd := exec.Command(targetPath, strings.Fields(check)...)
 		if _, err := cmd.Output(); err != nil {
-			log.Printf("🚫 Check failed: %v", err)
+			log.Printf("🚫 Check failed ('%s %s'): %v", targetPath, check, err)
 			return ValidationError("check failed %v", err)
 		} else {
-			log.Printf("👍 Check successful")
+			log.Printf("👍 Check successful ('%s %s')", targetPath, check)
 		}
 	}
 	return nil
@@ -472,8 +472,12 @@ func (f *fetcher) copyTool(tool *types.Tool, dir string, fileName string, target
 				return true, err
 			}
 
-			if f.upx && !tool.SkipUpx {
-				f.upxCompress(targetPath)
+			if f.upx {
+				if tool.SkipUpx {
+					f.upxCompress(targetPath)
+				} else {
+					log.Printf("⏭️️ Skipping upx compression")
+				}
 			}
 
 			return true, nil
