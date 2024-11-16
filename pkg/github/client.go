@@ -3,6 +3,7 @@ package github
 import (
 	"fmt"
 	"log"
+	http2 "net/http"
 	"os"
 	"strings"
 
@@ -32,16 +33,21 @@ func LatestRelease(client *resty.Client, repo string, quiet bool) (*types.Github
 	if err != nil {
 		return nil, http.CheckError(err)
 	}
-	if resp.IsError() {
+	if resp.IsError() && resp.StatusCode() != http2.StatusNotFound {
 		return nil, fmt.Errorf("github request was not successful: %s (%d) %s", url, resp.StatusCode(), ghErr.Message)
 	}
 
 	if ghr.TagName == "" {
 		ght := &types.GithubTags{}
-		ghc.SetResult(ght)
-		_, err := ghc.Get(latestTagURL(repo))
+		ghc.SetResult(ght).
+			SetError(ghErr).
+			SetHeader("Accept", "application/json")
+		resp, err := ghc.Get(latestTagURL(repo))
 		if err != nil {
 			return nil, http.CheckError(err)
+		}
+		if resp.IsError() {
+			return nil, fmt.Errorf("github request was not successful: %s (%d) %s", url, resp.StatusCode(), ghErr.Message)
 		}
 
 		if latest := ght.GetLatest(); latest != nil {
