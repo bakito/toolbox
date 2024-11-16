@@ -394,11 +394,12 @@ func (f *fetcher) fetchTool(tool *types.Tool, toolName string, url string, tmpDi
 	if err != nil {
 		return err
 	}
+	downloadedName := toolName
 	if !extracted {
-		toolName = fileName
+		downloadedName = fileName
 	}
 
-	return f.moveToTarget(tool, toolName, targetDir, dir, toolName)
+	return f.moveToTarget(tool, toolName, targetDir, dir, downloadedName)
 }
 
 func (f *fetcher) validate(targetPath string, check string) error {
@@ -427,7 +428,7 @@ func (f *fetcher) validate(targetPath string, check string) error {
 	return nil
 }
 
-func (f *fetcher) moveToTarget(tool *types.Tool, trueToolName string, targetDir string, dir string, remoteToolName string) error {
+func (f *fetcher) moveToTarget(tool *types.Tool, trueToolName string, targetDir string, dir string, downloadedName string) error {
 	targetFilePath, err := filepath.Abs(filepath.Join(targetDir, trueToolName))
 	if err != nil {
 		return err
@@ -440,12 +441,12 @@ func (f *fetcher) moveToTarget(tool *types.Tool, trueToolName string, targetDir 
 		}
 		log.Printf("🔀 Rename current executable to %s", renameTo)
 	}
-	ok, err := f.copyTool(tool, dir, remoteToolName, targetDir, trueToolName)
+	ok, err := f.copyTool(tool, dir, downloadedName, targetDir, trueToolName)
 	if err != nil {
 		return err
 	}
 	if !ok {
-		return fmt.Errorf("could not find: %s", remoteToolName)
+		return fmt.Errorf("could not find: %s", downloadedName)
 	}
 	return nil
 }
