@@ -5,7 +5,7 @@ go 1.22.4
 require (
 	github.com/cavaliergopher/grab/v3 v3.0.1
 	github.com/go-resty/resty/v2 v2.16.2
-	github.com/onsi/ginkgo/v2 v2.21.0
+	github.com/onsi/ginkgo/v2 v2.22.0
 	github.com/onsi/gomega v1.35.1
 	github.com/spf13/cobra v1.8.1
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8
