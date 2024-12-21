@@ -3,6 +3,7 @@ package makefile
 import (
 	"bytes"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -181,11 +182,5 @@ func unique(slice []string) []string {
 		uniqMap[v] = struct{}{}
 	}
 
-	// turn the map keys into a slice
-	uniqSlice := make([]string, 0, len(uniqMap))
-	for v := range uniqMap {
-		uniqSlice = append(uniqSlice, v)
-	}
-	slices.Sort(uniqSlice)
-	return uniqSlice
+	return slices.Sorted(maps.Keys(uniqMap))
 }
