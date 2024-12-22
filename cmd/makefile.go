@@ -33,6 +33,8 @@ func init() {
 	rootCmd.AddCommand(makefileCmd)
 
 	makefileCmd.Flags().StringP(flagFile, "f", "Makefile", "The Makefile path to generate tools in")
-	makefileCmd.Flags().StringVar(&toolsGo, flagToolsGo, "tools.go", "The tools.go file to check for tools dependencies")
-	makefileCmd.Flags().BoolVar(&renovate, "renovate", false, "If enables, renovate config is added to the Makefile (renovate.json file, if existing)")
+	makefileCmd.Flags().
+		StringVar(&toolsGo, flagToolsGo, "tools.go", "The tools.go file to check for tools dependencies")
+	makefileCmd.Flags().
+		BoolVar(&renovate, "renovate", false, "If enables, renovate config is added to the Makefile (renovate.json file, if existing)")
 }

@@ -12,6 +12,7 @@ $(TB_LOCALBIN):
 TB_DEEPCOPY_GEN ?= $(TB_LOCALBIN)/deepcopy-gen
 TB_GINKGO ?= $(TB_LOCALBIN)/ginkgo
 TB_GOLANGCI_LINT ?= $(TB_LOCALBIN)/golangci-lint
+TB_GOLINES ?= $(TB_LOCALBIN)/golines
 TB_GORELEASER ?= $(TB_LOCALBIN)/goreleaser
 TB_OAPI_CODEGEN ?= $(TB_LOCALBIN)/oapi-codegen
 TB_SEMVER ?= $(TB_LOCALBIN)/semver
@@ -21,6 +22,8 @@ TB_SEMVER ?= $(TB_LOCALBIN)/semver
 TB_DEEPCOPY_GEN_VERSION ?= v0.32.0
 # renovate: packageName=github.com/golangci/golangci-lint/cmd/golangci-lint
 TB_GOLANGCI_LINT_VERSION ?= v1.62.2
+# renovate: packageName=github.com/segmentio/golines
+TB_GOLINES_VERSION ?= v0.12.2
 # renovate: packageName=github.com/goreleaser/goreleaser/v2
 TB_GORELEASER_VERSION ?= v2.5.0
 # renovate: packageName=github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen
@@ -41,6 +44,10 @@ $(TB_GINKGO): $(TB_LOCALBIN)
 tb.golangci-lint: $(TB_GOLANGCI_LINT) ## Download golangci-lint locally if necessary.
 $(TB_GOLANGCI_LINT): $(TB_LOCALBIN)
 	test -s $(TB_LOCALBIN)/golangci-lint || GOBIN=$(TB_LOCALBIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(TB_GOLANGCI_LINT_VERSION)
+.PHONY: tb.golines
+tb.golines: $(TB_GOLINES) ## Download golines locally if necessary.
+$(TB_GOLINES): $(TB_LOCALBIN)
+	test -s $(TB_LOCALBIN)/golines || GOBIN=$(TB_LOCALBIN) go install github.com/segmentio/golines@$(TB_GOLINES_VERSION)
 .PHONY: tb.goreleaser
 tb.goreleaser: $(TB_GORELEASER) ## Download goreleaser locally if necessary.
 $(TB_GORELEASER): $(TB_LOCALBIN)
@@ -61,6 +68,7 @@ tb.reset:
 		$(TB_LOCALBIN)/deepcopy-gen \
 		$(TB_LOCALBIN)/ginkgo \
 		$(TB_LOCALBIN)/golangci-lint \
+		$(TB_LOCALBIN)/golines \
 		$(TB_LOCALBIN)/goreleaser \
 		$(TB_LOCALBIN)/oapi-codegen \
 		$(TB_LOCALBIN)/semver
@@ -71,6 +79,7 @@ tb.update: tb.reset
 	toolbox makefile --renovate -f $(TB_LOCALDIR)/Makefile \
 		k8s.io/code-generator/cmd/deepcopy-gen@github.com/kubernetes/code-generator \
 		github.com/golangci/golangci-lint/cmd/golangci-lint \
+		github.com/segmentio/golines \
 		github.com/goreleaser/goreleaser/v2 \
 		github.com/deepmap/oapi-codegen/v2/cmd/oapi-codegen \
 		github.com/bakito/semver

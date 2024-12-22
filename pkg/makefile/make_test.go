@@ -97,19 +97,25 @@ var _ = Describe("Make", func() {
 	})
 	Context("updateRenovateConfInternal", func() {
 		It("should add a customManagers section", func() {
-			withRenovate, cfg, err := updateRenovateConfInternal(filepath.Join(testDataDir, "renovate.no-managers.json"))
+			withRenovate, cfg, err := updateRenovateConfInternal(
+				filepath.Join(testDataDir, "renovate.no-managers.json"),
+			)
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(withRenovate).Should(BeTrue())
 			Ω(string(cfg)).Should(Equal(readFile(testDataDir, "renovate.no-managers.expected.json")))
 		})
 		It("should add the toolbox customManager", func() {
-			withRenovate, cfg, err := updateRenovateConfInternal(filepath.Join(testDataDir, "renovate.other-managers.json"))
+			withRenovate, cfg, err := updateRenovateConfInternal(
+				filepath.Join(testDataDir, "renovate.other-managers.json"),
+			)
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(withRenovate).Should(BeTrue())
 			Ω(string(cfg)).Should(Equal(readFile(testDataDir, "renovate.other-managers.expected.json")))
 		})
 		It("should update the toolbox customManager", func() {
-			withRenovate, cfg, err := updateRenovateConfInternal(filepath.Join(testDataDir, "renovate.incorrect-managers.json"))
+			withRenovate, cfg, err := updateRenovateConfInternal(
+				filepath.Join(testDataDir, "renovate.incorrect-managers.json"),
+			)
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(withRenovate).Should(BeTrue())
 			Ω(string(cfg)).Should(Equal(readFile(testDataDir, "renovate.incorrect-managers.expected.json")))

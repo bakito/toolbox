@@ -199,7 +199,13 @@ func SaveYamlFile(path string, obj interface{}) error {
 	return os.WriteFile(path, b.Bytes(), 0o600)
 }
 
-func (f *fetcher) handleTool(client *resty.Client, ver map[string]string, tmp string, tb *types.Toolbox, tool *types.Tool) error {
+func (f *fetcher) handleTool(
+	client *resty.Client,
+	ver map[string]string,
+	tmp string,
+	tb *types.Toolbox,
+	tool *types.Tool,
+) error {
 	log.Printf("⚙️ Processing %s\n", tool.Name)
 	defer func() { println() }()
 	var ghr *types.GithubRelease
@@ -279,7 +285,13 @@ func (f *fetcher) downloadViaGithub(tb *types.Toolbox, tool *types.Tool, ghr *ty
 	return nil
 }
 
-func (f *fetcher) downloadFromURL(client *resty.Client, tb *types.Toolbox, ver map[string]string, tmp string, tool *types.Tool) error {
+func (f *fetcher) downloadFromURL(
+	client *resty.Client,
+	tb *types.Toolbox,
+	ver map[string]string,
+	tmp string,
+	tool *types.Tool,
+) error {
 	currentVersion := ver[tool.Name]
 	if strings.HasPrefix(tool.Version, "http") {
 		resp, err := client.R().
@@ -428,7 +440,13 @@ func (f *fetcher) validate(targetPath string, check string) error {
 	return nil
 }
 
-func (f *fetcher) moveToTarget(tool *types.Tool, trueToolName string, targetDir string, dir string, downloadedName string) error {
+func (f *fetcher) moveToTarget(
+	tool *types.Tool,
+	trueToolName string,
+	targetDir string,
+	dir string,
+	downloadedName string,
+) error {
 	targetFilePath, err := filepath.Abs(filepath.Join(targetDir, trueToolName))
 	if err != nil {
 		return err
@@ -451,7 +469,13 @@ func (f *fetcher) moveToTarget(tool *types.Tool, trueToolName string, targetDir 
 	return nil
 }
 
-func (f *fetcher) copyTool(tool *types.Tool, dir string, fileName string, targetDir string, targetName string) (bool, error) {
+func (f *fetcher) copyTool(
+	tool *types.Tool,
+	dir string,
+	fileName string,
+	targetDir string,
+	targetName string,
+) (bool, error) {
 	files, err := os.ReadDir(dir)
 	if err != nil {
 		return false, err

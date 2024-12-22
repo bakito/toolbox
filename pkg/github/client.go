@@ -47,7 +47,12 @@ func LatestRelease(client *resty.Client, repo string, quiet bool) (*types.Github
 			return nil, http.CheckError(err)
 		}
 		if resp.IsError() {
-			return nil, fmt.Errorf("github request was not successful: %s (%d) %s", url, resp.StatusCode(), ghErr.Message)
+			return nil, fmt.Errorf(
+				"github request was not successful: %s (%d) %s",
+				url,
+				resp.StatusCode(),
+				ghErr.Message,
+			)
 		}
 
 		if latest := ght.GetLatest(); latest != nil {
