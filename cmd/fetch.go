@@ -27,6 +27,6 @@ func init() {
 
 func addConfigFlag(cmd *cobra.Command) {
 	cmd.Flags().StringP(flagConfig, "c", "",
-		"The config file to be used. (default 1. '.toolbox.yaml' current dir, " +
-		"2. '~/.config/toolbox.yaml', 3. '~/.toolbox.yaml')")
+		"The config file to be used. (default 1. '.toolbox.yaml' current dir, "+
+			"2. '~/.config/toolbox.yaml', 3. '~/.toolbox.yaml')")
 }
