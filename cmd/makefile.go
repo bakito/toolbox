@@ -36,5 +36,6 @@ func init() {
 	makefileCmd.Flags().
 		StringVar(&toolsGo, flagToolsGo, "tools.go", "The tools.go file to check for tools dependencies")
 	makefileCmd.Flags().
-		BoolVar(&renovate, "renovate", false, "If enables, renovate config is added to the Makefile (renovate.json file, if existing)")
+		BoolVar(&renovate, "renovate", false, "If enables, renovate config is added to the Makefile " + 
+			"(renovate.json file, if existing)")
 }
