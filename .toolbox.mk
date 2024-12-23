@@ -11,6 +11,7 @@ $(TB_LOCALBIN):
 ## Tool Binaries
 TB_DEEPCOPY_GEN ?= $(TB_LOCALBIN)/deepcopy-gen
 TB_GINKGO ?= $(TB_LOCALBIN)/ginkgo
+TB_GOFUMPT ?= $(TB_LOCALBIN)/gofumpt
 TB_GOLANGCI_LINT ?= $(TB_LOCALBIN)/golangci-lint
 TB_GOLINES ?= $(TB_LOCALBIN)/golines
 TB_GORELEASER ?= $(TB_LOCALBIN)/goreleaser
@@ -20,6 +21,8 @@ TB_SEMVER ?= $(TB_LOCALBIN)/semver
 ## Tool Versions
 # renovate: packageName=k8s.io/code-generator/cmd/deepcopy-gen
 TB_DEEPCOPY_GEN_VERSION ?= v0.32.0
+# renovate: packageName=mvdan.cc/gofumpt
+TB_GOFUMPT_VERSION ?= v0.7.0
 # renovate: packageName=github.com/golangci/golangci-lint/cmd/golangci-lint
 TB_GOLANGCI_LINT_VERSION ?= v1.62.2
 # renovate: packageName=github.com/segmentio/golines
@@ -40,6 +43,10 @@ $(TB_DEEPCOPY_GEN): $(TB_LOCALBIN)
 tb.ginkgo: $(TB_GINKGO) ## Download ginkgo locally if necessary.
 $(TB_GINKGO): $(TB_LOCALBIN)
 	test -s $(TB_LOCALBIN)/ginkgo || GOBIN=$(TB_LOCALBIN) go install github.com/onsi/ginkgo/v2/ginkgo
+.PHONY: tb.gofumpt
+tb.gofumpt: $(TB_GOFUMPT) ## Download gofumpt locally if necessary.
+$(TB_GOFUMPT): $(TB_LOCALBIN)
+	test -s $(TB_LOCALBIN)/gofumpt || GOBIN=$(TB_LOCALBIN) go install mvdan.cc/gofumpt@$(TB_GOFUMPT_VERSION)
 .PHONY: tb.golangci-lint
 tb.golangci-lint: $(TB_GOLANGCI_LINT) ## Download golangci-lint locally if necessary.
 $(TB_GOLANGCI_LINT): $(TB_LOCALBIN)
@@ -67,6 +74,7 @@ tb.reset:
 	@rm -f \
 		$(TB_LOCALBIN)/deepcopy-gen \
 		$(TB_LOCALBIN)/ginkgo \
+		$(TB_LOCALBIN)/gofumpt \
 		$(TB_LOCALBIN)/golangci-lint \
 		$(TB_LOCALBIN)/golines \
 		$(TB_LOCALBIN)/goreleaser \
@@ -78,6 +86,7 @@ tb.reset:
 tb.update: tb.reset
 	toolbox makefile --renovate -f $(TB_LOCALDIR)/Makefile \
 		k8s.io/code-generator/cmd/deepcopy-gen@github.com/kubernetes/code-generator \
+		mvdan.cc/gofumpt@github.com/mvdan/gofumpt \
 		github.com/golangci/golangci-lint/cmd/golangci-lint \
 		github.com/segmentio/golines \
 		github.com/goreleaser/goreleaser/v2 \

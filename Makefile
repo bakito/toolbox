@@ -21,6 +21,5 @@ release: tb.goreleaser tb.semver
 test-release: tb.goreleaser
 	$(TB_GORELEASER) --skip=publish --snapshot --clean
 
-fmt: tb.golines
-	$(TB_GOLINES) . --max-len=120 --write-output
-
+fmt: tb.golines tb.gofumpt
+	$(TB_GOLINES) --base-formatter="$(TB_GOFUMPT)" --max-len=120 --write-output .
