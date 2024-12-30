@@ -6,7 +6,7 @@ require (
 	github.com/cavaliergopher/grab/v3 v3.0.1
 	github.com/go-resty/resty/v2 v2.16.2
 	github.com/onsi/ginkgo/v2 v2.22.1
-	github.com/onsi/gomega v1.36.1
+	github.com/onsi/gomega v1.36.2
 	github.com/spf13/cobra v1.8.1
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8
 	golang.org/x/mod v0.22.0
@@ -25,7 +25,7 @@ require (
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
-	golang.org/x/net v0.32.0 // indirect
+	golang.org/x/net v0.33.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
 	golang.org/x/tools v0.28.0 // indirect
