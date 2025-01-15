@@ -499,9 +499,9 @@ func (f *fetcher) copyTool(
 
 			if f.upx {
 				if tool.SkipUpx {
-					f.upxCompress(targetPath)
-				} else {
 					log.Printf("⏭️️ Skipping upx compression")
+				} else {
+					f.upxCompress(targetPath)
 				}
 			}
 
