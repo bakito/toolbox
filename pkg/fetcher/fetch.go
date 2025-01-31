@@ -423,7 +423,6 @@ func (f *fetcher) fetchTool(tool *types.Tool, toolName string, url string, tmpDi
 	}
 
 	return nil
-
 }
 
 func (f *fetcher) validate(targetPath string, check string) error {
