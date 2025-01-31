@@ -410,8 +410,20 @@ func (f *fetcher) fetchTool(tool *types.Tool, toolName string, url string, tmpDi
 	if !extracted {
 		downloadedName = fileName
 	}
+	if err = f.moveToTarget(tool, toolName, targetDir, dir, downloadedName, false); err != nil {
+		return err
+	}
 
-	return f.moveToTarget(tool, toolName, targetDir, dir, downloadedName)
+	for _, add := range tool.Additional {
+		if toolName != add {
+			if err = f.moveToTarget(tool, add, targetDir, dir, add, true); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+
 }
 
 func (f *fetcher) validate(targetPath string, check string) error {
@@ -446,6 +458,7 @@ func (f *fetcher) moveToTarget(
 	targetDir string,
 	dir string,
 	downloadedName string,
+	isAdditional bool,
 ) error {
 	targetFilePath, err := filepath.Abs(filepath.Join(targetDir, trueToolName))
 	if err != nil {
@@ -463,7 +476,7 @@ func (f *fetcher) moveToTarget(
 	if err != nil {
 		return err
 	}
-	if !ok {
+	if !ok && !isAdditional {
 		return fmt.Errorf("could not find: %s", downloadedName)
 	}
 	return nil
@@ -484,28 +497,29 @@ func (f *fetcher) copyTool(
 	for _, file := range files {
 		if file.IsDir() {
 			dirs = append(dirs, file)
-		}
-		if fileMatches(file, fileName) {
+		} else {
+			if fileMatches(file, fileName) {
 
-			sourcePath := filepath.Join(dir, file.Name())
-			targetPath := filepath.Join(targetDir, binaryName(targetName))
+				sourcePath := filepath.Join(dir, file.Name())
+				targetPath := filepath.Join(targetDir, binaryName(targetName))
 
-			if err := copyFile(sourcePath, targetPath); err != nil {
-				return false, err
-			}
-			if err := f.validate(targetPath, tool.Check); err != nil {
-				return true, err
-			}
-
-			if f.upx {
-				if tool.SkipUpx {
-					log.Printf("⏭️️ Skipping upx compression")
-				} else {
-					f.upxCompress(targetPath)
+				if err := copyFile(sourcePath, targetPath); err != nil {
+					return false, err
 				}
-			}
+				if err := f.validate(targetPath, tool.Check); err != nil {
+					return true, err
+				}
 
-			return true, nil
+				if f.upx {
+					if tool.SkipUpx {
+						log.Printf("⏭️️ Skipping upx compression")
+					} else {
+						f.upxCompress(targetPath)
+					}
+				}
+
+				return true, nil
+			}
 		}
 	}
 	for _, d := range dirs {

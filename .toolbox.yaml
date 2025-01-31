@@ -1,4 +1,8 @@
 tools:
+  age:
+    additional:
+      - age-keygen
+    github: FiloSottile/age
   gh:
     github: cli/cli
     check: version
