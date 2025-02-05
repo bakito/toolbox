@@ -9,7 +9,7 @@ require (
 	github.com/onsi/gomega v1.36.2
 	github.com/spf13/cobra v1.8.1
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8
-	golang.org/x/mod v0.22.0
+	golang.org/x/mod v0.23.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
