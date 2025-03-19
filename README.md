@@ -3,7 +3,7 @@
 
 # toolbox
 
-🧰 a small toolbox helping to fetch tools
+🧰 A little toolbox to help fetching tools
 
 ## Fetch tools
 
