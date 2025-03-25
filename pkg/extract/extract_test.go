@@ -1,13 +1,13 @@
 package extract_test
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
-	"github.com/bakito/toolbox/pkg/extract"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
+	"github.com/bakito/toolbox/pkg/extract"
 )
 
 var _ = Describe("Extract", func() {
@@ -29,7 +29,7 @@ var _ = Describe("Extract", func() {
 	Context("File", func() {
 		DescribeTable("Extracting the testfile",
 			func(file string) {
-				ok, err := extract.File(fmt.Sprintf("../../testdata/%s", file), tempDir)
+				ok, err := extract.File("../../testdata/"+file, tempDir)
 				Ω(ok).Should(BeTrue())
 				Ω(err).ShouldNot(HaveOccurred())
 				files, err := findFiles(tempDir)

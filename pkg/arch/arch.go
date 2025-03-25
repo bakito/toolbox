@@ -1,3 +1,4 @@
+// Package arch provides architecture specific functions
 package arch
 
 import (

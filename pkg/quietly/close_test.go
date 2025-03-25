@@ -3,9 +3,10 @@ package quietly_test
 import (
 	"errors"
 
-	"github.com/bakito/toolbox/pkg/quietly"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
+	"github.com/bakito/toolbox/pkg/quietly"
 )
 
 var _ = Describe("Close", func() {

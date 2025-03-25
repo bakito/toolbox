@@ -10,7 +10,7 @@ import (
 
 type GithubError struct {
 	Message          string `json:"message"`
-	DocumentationUrl string `json:"documentation_url"`
+	DocumentationURL string `json:"documentation_url"`
 }
 
 type GithubRelease struct {
@@ -21,11 +21,11 @@ type GithubRelease struct {
 }
 
 type Asset struct {
-	URL      string      `json:"url"`
-	ID       int         `json:"id"`
-	NodeID   string      `json:"node_id"`
-	Name     string      `json:"name"`
-	Label    interface{} `json:"label"`
+	URL      string `json:"url"`
+	ID       int    `json:"id"`
+	NodeID   string `json:"node_id"`
+	Name     string `json:"name"`
+	Label    any    `json:"label"`
 	Uploader struct {
 		Login             string `json:"login"`
 		ID                int    `json:"id"`

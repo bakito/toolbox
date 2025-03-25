@@ -4,12 +4,13 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/bakito/toolbox/pkg/github"
-	"github.com/bakito/toolbox/pkg/types"
 	"github.com/go-resty/resty/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/format"
+
+	"github.com/bakito/toolbox/pkg/github"
+	"github.com/bakito/toolbox/pkg/types"
 )
 
 const testDataDir = "../../testdata"
@@ -38,7 +39,7 @@ var _ = Describe("Make", func() {
 		format.TruncatedDiff = true
 	})
 	Context("Generate", func() {
-		It("should generate a correct output", func() {
+		It("should generateForTools a correct output", func() {
 			err := Generate(resty.New(), makeFilePath, false, "",
 				"sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools",
 				"github.com/bakito/semver",
@@ -61,7 +62,7 @@ var _ = Describe("Make", func() {
 			Ω(readFile(makeFilePath)).Should(Equal(readFile(testDataDir, "Makefile.content.expected")))
 			Ω(readFile(includeFilePath) + "\n").Should(Equal(readFile(testDataDir, ".toolbox.mk.content.expected")))
 		})
-		It("should generate a correct output wit hybrid tools", func() {
+		It("should generateForTools a correct output wit hybrid tools", func() {
 			err := Generate(resty.New(), makeFilePath, false,
 				filepath.Join(testDataDir, "tools.go.tst"),
 				"sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools",
@@ -71,7 +72,7 @@ var _ = Describe("Make", func() {
 			Ω(readFile(makeFilePath)).Should(Equal(readFile(testDataDir, "Makefile.content.expected")))
 			Ω(readFile(includeFilePath) + "\n").Should(Equal(readFile(testDataDir, ".toolbox.mk.hybrid.expected")))
 		})
-		It("should generate a correct output with renovate enabled", func() {
+		It("should generateForTools a correct output with renovate enabled", func() {
 			err := Generate(resty.New(), makeFilePath, true, "",
 				"sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools",
 				"github.com/bakito/semver",
@@ -82,14 +83,14 @@ var _ = Describe("Make", func() {
 			Ω(readFile(includeFilePath) + "\n").Should(Equal(readFile(testDataDir, ".toolbox.mk.renovate.expected")))
 		})
 	})
-	Context("generate", func() {
-		It("should generate a correct output", func() {
+	Context("generateForTools", func() {
+		It("should generateForTools a correct output", func() {
 			td := []toolData{
 				dataForTool(true, "sigs.k8s.io/controller-tools/cmd/controller-gen"),
 				dataForTool(true, "github.com/bakito/semver"),
 				dataForTool(true, "github.com/bakito/toolbox"),
 			}
-			err := generate(resty.New(), makeFilePath, false, nil, td)
+			err := generateForTools(resty.New(), makeFilePath, false, nil, td)
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(readFile(makeFilePath)).Should(Equal(readFile(testDataDir, "Makefile.content.expected")))
 			Ω(readFile(includeFilePath) + "\n").Should(Equal(readFile(testDataDir, ".toolbox.mk.tools.go.expected")))

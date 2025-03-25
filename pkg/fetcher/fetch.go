@@ -1,3 +1,4 @@
+// Package fetcher implements artifact fetch functions
 package fetcher
 
 import (
@@ -15,6 +16,11 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/cavaliergopher/grab/v3"
+	"github.com/go-resty/resty/v2"
+	"golang.org/x/mod/semver"
+	"gopkg.in/yaml.v3"
+
 	"github.com/bakito/toolbox/pkg/arch"
 	"github.com/bakito/toolbox/pkg/extract"
 	"github.com/bakito/toolbox/pkg/github"
@@ -22,10 +28,6 @@ import (
 	"github.com/bakito/toolbox/pkg/quietly"
 	"github.com/bakito/toolbox/pkg/types"
 	"github.com/bakito/toolbox/version"
-	"github.com/cavaliergopher/grab/v3"
-	"github.com/go-resty/resty/v2"
-	"golang.org/x/mod/semver"
-	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -54,7 +56,7 @@ func New() Fetcher {
 }
 
 type Fetcher interface {
-	Fetch(string, ...string) error
+	Fetch(cfgFile string, selectedTools ...string) error
 }
 type fetcher struct {
 	executablePath string
@@ -150,16 +152,15 @@ func sanitizeTargetDir(tb *types.Toolbox) {
 
 func (f *fetcher) assureTargetDirAvailable(tb *types.Toolbox) error {
 	if _, err := os.Stat(tb.Target); err != nil {
-		if os.IsNotExist(err) {
-			if tb.CreateTarget == nil || *tb.CreateTarget {
-				log.Printf("Creating target dir %q\n", tb.Target)
-				_ = os.MkdirAll(tb.Target, 0o700)
-			} else {
-				return fmt.Errorf("target dir %q does not exist and may not be created", tb.Target)
-			}
-		} else {
+		if !os.IsNotExist(err) {
 			return err
 		}
+		if tb.CreateTarget != nil && !*tb.CreateTarget {
+			return fmt.Errorf("target dir %q does not exist and may not be created", tb.Target)
+		}
+
+		log.Printf("Creating target dir %q\n", tb.Target)
+		_ = os.MkdirAll(tb.Target, 0o700)
 	}
 	return nil
 }
@@ -188,7 +189,7 @@ func (f *fetcher) checkUpxAvailable() {
 	}
 }
 
-func SaveYamlFile(path string, obj interface{}) error {
+func SaveYamlFile(path string, obj any) error {
 	var b bytes.Buffer
 	env := yaml.NewEncoder(&b)
 	env.SetIndent(2)
@@ -207,7 +208,7 @@ func (f *fetcher) handleTool(
 	tool *types.Tool,
 ) error {
 	log.Printf("⚙️ Processing %s\n", tool.Name)
-	defer func() { println() }()
+	defer println()
 	var ghr *types.GithubRelease
 	var err error
 	configVersion := tool.Version
@@ -254,7 +255,7 @@ func (f *fetcher) handleTool(
 	return nil
 }
 
-func isNewer(toolVersion string, currentVersion string) bool {
+func isNewer(toolVersion, currentVersion string) bool {
 	if !semver.IsValid(toolVersion) || !semver.IsValid(currentVersion) {
 		return false
 	}
@@ -298,7 +299,7 @@ func (f *fetcher) downloadFromURL(
 			EnableTrace().
 			Get(tool.Version)
 		if err != nil {
-			return nil
+			return err
 		}
 		tool.Version = string(resp.Body())
 
@@ -369,7 +370,7 @@ func hasForbiddenSuffix(tb *types.Toolbox, a types.Asset) bool {
 	return false
 }
 
-func parseTemplate(templ string, version string) string {
+func parseTemplate(templ, version string) string {
 	ut, err := template.New("url").Parse(templ)
 	if err != nil {
 		panic(err)
@@ -388,12 +389,12 @@ func templateData(version string) map[string]string {
 		"VersionNum": strings.TrimPrefix(version, "v"),
 		"OS":         runtime.GOOS,
 		"Arch":       runtime.GOARCH,
-		"ArchBIT":    fmt.Sprintf("%d", strconv.IntSize),
+		"ArchBIT":    strconv.Itoa(strconv.IntSize),
 		"FileExt":    defaultFileExtension(),
 	}
 }
 
-func (f *fetcher) fetchTool(tool *types.Tool, toolName string, url string, tmpDir string, targetDir string) error {
+func (f *fetcher) fetchTool(tool *types.Tool, toolName, url, tmpDir, targetDir string) error {
 	dir := fmt.Sprintf("%s/%s", tmpDir, toolName)
 	paths := strings.Split(url, "/")
 	fileName := paths[len(paths)-1]
@@ -410,13 +411,13 @@ func (f *fetcher) fetchTool(tool *types.Tool, toolName string, url string, tmpDi
 	if !extracted {
 		downloadedName = fileName
 	}
-	if err = f.moveToTarget(tool, toolName, targetDir, dir, downloadedName, false); err != nil {
+	if err := f.moveToTarget(tool, toolName, targetDir, dir, downloadedName, false); err != nil {
 		return err
 	}
 
 	for _, add := range tool.Additional {
 		if toolName != add {
-			if err = f.moveToTarget(tool, add, targetDir, dir, add, true); err != nil {
+			if err := f.moveToTarget(tool, add, targetDir, dir, add, true); err != nil {
 				return err
 			}
 		}
@@ -425,28 +426,26 @@ func (f *fetcher) fetchTool(tool *types.Tool, toolName string, url string, tmpDi
 	return nil
 }
 
-func (f *fetcher) validate(targetPath string, check string) error {
+func (f *fetcher) validate(targetPath, check string) error {
 	match, err := arch.DoesBinaryMatchCurrentOSArch(targetPath)
 	if err != nil {
 		log.Printf("🏛🚫 Arch check failed: %v", err)
 		return ValidationError("arch check failed %v", err)
 	}
-	if match {
-		log.Printf("🏛 Arch matches")
-	} else {
+	if !match {
 		log.Printf("🏛🚫 Arch doesn't match system")
 		return ValidationError("arch doesn't match system")
 	}
+	log.Printf("🏛 Arch matches")
 
-	if len(check) > 0 {
+	if check != "" {
 		// #nosec G204:
 		cmd := exec.Command(targetPath, strings.Fields(check)...)
 		if _, err := cmd.Output(); err != nil {
 			log.Printf("🚫 Check failed ('%s %s'): %v", targetPath, check, err)
 			return ValidationError("check failed %v", err)
-		} else {
-			log.Printf("👍 Check successful ('%s %s')", targetPath, check)
 		}
+		log.Printf("👍 Check successful ('%s %s')", targetPath, check)
 	}
 	return nil
 }
@@ -496,29 +495,26 @@ func (f *fetcher) copyTool(
 	for _, file := range files {
 		if file.IsDir() {
 			dirs = append(dirs, file)
-		} else {
-			if fileMatches(file, fileName) {
+		} else if fileMatches(file, fileName) {
+			sourcePath := filepath.Join(dir, file.Name())
+			targetPath := filepath.Join(targetDir, binaryName(targetName))
 
-				sourcePath := filepath.Join(dir, file.Name())
-				targetPath := filepath.Join(targetDir, binaryName(targetName))
-
-				if err := copyFile(sourcePath, targetPath); err != nil {
-					return false, err
-				}
-				if err := f.validate(targetPath, tool.Check); err != nil {
-					return true, err
-				}
-
-				if f.upx {
-					if tool.SkipUpx {
-						log.Printf("⏭️️ Skipping upx compression")
-					} else {
-						f.upxCompress(targetPath)
-					}
-				}
-
-				return true, nil
+			if err := copyFile(sourcePath, targetPath); err != nil {
+				return false, err
 			}
+			if err := f.validate(targetPath, tool.Check); err != nil {
+				return true, err
+			}
+
+			if f.upx {
+				if tool.SkipUpx {
+					log.Printf("⏭️️ Skipping upx compression")
+				} else {
+					f.upxCompress(targetPath)
+				}
+			}
+
+			return true, nil
 		}
 	}
 	for _, d := range dirs {
@@ -555,7 +551,7 @@ func fileMatches(file os.DirEntry, fileName string) bool {
 		file.Name() == binaryName(fmt.Sprintf("%s-%s_%s", fileName, runtime.GOOS, runtime.GOARCH))
 }
 
-func copyFile(sourcePath string, targetPath string) error {
+func copyFile(sourcePath, targetPath string) error {
 	from, err := os.Open(sourcePath)
 	if err != nil {
 		return err
@@ -636,7 +632,7 @@ func readVersions(target string) (map[string]string, error) {
 	return ver, nil
 }
 
-func matches(info string, name string) bool {
+func matches(info, name string) bool {
 	ln := strings.ToLower(name)
 	if strings.Contains(ln, strings.ToLower(info)) {
 		return true
@@ -659,13 +655,13 @@ func matches(info string, name string) bool {
 	return false
 }
 
-func downloadFile(path string, url string) (err error) {
+func downloadFile(path, url string) (err error) {
 	req, err := grab.NewRequest(path, url)
 	if err != nil {
 		return err
 	}
 	client := grab.NewClient()
-	req.HTTPRequest.Header.Set("User-Agent", fmt.Sprintf("toolbox/%s", version.Version))
+	req.HTTPRequest.Header.Set("User-Agent", "toolbox/"+version.Version)
 
 	resp := client.Do(req)
 	if resp.Err() != nil {

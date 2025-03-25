@@ -9,14 +9,14 @@ import (
 	"github.com/bakito/toolbox/pkg/types/renovate"
 )
 
-const renovateJson = "renovate.json"
+const renovateJSON = "renovate.json"
 
 func updateRenovateConf() error {
-	withRenovate, cfg, err := updateRenovateConfInternal(renovateJson)
+	withRenovate, cfg, err := updateRenovateConfInternal(renovateJSON)
 	if err != nil || !withRenovate {
 		return err
 	}
-	return os.WriteFile(renovateJson, cfg, 0o600)
+	return os.WriteFile(renovateJSON, cfg, 0o600)
 }
 
 func updateRenovateConfInternal(renovateCfgFile string) (bool, []byte, error) {
@@ -53,7 +53,7 @@ func updateRenovateConfInternal(renovateCfgFile string) (bool, []byte, error) {
 		cms = []renovate.CustomManager{renovate.Config()}
 	}
 
-	var merged []map[string]interface{}
+	var merged []map[string]any
 	if err := covert(&cms, &merged); err != nil {
 		return false, nil, err
 	}
@@ -63,30 +63,27 @@ func updateRenovateConfInternal(renovateCfgFile string) (bool, []byte, error) {
 	return true, pp, err
 }
 
-func covert(from interface{}, to interface{}) error {
+func covert(from, to any) error {
 	b, err := json.Marshal(from)
 	if err != nil {
 		return err
 	}
-	if err := json.Unmarshal(b, to); err != nil {
-		return err
-	}
-	return nil
+	return json.Unmarshal(b, to)
 }
 
-func readRenovateConfig(renovateCfgFile string) (map[string]interface{}, error) {
+func readRenovateConfig(renovateCfgFile string) (map[string]any, error) {
 	b, err := os.ReadFile(renovateCfgFile)
 	if err != nil {
 		return nil, err
 	}
-	renovateConfig := make(map[string]interface{})
+	renovateConfig := make(map[string]any)
 	if err := json.Unmarshal(b, &renovateConfig); err != nil {
 		return nil, err
 	}
 	return renovateConfig, nil
 }
 
-func prettyPrint(renovateConfig map[string]interface{}) ([]byte, error) {
+func prettyPrint(renovateConfig map[string]any) ([]byte, error) {
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	enc.SetIndent("", "  ")

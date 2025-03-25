@@ -1,13 +1,15 @@
+// Package cmd implements cobra commands
 package cmd
 
 import (
 	"os"
 
-	"github.com/bakito/toolbox/version"
 	"github.com/spf13/cobra"
+
+	"github.com/bakito/toolbox/version"
 )
 
-// rootCmd represents the base command when called without any subcommands
+// rootCmd represents the base command when called without any subcommands.
 var rootCmd = &cobra.Command{
 	Use:     "toolbox",
 	Short:   "🧰 a small toolbox helping to fetch tools",

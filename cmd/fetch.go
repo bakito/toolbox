@@ -1,13 +1,14 @@
 package cmd
 
 import (
-	"github.com/bakito/toolbox/pkg/fetcher"
 	"github.com/spf13/cobra"
+
+	"github.com/bakito/toolbox/pkg/fetcher"
 )
 
 const flagConfig = "config"
 
-// fetchCmd represents the fetch command
+// fetchCmd represents the fetch command.
 var fetchCmd = &cobra.Command{
 	Use:   "fetch",
 	Short: "Fetch all tools",

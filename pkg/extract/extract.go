@@ -1,3 +1,4 @@
+// Package extract provides file extraction functions
 package extract
 
 import (
@@ -12,8 +13,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/bakito/toolbox/pkg/quietly"
 	"github.com/xi2/xz"
+
+	"github.com/bakito/toolbox/pkg/quietly"
 )
 
 func File(file, target string) (bool, error) {
@@ -32,7 +34,7 @@ func File(file, target string) (bool, error) {
 	return false, nil
 }
 
-func unzip(file string, target string) error {
+func unzip(file, target string) error {
 	read, err := zip.OpenReader(file)
 	if err != nil {
 		return err
@@ -72,7 +74,7 @@ func unzipFile(file *zip.File, target string) error {
 	return err
 }
 
-// sanitize archive file pathing from "G305: Zip Slip vulnerability"
+// sanitize archive file pathing from "G305: Zip Slip vulnerability".
 func sanitizeArchivePath(d, t string) (v string, err error) {
 	v = filepath.Join(d, t)
 	if strings.HasPrefix(v, filepath.Clean(d)) {
@@ -91,7 +93,7 @@ func tarGz(file, target string) error {
 
 	uncompressedStream, err := gzip.NewReader(tarFile)
 	if err != nil {
-		log.Fatal("ExtractTarGz: NewReader failed")
+		return fmt.Errorf("ExtractTarGz: NewReader failed: %w", err)
 	}
 
 	tarReader := tar.NewReader(uncompressedStream)
@@ -163,7 +165,6 @@ func tarXz(file, target string) error {
 		if err := tarXzFile(tr, hdr, target); err != nil {
 			return err
 		}
-
 	}
 	return nil
 }
@@ -195,7 +196,6 @@ func tarXzFile(tr *tar.Reader, hdr *tar.Header, target string) error {
 				return err
 			}
 		}
-
 	}
 	return nil
 }

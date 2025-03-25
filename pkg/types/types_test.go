@@ -1,9 +1,10 @@
 package types_test
 
 import (
-	"github.com/bakito/toolbox/pkg/types"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
+	"github.com/bakito/toolbox/pkg/types"
 )
 
 var _ = Describe("Types", func() {

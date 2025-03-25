@@ -1,3 +1,4 @@
+// Package types defines common types
 package types
 
 import (

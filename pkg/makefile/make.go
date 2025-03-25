@@ -1,3 +1,4 @@
+// Package makefile
 package makefile
 
 import (
@@ -12,8 +13,9 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/bakito/toolbox/pkg/github"
 	"github.com/go-resty/resty/v2"
+
+	"github.com/bakito/toolbox/pkg/github"
 )
 
 var (
@@ -23,10 +25,10 @@ var (
 
 func Generate(client *resty.Client, makefile string, renovate bool, toolsFile string, tools ...string) error {
 	argTools, toolData := mergeWithToolsGo(toolsFile, unique(tools))
-	return generate(client, makefile, renovate, argTools, toolData)
+	return generateForTools(client, makefile, renovate, argTools, toolData)
 }
 
-func generate(client *resty.Client, makefile string, renovate bool, argTools []string, toolData []toolData) error {
+func generateForTools(client *resty.Client, makefile string, renovate bool, argTools []string, toolData []toolData) error {
 	for _, t := range argTools {
 		td, err := dataForArg(client, t)
 		if err != nil {
@@ -48,7 +50,7 @@ func generate(client *resty.Client, makefile string, renovate bool, argTools []s
 
 	out := &bytes.Buffer{}
 	t := template.Must(template.New("toolbox.mk").Parse(makefileTemplate))
-	if err := t.Execute(out, map[string]interface{}{
+	if err := t.Execute(out, map[string]any{
 		"Tools":        toolData,
 		"WithVersions": withVersions,
 		"Renovate":     renovate,
@@ -80,7 +82,7 @@ func generate(client *resty.Client, makefile string, renovate bool, argTools []s
 	}
 
 	var file string
-	if !strings.Contains(string(data), fmt.Sprintf("include ./%s", includeFileName)) {
+	if !strings.Contains(string(data), "include ./"+includeFileName) {
 		file = fmt.Sprintf("# Include toolbox tasks\ninclude ./%s\n\n", includeFileName)
 	}
 
@@ -120,9 +122,9 @@ func dataForArg(client *resty.Client, tool string) (toolData, error) {
 	return td, nil
 }
 
-func dataForTool(fromToolsGo bool, toolName string, fullTool ...string) (td toolData) {
+func dataForTool(fromToolsGo bool, toolName string, fullTool ...string) toolData {
 	parts := strings.Split(toolName, "/")
-
+	var td toolData
 	td.ToolName = toolName
 	if len(fullTool) == 1 {
 		td.Tool = fullTool[0]
@@ -136,7 +138,7 @@ func dataForTool(fromToolsGo bool, toolName string, fullTool ...string) (td tool
 	}
 	td.UpperName = strings.ReplaceAll(strings.ToUpper(td.Name), "-", "_")
 	td.FromToolsGo = fromToolsGo
-	return
+	return td
 }
 
 type toolData struct {

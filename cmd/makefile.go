@@ -1,9 +1,10 @@
 package cmd
 
 import (
-	"github.com/bakito/toolbox/pkg/makefile"
 	"github.com/go-resty/resty/v2"
 	"github.com/spf13/cobra"
+
+	"github.com/bakito/toolbox/pkg/makefile"
 )
 
 const (
@@ -14,7 +15,7 @@ const (
 var (
 	toolsGo  string
 	renovate bool
-	// makefileCmd represents the makefile command
+	// makefileCmd represents the makefile command.
 	makefileCmd = &cobra.Command{
 		Use:   "makefile [tools]",
 		Short: "Adds tools to a Makefile",

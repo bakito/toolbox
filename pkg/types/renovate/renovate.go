@@ -1,3 +1,4 @@
+// Package renovate defines renovate types
 package renovate
 
 const (

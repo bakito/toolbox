@@ -4,9 +4,10 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/spf13/cobra"
+
 	"github.com/bakito/toolbox/pkg/fetcher"
 	"github.com/bakito/toolbox/pkg/types"
-	"github.com/spf13/cobra"
 )
 
 const (
@@ -17,7 +18,7 @@ const (
 	flagVersion     = "version"
 )
 
-// fetchCmd represents the fetch command
+// fetchCmd represents the fetch command.
 var addCmd = &cobra.Command{
 	Use:   "add <tool-name>",
 	Short: "Add a tool to the config",

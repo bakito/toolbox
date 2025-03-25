@@ -1,3 +1,4 @@
+// Package github API functions
 package github
 
 import (
@@ -7,9 +8,10 @@ import (
 	"os"
 	"strings"
 
+	"github.com/go-resty/resty/v2"
+
 	"github.com/bakito/toolbox/pkg/http"
 	"github.com/bakito/toolbox/pkg/types"
-	"github.com/go-resty/resty/v2"
 )
 
 const EnvGithubToken = "GITHUB_TOKEN" // #nosec G101: variable name for token
@@ -77,7 +79,7 @@ func handleGithubToken(ghc *resty.Request, quiet bool) {
 	}
 }
 
-func Release(client *resty.Client, repo string, version string, quiet bool) (*types.GithubRelease, error) {
+func Release(client *resty.Client, repo, version string, quiet bool) (*types.GithubRelease, error) {
 	ghr := &types.GithubRelease{}
 	ghErr := &types.GithubError{}
 
@@ -120,7 +122,7 @@ func latestReleaseURL(repo string) string {
 	return ""
 }
 
-func releaseURL(repo string, version string) string {
+func releaseURL(repo, version string) string {
 	if repo != "" {
 		return fmt.Sprintf(releaseURLPattern, repo, version)
 	}
