@@ -10,7 +10,7 @@
 ### Linux
 
 ```bash
-curl -sSL https://github.com/bakito/toolbox/install.sh | sh
+curl -sSL https://raw.githubusercontent.com/bakito/toolbox/refs/heads/main/install.sh | sh
 ```
 
 ## Fetch tools
