@@ -5,6 +5,14 @@
 
 🧰 A little toolbox to help fetching tools
 
+## Installation
+
+### Linux
+
+```bash
+curl -sSL https://github.com/bakito/toolbox/install.sh | sh
+```
+
 ## Fetch tools
 
 ```text
