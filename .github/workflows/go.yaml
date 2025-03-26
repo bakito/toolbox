@@ -22,6 +22,14 @@ jobs:
           go-version-file: "go.mod"
       - name: Lint
         run: make lint
+  installer:
+    name: installer
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install
+        run: curl -sSL https://raw.githubusercontent.com/bakito/toolbox/${GITHUB_SHA}/install.sh | sh
+      - name: Run binary
+        run: $HOME/bin/toolbox --version
   test:
     name: test
     runs-on: ubuntu-latest
