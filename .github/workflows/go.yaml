@@ -26,7 +26,9 @@ jobs:
     name: installer
     runs-on: ubuntu-latest
     steps:
-      - run: echo curl -sSL https://raw.githubusercontent.com/bakito/toolbox/refs/heads/${GITHUB_REF#refs/heads/}/install.sh
+      - name: Get branch name from GITHUB_REF
+        run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+      - run: echo $BRANCH_NAME
       - name: Install
         run: curl -sSL https://raw.githubusercontent.com/bakito/toolbox/refs/heads/${GITHUB_REF#refs/heads/}/install.sh | sh
   test:
