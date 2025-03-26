@@ -13,7 +13,8 @@ mkdir -p "$INSTALL_DIR"
 LATEST_TAG=$(curl -s "https://api.github.com/repos/$REPO/releases/latest" | grep '"tag_name"' | cut -d '"' -f 4)
 
 # Construct download URL
-ARCHIVE_NAME="${BIN_NAME}_linux_amd64.tar.gz"
+
+ARCHIVE_NAME="${BIN_NAME}_${LATEST_TAG#v}_linux_amd64.tar.gz"
 DOWNLOAD_URL="https://github.com/$REPO/releases/download/$LATEST_TAG/$ARCHIVE_NAME"
 
 # Temporary directory for extraction
