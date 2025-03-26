@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install
-        run: curl -sSL https://raw.githubusercontent.com/bakito/toolbox/refs/heads/main/install.sh | sh
+        run: curl -sSL https://raw.githubusercontent.com/bakito/toolbox/refs/heads/${GITHUB_REF#refs/heads/}/install.sh | sh
   test:
     name: test
     runs-on: ubuntu-latest
