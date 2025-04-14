@@ -370,23 +370,23 @@ func hasForbiddenSuffix(tb *types.Toolbox, a types.Asset) bool {
 	return false
 }
 
-func parseTemplate(templ, version string) string {
+func parseTemplate(templ, v string) string {
 	ut, err := template.New("url").Parse(templ)
 	if err != nil {
 		panic(err)
 	}
 
 	var b bytes.Buffer
-	if err := ut.Execute(&b, templateData(version)); err != nil {
+	if err := ut.Execute(&b, templateData(v)); err != nil {
 		panic(err)
 	}
 	return b.String()
 }
 
-func templateData(version string) map[string]string {
+func templateData(v string) map[string]string {
 	return map[string]string{
-		"Version":    version,
-		"VersionNum": strings.TrimPrefix(version, "v"),
+		"Version":    v,
+		"VersionNum": strings.TrimPrefix(v, "v"),
 		"OS":         runtime.GOOS,
 		"Arch":       runtime.GOARCH,
 		"ArchBIT":    strconv.Itoa(strconv.IntSize),
@@ -665,7 +665,7 @@ func downloadFile(path, url string) (err error) {
 
 	resp := client.Do(req)
 	if resp.Err() != nil {
-		return http.CheckError(err)
+		return http.CheckError(resp.Err())
 	}
 
 	log.Printf("Download saved to %s", resp.Filename)
