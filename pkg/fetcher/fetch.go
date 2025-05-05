@@ -495,7 +495,7 @@ func (f *fetcher) copyTool(
 	for _, file := range files {
 		if file.IsDir() {
 			dirs = append(dirs, file)
-		} else if fileMatches(file, fileName) {
+		} else if ManagerFilePatternses(file, fileName) {
 			sourcePath := filepath.Join(dir, file.Name())
 			targetPath := filepath.Join(targetDir, binaryName(targetName))
 
@@ -544,7 +544,7 @@ func (f *fetcher) upxCompress(targetPath string) {
 	}
 }
 
-func fileMatches(file os.DirEntry, fileName string) bool {
+func ManagerFilePatternses(file os.DirEntry, fileName string) bool {
 	return file.Name() == binaryName(fileName) ||
 		file.Name() == fileName ||
 		file.Name() == binaryName(fmt.Sprintf("%s_%s_%s", fileName, runtime.GOOS, runtime.GOARCH)) ||
