@@ -5,7 +5,7 @@
       "customType": "regex",
       "datasourceTemplate": "docker",
       "description": "Update toolbox tools in Makefile",
-      "managerFilePatterns": [
+      "fileMatch": [
         "^Docker$"
       ],
       "matchStrings": [

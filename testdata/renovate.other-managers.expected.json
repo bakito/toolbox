@@ -5,7 +5,7 @@
       "customType": "regex",
       "datasourceTemplate": "go",
       "description": "this is an existing manager and should not be touched",
-      "managerFilePatterns": [
+      "fileMatch": [
         "^Dockerfile"
       ],
       "matchStrings": [
@@ -16,7 +16,7 @@
       "customType": "regex",
       "datasourceTemplate": "go",
       "description": "Update toolbox tools in .toolbox.mk",
-      "managerFilePatterns": [
+      "fileMatch": [
         "^\\.toolbox\\.mk$"
       ],
       "matchStrings": [
