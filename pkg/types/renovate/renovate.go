@@ -5,34 +5,34 @@ const (
 	CustomType            = "regex"
 	DescriptionDeprecated = "Update toolbox tools in Makefile"
 	Description           = "Update toolbox tools in .toolbox.mk"
-	FileMatch             = `^\.toolbox\.mk$`
+	ManagerFilePatterns   = `^\.toolbox\.mk$`
 	MatchString           = `# renovate: packageName=(?<packageName>.+?)\s+.+?_VERSION \?= (?<currentValue>.+?)\s`
 	DatasourceTemplate    = "go"
 )
 
 func Config() CustomManager {
 	return CustomManager{
-		CustomType:         CustomType,
-		Description:        Description,
-		FileMatch:          []string{FileMatch},
-		MatchStrings:       []string{MatchString},
-		DatasourceTemplate: DatasourceTemplate,
+		CustomType:          CustomType,
+		Description:         Description,
+		ManagerFilePatterns: []string{ManagerFilePatterns},
+		MatchStrings:        []string{MatchString},
+		DatasourceTemplate:  DatasourceTemplate,
 	}
 }
 
 type CustomManagers []CustomManager
 
 type CustomManager struct {
-	CustomType         string   `json:"customType"`
-	Description        string   `json:"description"`
-	FileMatch          []string `json:"fileMatch"`
-	MatchStrings       []string `json:"matchStrings"`
-	DatasourceTemplate string   `json:"datasourceTemplate"`
+	CustomType          string   `json:"customType"`
+	Description         string   `json:"description"`
+	ManagerFilePatterns []string `json:"managerFilePatterns"`
+	MatchStrings        []string `json:"matchStrings"`
+	DatasourceTemplate  string   `json:"datasourceTemplate"`
 }
 
 func (m *CustomManager) UpdateParams() {
 	m.Description = Description
-	m.FileMatch = []string{FileMatch}
+	m.ManagerFilePatterns = []string{ManagerFilePatterns}
 	m.MatchStrings = []string{MatchString}
 	m.DatasourceTemplate = DatasourceTemplate
 }
