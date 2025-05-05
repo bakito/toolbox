@@ -5,7 +5,7 @@
       "customType": "regex",
       "datasourceTemplate": "go",
       "description": "Update toolbox tools in .toolbox.mk",
-      "managerFilePatterns": [
+      "fileMatch": [
         "^\\.toolbox\\.mk$"
       ],
       "matchStrings": [
