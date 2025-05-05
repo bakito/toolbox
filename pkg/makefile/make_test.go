@@ -113,6 +113,14 @@ var _ = Describe("Make", func() {
 			Ω(withRenovate).Should(BeTrue())
 			Ω(string(cfg)).Should(Equal(readFile(testDataDir, "renovate.other-managers.expected.json")))
 		})
+		It("should add the toolbox customManager with fileMatch", func() {
+			withRenovate, cfg, err := updateRenovateConfInternal(
+				filepath.Join(testDataDir, "renovate.other-managers-fileMatch.json"),
+			)
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(withRenovate).Should(BeTrue())
+			Ω(string(cfg)).Should(Equal(readFile(testDataDir, "renovate.other-managers.expected.json")))
+		})
 		It("should update the toolbox customManager", func() {
 			withRenovate, cfg, err := updateRenovateConfInternal(
 				filepath.Join(testDataDir, "renovate.incorrect-managers.json"),

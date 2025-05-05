@@ -25,16 +25,21 @@ type CustomManagers []CustomManager
 type CustomManager struct {
 	CustomType          string   `json:"customType"`
 	Description         string   `json:"description"`
-	ManagerFilePatterns []string `json:"managerFilePatterns"`
+	ManagerFilePatterns []string `json:"managerFilePatterns,omitempty"`
+	FileMatch           []string `json:"fileMatch,omitempty"`
 	MatchStrings        []string `json:"matchStrings"`
 	DatasourceTemplate  string   `json:"datasourceTemplate"`
 }
 
 func (m *CustomManager) UpdateParams() {
 	m.Description = Description
+	if len(m.FileMatch) > 0 {
+		m.FileMatch = nil
+	}
 	m.ManagerFilePatterns = []string{ManagerFilePatterns}
 	m.MatchStrings = []string{MatchString}
 	m.DatasourceTemplate = DatasourceTemplate
+
 }
 
 func (m *CustomManager) IsToolbox() bool {
