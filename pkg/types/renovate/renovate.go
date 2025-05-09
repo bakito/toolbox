@@ -39,7 +39,6 @@ func (m *CustomManager) UpdateParams() {
 	m.ManagerFilePatterns = []string{ManagerFilePatterns}
 	m.MatchStrings = []string{MatchString}
 	m.DatasourceTemplate = DatasourceTemplate
-
 }
 
 func (m *CustomManager) IsToolbox() bool {

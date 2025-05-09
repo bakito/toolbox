@@ -42,12 +42,10 @@ func updateRenovateConfInternal(renovateCfgFile string) (bool, []byte, error) {
 				found = true
 				manager.UpdateParams()
 				cms[i] = manager
-			} else {
-				if len(manager.FileMatch) > 0 && len(manager.ManagerFilePatterns) == 0 {
-					manager.ManagerFilePatterns = manager.FileMatch
-					manager.FileMatch = nil
-					cms[i] = manager
-				}
+			} else if len(manager.FileMatch) > 0 && len(manager.ManagerFilePatterns) == 0 {
+				manager.ManagerFilePatterns = manager.FileMatch
+				manager.FileMatch = nil
+				cms[i] = manager
 			}
 		}
 		if !found {
