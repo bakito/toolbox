@@ -5,7 +5,7 @@ TB_LOCALDIR ?= $(shell which cygpath > /dev/null 2>&1 && cygpath -m $$(pwd) || p
 ## Location to install dependencies to
 TB_LOCALBIN ?= $(TB_LOCALDIR)/bin
 $(TB_LOCALBIN):
-	mkdir -p $(TB_LOCALBIN)
+	if [ ! -e $(TB_LOCALBIN) ]; then mkdir -p $(TB_LOCALBIN); fi
 
 ## Tool Binaries
 {{- range .Tools }}
