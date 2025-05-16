@@ -23,12 +23,12 @@ func Config() CustomManager {
 type CustomManagers []CustomManager
 
 type CustomManager struct {
-	CustomType          string   `json:"customType"`
-	Description         string   `json:"description"`
+	CustomType          string   `json:"customType,omitempty"`
+	Description         string   `json:"description,omitempty"`
 	ManagerFilePatterns []string `json:"managerFilePatterns,omitempty"`
 	FileMatch           []string `json:"fileMatch,omitempty"`
-	MatchStrings        []string `json:"matchStrings"`
-	DatasourceTemplate  string   `json:"datasourceTemplate"`
+	MatchStrings        []string `json:"matchStrings,omitempty"`
+	DatasourceTemplate  string   `json:"datasourceTemplate,omitempty"`
 }
 
 func (m *CustomManager) UpdateParams() {
