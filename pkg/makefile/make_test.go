@@ -42,6 +42,7 @@ var _ = Describe("Make", func() {
 		It("should generateForTools a correct output", func() {
 			err := Generate(resty.New(), makeFilePath, false, "",
 				"sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools",
+				"github.com/golangci/golangci-lint/v2/cmd/golangci-lint",
 				"github.com/bakito/semver",
 				"github.com/bakito/toolbox",
 			)
@@ -54,6 +55,7 @@ var _ = Describe("Make", func() {
 			makeFilePath = copyFile("Makefile.content.migrate", tempDir)
 			err := Generate(resty.New(), makeFilePath, false, "",
 				"sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools",
+				"github.com/golangci/golangci-lint/v2/cmd/golangci-lint",
 				"github.com/bakito/semver",
 				"github.com/bakito/toolbox",
 			)
@@ -75,6 +77,7 @@ var _ = Describe("Make", func() {
 		It("should generateForTools a correct output with renovate enabled", func() {
 			err := Generate(resty.New(), makeFilePath, true, "",
 				"sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools",
+				"github.com/golangci/golangci-lint/v2/cmd/golangci-lint",
 				"github.com/bakito/semver",
 				"github.com/bakito/toolbox",
 			)

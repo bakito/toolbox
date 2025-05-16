@@ -113,6 +113,7 @@ func dataForArg(client *resty.Client, tool string) (toolData, error) {
 	if len(match) != 2 {
 		return td, fmt.Errorf("invalid tool %q", tool)
 	}
+
 	ghr, err := getRelease(client, match[1], true)
 	if err != nil {
 		return td, err
@@ -138,13 +139,32 @@ func dataForTool(fromToolsGo bool, toolName string, fullTool ...string) toolData
 	}
 	td.UpperName = strings.ReplaceAll(strings.ToUpper(td.Name), "-", "_")
 	td.FromToolsGo = fromToolsGo
+	td.GoModule = extractModulePath(td.ToolName)
 	return td
+}
+
+func extractModulePath(importPath string) string {
+	// Remove quotes if present
+	importPath = strings.Trim(importPath, `"`)
+
+	re := regexp.MustCompile(`^(.*)(/v\d+)(/.*)?$`)
+
+	matches := re.FindStringSubmatch(importPath)
+	if matches == nil {
+		return importPath
+	}
+
+	base := matches[1]
+	version := matches[2]
+
+	return base + version
 }
 
 type toolData struct {
 	Name        string `json:"Name"`
 	UpperName   string `json:"UpperName"`
 	Version     string `json:"Version"`
+	GoModule    string `json:"GoModule"`
 	Tool        string `json:"Tool"`
 	ToolName    string `json:"ToolName"`
 	FromToolsGo bool   `json:"FromToolsGo"`
