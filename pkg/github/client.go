@@ -73,7 +73,7 @@ func TokenSet() bool {
 func handleGithubToken(ghc *resty.Request, quiet bool) {
 	if t, ok := os.LookupEnv(EnvGithubToken); ok && strings.TrimSpace(t) != "" {
 		if !quiet {
-			log.Printf("🔑 Using github token\n")
+			log.Print("🔑 Using github token\n")
 		}
 		ghc.SetAuthToken(t)
 	}
