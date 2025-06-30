@@ -84,7 +84,7 @@ func (f *fetcher) Fetch(cfgFile string, selectedTools ...string) error {
 
 	tb, _, err := ReadToolbox(cfgFile)
 	if tb.HasGithubTools() && !github.TokenSet() {
-		log.Printf("⚠️ when using github tools, defining a github token 'GITHUB_TOKEN' is recommended")
+		log.Print("⚠️ when using github tools, defining a github token 'GITHUB_TOKEN' is recommended")
 	}
 	if err != nil {
 		return err
@@ -184,7 +184,7 @@ func (f *fetcher) checkUpxAvailable() {
 	cmd := exec.Command("upx", "--version")
 	_, err := cmd.Output()
 	if err == nil {
-		log.Printf("🗜️ upx is available")
+		log.Print("🗜️ upx is available")
 		f.upx = true
 	}
 }
@@ -234,7 +234,7 @@ func (f *fetcher) handleTool(
 	}
 
 	if isNewer(currentVersion, tool.Version) {
-		log.Printf("✅ Skipping since newer version is installed\n")
+		log.Print("✅ Skipping since newer version is installed\n")
 		return nil
 	}
 
@@ -242,7 +242,7 @@ func (f *fetcher) handleTool(
 		if configVersion != "" {
 			log.Printf("✅ Skipping since already configured version %s\n", configVersion)
 		} else {
-			log.Printf("✅ Skipping since already latest version\n")
+			log.Print("✅ Skipping since already latest version\n")
 		}
 		return nil
 	}
@@ -281,7 +281,7 @@ func (f *fetcher) downloadViaGithub(tb *types.Toolbox, tool *types.Tool, ghr *ty
 		}
 	}
 	if tool.CouldNotBeFound {
-		log.Printf("❌ Couldn't find a file here!\n")
+		log.Print("❌ Couldn't find a file here!\n")
 	}
 	return nil
 }
@@ -311,7 +311,7 @@ func (f *fetcher) downloadFromURL(
 	}
 
 	if tool.Version == currentVersion {
-		log.Printf("✅ Skipping since already latest version\n")
+		log.Print("✅ Skipping since already latest version\n")
 		return nil
 	}
 	return f.fetchTool(tool, tool.Name, parseTemplate(tool.DownloadURL, tool.Version), tmp, tb.Target)
@@ -433,10 +433,10 @@ func (f *fetcher) validate(targetPath, check string) error {
 		return ValidationError("arch check failed %v", err)
 	}
 	if !match {
-		log.Printf("🏛🚫 Arch doesn't match system")
+		log.Print("🏛🚫 Arch doesn't match system")
 		return ValidationError("arch doesn't match system")
 	}
-	log.Printf("🏛 Arch matches")
+	log.Print("🏛 Arch matches")
 
 	if check != "" {
 		// #nosec G204:
@@ -508,7 +508,7 @@ func (f *fetcher) copyTool(
 
 			if f.upx {
 				if tool.SkipUpx {
-					log.Printf("⏭️️ Skipping upx compression")
+					log.Print("⏭️️ Skipping upx compression")
 				} else {
 					f.upxCompress(targetPath)
 				}
@@ -527,7 +527,7 @@ func (f *fetcher) copyTool(
 }
 
 func (f *fetcher) upxCompress(targetPath string) {
-	log.Printf("🗜️ Compressing with upx")
+	log.Print("🗜️ Compressing with upx")
 	cmd := exec.Command("upx", "-q", "-q", targetPath)
 	stdout, err := cmd.Output()
 	if err == nil {
@@ -537,7 +537,7 @@ func (f *fetcher) upxCompress(targetPath string) {
 	} else {
 		var ee *exec.ExitError
 		if errors.As(err, &ee) && ee.ExitCode() == 2 {
-			log.Printf("\tAlready Compressed")
+			log.Print("\tAlready Compressed")
 		} else {
 			log.Printf("\tCompression error: %v", err)
 		}
