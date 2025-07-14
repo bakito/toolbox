@@ -140,6 +140,10 @@ func dataForTool(fromToolsGo bool, toolName string, fullTool ...string) toolData
 	td.UpperName = strings.ReplaceAll(strings.ToUpper(td.Name), "-", "_")
 	td.FromToolsGo = fromToolsGo
 	td.GoModule = extractModulePath(td.ToolName)
+	td.RepoURL = td.GoModule
+	if strings.Contains(td.Tool, "@") {
+		td.RepoURL = strings.Split(td.Tool, "@")[1]
+	}
 	return td
 }
 
@@ -165,6 +169,7 @@ type toolData struct {
 	UpperName   string `json:"UpperName"`
 	Version     string `json:"Version"`
 	GoModule    string `json:"GoModule"`
+	RepoURL     string `json:"RepoURL"`
 	Tool        string `json:"Tool"`
 	ToolName    string `json:"ToolName"`
 	FromToolsGo bool   `json:"FromToolsGo"`
