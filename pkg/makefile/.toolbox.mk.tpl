@@ -17,7 +17,7 @@ TB_{{.UpperName}} ?= $(TB_LOCALBIN)/{{.Name}}
 {{- range .Tools }}
 {{- if .Version }}
 {{- if $.Renovate }}
-# renovate: packageName={{.GoModule}}
+# renovate: packageName={{.RepoURL}}
 {{- end }}
 TB_{{.UpperName}}_VERSION ?= {{.Version}}
 {{- end }}

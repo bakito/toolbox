@@ -15,7 +15,7 @@ TB_SEMVER ?= $(TB_LOCALBIN)/semver
 TB_TOOLBOX ?= $(TB_LOCALBIN)/toolbox
 
 ## Tool Versions
-# renovate: packageName=sigs.k8s.io/controller-tools/cmd/controller-gen
+# renovate: packageName=github.com/kubernetes-sigs/controller-tools
 TB_CONTROLLER_GEN_VERSION ?= v0.2.1
 # renovate: packageName=github.com/golangci/golangci-lint/v2
 TB_GOLANGCI_LINT_VERSION ?= v0.2.1

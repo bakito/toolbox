@@ -17,7 +17,7 @@ TB_OAPI_CODEGEN ?= $(TB_LOCALBIN)/oapi-codegen
 TB_SEMVER ?= $(TB_LOCALBIN)/semver
 
 ## Tool Versions
-# renovate: packageName=k8s.io/code-generator/cmd/deepcopy-gen
+# renovate: packageName=github.com/kubernetes/code-generator
 TB_DEEPCOPY_GEN_VERSION ?= v0.33.2
 # renovate: packageName=github.com/golangci/golangci-lint/v2
 TB_GOLANGCI_LINT_VERSION ?= v2.2.2
