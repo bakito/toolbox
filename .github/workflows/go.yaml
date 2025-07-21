@@ -26,6 +26,8 @@ jobs:
     name: installer
     runs-on: ubuntu-latest
     steps:
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v4
       - name: Install
         run: ./install.sh
       - name: Run binary
