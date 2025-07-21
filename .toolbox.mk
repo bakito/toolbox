@@ -24,7 +24,7 @@ TB_GOLANGCI_LINT_VERSION ?= v2.2.2
 # renovate: packageName=github.com/goreleaser/goreleaser/v2
 TB_GORELEASER_VERSION ?= v2.11.0
 # renovate: packageName=github.com/deepmap/oapi-codegen/v2
-TB_OAPI_CODEGEN_VERSION ?= v2.4.1
+TB_OAPI_CODEGEN_VERSION ?= v2.5.0
 # renovate: packageName=github.com/bakito/semver
 TB_SEMVER_VERSION ?= v1.1.3
 
