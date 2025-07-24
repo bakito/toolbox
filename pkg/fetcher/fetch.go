@@ -3,6 +3,7 @@ package fetcher
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -181,7 +182,7 @@ func (f *fetcher) deleteOldBinary(tb *types.Toolbox) error {
 }
 
 func (f *fetcher) checkUpxAvailable() {
-	cmd := exec.Command("upx", "--version")
+	cmd := exec.CommandContext(context.TODO(), "upx", "--version")
 	_, err := cmd.Output()
 	if err == nil {
 		log.Print("🗜️ upx is available")
@@ -440,7 +441,7 @@ func (f *fetcher) validate(targetPath, check string) error {
 
 	if check != "" {
 		// #nosec G204:
-		cmd := exec.Command(targetPath, strings.Fields(check)...)
+		cmd := exec.CommandContext(context.TODO(), targetPath, strings.Fields(check)...)
 		if _, err := cmd.Output(); err != nil {
 			log.Printf("🚫 Check failed ('%s %s'): %v", targetPath, check, err)
 			return ValidationError("check failed %v", err)
@@ -528,7 +529,7 @@ func (f *fetcher) copyTool(
 
 func (f *fetcher) upxCompress(targetPath string) {
 	log.Print("🗜️ Compressing with upx")
-	cmd := exec.Command("upx", "-q", "-q", targetPath)
+	cmd := exec.CommandContext(context.TODO(), "upx", "-q", "-q", targetPath)
 	stdout, err := cmd.Output()
 	if err == nil {
 		parts := strings.Fields(string(stdout))
