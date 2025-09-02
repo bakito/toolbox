@@ -4,13 +4,12 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/bakito/toolbox/pkg/github"
+	"github.com/bakito/toolbox/pkg/types"
 	"github.com/go-resty/resty/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/format"
-
-	"github.com/bakito/toolbox/pkg/github"
-	"github.com/bakito/toolbox/pkg/types"
 )
 
 const testDataDir = "../../testdata"
@@ -110,7 +109,9 @@ var _ = Describe("Make", func() {
 			err := generateForTools(resty.New(), makeFilePath, false, false, nil, td)
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(readFile(makeFilePath)).Should(Equal(readFile(testDataDir, "Makefile.content.expected")))
-			Ω(readFile(includeFilePath) + "\n").Should(Equal(readFile(testDataDir, ".toolbox.mk.tools.go.expected")))
+
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(readFile(includeFilePath) + "\n").Should(EqualDiff(readFile(testDataDir, ".toolbox.mk.tools.go.expected")))
 		})
 	})
 	Context("updateRenovateConfInternal", func() {
