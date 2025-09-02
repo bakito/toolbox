@@ -131,7 +131,6 @@ func dataForArg(client *resty.Client, tool string) (toolData, error) {
 		return td, err
 	}
 	td.Version = ghr.TagName
-	td.VersionNumeric = strings.ReplaceAll(td.Version, "v", "")
 
 	return td, nil
 }
@@ -186,16 +185,15 @@ func extractModulePath(importPath string) string {
 }
 
 type toolData struct {
-	Name           string `json:"Name"`
-	UpperName      string `json:"UpperName"`
-	Version        string `json:"Version"`
-	VersionNumeric string `json:"VersionNumeric"`
-	GoModule       string `json:"GoModule"`
-	RepoURL        string `json:"RepoURL"`
-	Tool           string `json:"Tool"`
-	ToolName       string `json:"ToolName"`
-	FromToolsGo    bool   `json:"FromToolsGo"`
-	VersionArg     string `json:"VersionArg"`
+	Name        string `json:"Name"`
+	UpperName   string `json:"UpperName"`
+	Version     string `json:"Version"`
+	GoModule    string `json:"GoModule"`
+	RepoURL     string `json:"RepoURL"`
+	Tool        string `json:"Tool"`
+	ToolName    string `json:"ToolName"`
+	FromToolsGo bool   `json:"FromToolsGo"`
+	VersionArg  string `json:"VersionArg"`
 }
 
 func mergeWithToolsGo(fileName string, inTools []string) ([]string, []toolData) {
