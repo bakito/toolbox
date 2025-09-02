@@ -25,6 +25,7 @@ TB_{{.UpperName}} ?= $(TB_LOCALBIN)/{{.Name}}
 # renovate: packageName={{.RepoURL}}
 {{- end }}
 TB_{{.UpperName}}_VERSION ?= {{.Version}}
+{{- if $.VersionParam }}TB_{{.UpperName}}_VERSION_NUM ?= {{.VersionNumeric}}{{ end }}
 {{- end }}
 {{- end }}
 {{- end }}
@@ -34,7 +35,7 @@ TB_{{.UpperName}}_VERSION ?= {{.Version}}
 .PHONY: tb.{{.Name}}
 tb.{{.Name}}: $(TB_{{.UpperName}}) ## Download {{.Name}} locally if necessary.
 $(TB_{{.UpperName}}): $(TB_LOCALBIN)
-	test -s $(TB_LOCALBIN)/{{.Name}} || GOBIN=$(TB_LOCALBIN) {{ if $.Toolchain }}GOTOOLCHAIN=go$(TB_GO_VERSION) {{ end }}go install {{.ToolName}}{{- if .Version }}@$(TB_{{.UpperName}}_VERSION){{- end }}
+	test -s $(TB_LOCALBIN)/{{.Name}} {{ if .VersionParam }}&& $(TB_{{.UpperName}}) {{ .VersionParam }} | grep -q $(TB_{{.UpperName}}_VERSION_NUM) {{ end }}|| GOBIN=$(TB_LOCALBIN) {{ if $.Toolchain }}GOTOOLCHAIN=go$(TB_GO_VERSION) {{ end }}go install {{.ToolName}}{{- if .Version }}@$(TB_{{.UpperName}}_VERSION){{- end }}
 {{- end }}
 
 ## Reset Tools

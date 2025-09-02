@@ -126,16 +126,24 @@ func dataForArg(client *resty.Client, tool string) (toolData, error) {
 		return td, err
 	}
 	td.Version = ghr.TagName
+	td.VersionNumeric = strings.ReplaceAll(td.Version, "v", "")
 
 	return td, nil
 }
 
 func dataForTool(fromToolsGo bool, toolName string, fullTool ...string) toolData {
-	parts := strings.Split(toolName, "/")
 	var td toolData
 	td.ToolName = toolName
+
+	if sp := strings.Split(td.ToolName, "?"); len(sp) > 1 {
+		td.ToolName = sp[0]
+		td.VersionParam = sp[1]
+	}
+
+	parts := strings.Split(td.ToolName, "/")
+
 	if len(fullTool) == 1 {
-		td.Tool = fullTool[0]
+		td.Tool = strings.Split(fullTool[0], "?")[0]
 	} else {
 		td.Tool = toolName
 	}
@@ -144,12 +152,13 @@ func dataForTool(fromToolsGo bool, toolName string, fullTool ...string) toolData
 	} else {
 		td.Name = parts[len(parts)-1]
 	}
+
 	td.UpperName = strings.ReplaceAll(strings.ToUpper(td.Name), "-", "_")
 	td.FromToolsGo = fromToolsGo
 	td.GoModule = extractModulePath(td.ToolName)
 	td.RepoURL = td.GoModule
-	if strings.Contains(td.Tool, "@") {
-		td.RepoURL = strings.Split(td.Tool, "@")[1]
+	if sp := strings.Split(td.Tool, "@"); len(sp) > 1 {
+		td.RepoURL = sp[1]
 	}
 	return td
 }
@@ -172,14 +181,16 @@ func extractModulePath(importPath string) string {
 }
 
 type toolData struct {
-	Name        string `json:"Name"`
-	UpperName   string `json:"UpperName"`
-	Version     string `json:"Version"`
-	GoModule    string `json:"GoModule"`
-	RepoURL     string `json:"RepoURL"`
-	Tool        string `json:"Tool"`
-	ToolName    string `json:"ToolName"`
-	FromToolsGo bool   `json:"FromToolsGo"`
+	Name           string `json:"Name"`
+	UpperName      string `json:"UpperName"`
+	Version        string `json:"Version"`
+	VersionNumeric string `json:"VersionNumeric"`
+	GoModule       string `json:"GoModule"`
+	RepoURL        string `json:"RepoURL"`
+	Tool           string `json:"Tool"`
+	ToolName       string `json:"ToolName"`
+	FromToolsGo    bool   `json:"FromToolsGo"`
+	VersionParam   string `json:"VersionParam"`
 }
 
 func mergeWithToolsGo(fileName string, inTools []string) ([]string, []toolData) {

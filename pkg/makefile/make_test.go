@@ -42,7 +42,7 @@ var _ = Describe("Make", func() {
 		It("should generateForTools a correct output", func() {
 			err := Generate(resty.New(), makeFilePath, false, false, "",
 				"sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools",
-				"github.com/golangci/golangci-lint/v2/cmd/golangci-lint",
+				"github.com/golangci/golangci-lint/v2/cmd/golangci-lint?--version",
 				"github.com/bakito/semver",
 				"github.com/bakito/toolbox",
 			)
