@@ -25,16 +25,20 @@ TB_GORELEASER_VERSION_NUM ?= 2.11.2
 TB_SEMVER_VERSION ?= v1.1.5
 
 ## Tool Installer
-tb.ginkgo: $(TB_LOCALBIN) ## Download ginkgo locally if necessary.
+.PHONY: tb.ginkgo
+tb.ginkgo: ## Download ginkgo locally if necessary.
 	test -s $(TB_GINKGO) || \
 	  GOBIN=$(TB_LOCALBIN) go install github.com/onsi/ginkgo/v2/ginkgo
-tb.golangci-lint: $(TB_LOCALBIN) ## Download golangci-lint locally if necessary.
-	test -s $(TB_GOLANGCI_LINT) && $(TB_GOLANGCI_LINT) --version | grep -q $(TB_GOLANGCI_LINT_VERSION_NUM) || \
-	  GOBIN=$(TB_LOCALBIN) go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(TB_GOLANGCI_LINT_VERSION)
-tb.goreleaser: $(TB_LOCALBIN) ## Download goreleaser locally if necessary.
+.PHONY: tb.golangci-lint
+tb.golangci-lint: ## Download golangci-lint locally if necessary.
+	@test -s $(TB_GOLANGCI_LINT) && $(TB_GOLANGCI_LINT) --version | grep -q $(TB_GOLANGCI_LINT_VERSION_NUM) || echo "*****"&&\
+		GOBIN=$(TB_LOCALBIN) go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(TB_GOLANGCI_LINT_VERSION)
+.PHONY: tb.goreleaser
+tb.goreleaser: ## Download goreleaser locally if necessary.
 	test -s $(TB_GORELEASER) && $(TB_GORELEASER) --version | grep -q $(TB_GORELEASER_VERSION_NUM) || \
 	  GOBIN=$(TB_LOCALBIN) go install github.com/goreleaser/goreleaser/v2@$(TB_GORELEASER_VERSION)
-tb.semver: $(TB_LOCALBIN) ## Download semver locally if necessary.
+.PHONY: tb.semver
+tb.semver: ## Download semver locally if necessary.
 	test -s $(TB_SEMVER) || \
 	  GOBIN=$(TB_LOCALBIN) go install github.com/bakito/semver@$(TB_SEMVER_VERSION)
 

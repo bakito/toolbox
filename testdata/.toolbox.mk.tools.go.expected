@@ -15,25 +15,25 @@ TB_TOOLBOX ?= $(TB_LOCALBIN)/toolbox
 
 ## Tool Installer
 .PHONY: tb.controller-gen
-tb.controller-gen: $(TB_CONTROLLER_GEN) ## Download controller-gen locally if necessary.
-$(TB_CONTROLLER_GEN): $(TB_LOCALBIN)
-	test -s $(TB_LOCALBIN)/controller-gen || GOBIN=$(TB_LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen
+tb.controller-gen: ## Download controller-gen locally if necessary.
+	@test -s $(TB_CONTROLLER_GEN) || \
+		GOBIN=$(TB_LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen
 .PHONY: tb.semver
-tb.semver: $(TB_SEMVER) ## Download semver locally if necessary.
-$(TB_SEMVER): $(TB_LOCALBIN)
-	test -s $(TB_LOCALBIN)/semver || GOBIN=$(TB_LOCALBIN) go install github.com/bakito/semver
+tb.semver: ## Download semver locally if necessary.
+	@test -s $(TB_SEMVER) || \
+		GOBIN=$(TB_LOCALBIN) go install github.com/bakito/semver
 .PHONY: tb.toolbox
-tb.toolbox: $(TB_TOOLBOX) ## Download toolbox locally if necessary.
-$(TB_TOOLBOX): $(TB_LOCALBIN)
-	test -s $(TB_LOCALBIN)/toolbox || GOBIN=$(TB_LOCALBIN) go install github.com/bakito/toolbox
+tb.toolbox: ## Download toolbox locally if necessary.
+	@test -s $(TB_TOOLBOX) || \
+		GOBIN=$(TB_LOCALBIN) go install github.com/bakito/toolbox
 
 ## Reset Tools
 .PHONY: tb.reset
 tb.reset:
 	@rm -f \
-		$(TB_LOCALBIN)/controller-gen \
-		$(TB_LOCALBIN)/semver \
-		$(TB_LOCALBIN)/toolbox
+		$(TB_CONTROLLER_GEN) \
+		$(TB_SEMVER) \
+		$(TB_TOOLBOX)
 
 ## Update Tools
 .PHONY: tb.update
