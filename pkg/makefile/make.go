@@ -48,19 +48,24 @@ func generateForTools(
 	})
 
 	withVersions := false
+	withVersionArgs := false
 	for _, td := range toolData {
 		if !withVersions && td.Version != "" {
 			withVersions = true
+		}
+		if !withVersionArgs && td.VersionArg != "" {
+			withVersionArgs = true
 		}
 	}
 
 	out := &bytes.Buffer{}
 	t := template.Must(template.New("toolbox.mk").Parse(makefileTemplate))
 	if err := t.Execute(out, map[string]any{
-		"Tools":        toolData,
-		"WithVersions": withVersions,
-		"Renovate":     renovate,
-		"Toolchain":    toolchain,
+		"Tools":           toolData,
+		"WithVersions":    withVersions,
+		"WithVersionArgs": withVersionArgs,
+		"Renovate":        renovate,
+		"Toolchain":       toolchain,
 	}); err != nil {
 		return err
 	}
@@ -131,11 +136,18 @@ func dataForArg(client *resty.Client, tool string) (toolData, error) {
 }
 
 func dataForTool(fromToolsGo bool, toolName string, fullTool ...string) toolData {
-	parts := strings.Split(toolName, "/")
 	var td toolData
 	td.ToolName = toolName
+
+	if sp := strings.Split(td.ToolName, "?"); len(sp) > 1 {
+		td.ToolName = sp[0]
+		td.VersionArg = sp[1]
+	}
+
+	parts := strings.Split(td.ToolName, "/")
+
 	if len(fullTool) == 1 {
-		td.Tool = fullTool[0]
+		td.Tool = strings.Split(fullTool[0], "?")[0]
 	} else {
 		td.Tool = toolName
 	}
@@ -144,12 +156,13 @@ func dataForTool(fromToolsGo bool, toolName string, fullTool ...string) toolData
 	} else {
 		td.Name = parts[len(parts)-1]
 	}
+
 	td.UpperName = strings.ReplaceAll(strings.ToUpper(td.Name), "-", "_")
 	td.FromToolsGo = fromToolsGo
 	td.GoModule = extractModulePath(td.ToolName)
 	td.RepoURL = td.GoModule
-	if strings.Contains(td.Tool, "@") {
-		td.RepoURL = strings.Split(td.Tool, "@")[1]
+	if sp := strings.Split(td.Tool, "@"); len(sp) > 1 {
+		td.RepoURL = sp[1]
 	}
 	return td
 }
@@ -180,6 +193,7 @@ type toolData struct {
 	Tool        string `json:"Tool"`
 	ToolName    string `json:"ToolName"`
 	FromToolsGo bool   `json:"FromToolsGo"`
+	VersionArg  string `json:"VersionArg"`
 }
 
 func mergeWithToolsGo(fileName string, inTools []string) ([]string, []toolData) {

@@ -26,30 +26,30 @@ TB_TOOLBOX_VERSION ?= v0.2.1
 
 ## Tool Installer
 .PHONY: tb.controller-gen
-tb.controller-gen: $(TB_CONTROLLER_GEN) ## Download controller-gen locally if necessary.
-$(TB_CONTROLLER_GEN): $(TB_LOCALBIN)
-	test -s $(TB_LOCALBIN)/controller-gen || GOBIN=$(TB_LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(TB_CONTROLLER_GEN_VERSION)
+tb.controller-gen: ## Download controller-gen locally if necessary.
+	@test -s $(TB_CONTROLLER_GEN) || \
+		GOBIN=$(TB_LOCALBIN) go install sigs.k8s.io/controller-tools/cmd/controller-gen@$(TB_CONTROLLER_GEN_VERSION)
 .PHONY: tb.golangci-lint
-tb.golangci-lint: $(TB_GOLANGCI_LINT) ## Download golangci-lint locally if necessary.
-$(TB_GOLANGCI_LINT): $(TB_LOCALBIN)
-	test -s $(TB_LOCALBIN)/golangci-lint || GOBIN=$(TB_LOCALBIN) go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(TB_GOLANGCI_LINT_VERSION)
+tb.golangci-lint: ## Download golangci-lint locally if necessary.
+	@test -s $(TB_GOLANGCI_LINT) || \
+		GOBIN=$(TB_LOCALBIN) go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(TB_GOLANGCI_LINT_VERSION)
 .PHONY: tb.semver
-tb.semver: $(TB_SEMVER) ## Download semver locally if necessary.
-$(TB_SEMVER): $(TB_LOCALBIN)
-	test -s $(TB_LOCALBIN)/semver || GOBIN=$(TB_LOCALBIN) go install github.com/bakito/semver@$(TB_SEMVER_VERSION)
+tb.semver: ## Download semver locally if necessary.
+	@test -s $(TB_SEMVER) || \
+		GOBIN=$(TB_LOCALBIN) go install github.com/bakito/semver@$(TB_SEMVER_VERSION)
 .PHONY: tb.toolbox
-tb.toolbox: $(TB_TOOLBOX) ## Download toolbox locally if necessary.
-$(TB_TOOLBOX): $(TB_LOCALBIN)
-	test -s $(TB_LOCALBIN)/toolbox || GOBIN=$(TB_LOCALBIN) go install github.com/bakito/toolbox@$(TB_TOOLBOX_VERSION)
+tb.toolbox: ## Download toolbox locally if necessary.
+	@test -s $(TB_TOOLBOX) || \
+		GOBIN=$(TB_LOCALBIN) go install github.com/bakito/toolbox@$(TB_TOOLBOX_VERSION)
 
 ## Reset Tools
 .PHONY: tb.reset
 tb.reset:
 	@rm -f \
-		$(TB_LOCALBIN)/controller-gen \
-		$(TB_LOCALBIN)/golangci-lint \
-		$(TB_LOCALBIN)/semver \
-		$(TB_LOCALBIN)/toolbox
+		$(TB_CONTROLLER_GEN) \
+		$(TB_GOLANGCI_LINT) \
+		$(TB_SEMVER) \
+		$(TB_TOOLBOX)
 
 ## Update Tools
 .PHONY: tb.update
