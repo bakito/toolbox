@@ -23,12 +23,18 @@ var (
 	getRelease    = github.LatestRelease
 )
 
-func Generate(client *resty.Client, makefile string, renovate bool, toolsFile string, tools ...string) error {
+func Generate(client *resty.Client, makefile string, renovate, toolchain bool, toolsFile string, tools ...string) error {
 	argTools, toolData := mergeWithToolsGo(toolsFile, unique(tools))
-	return generateForTools(client, makefile, renovate, argTools, toolData)
+	return generateForTools(client, makefile, renovate, toolchain, argTools, toolData)
 }
 
-func generateForTools(client *resty.Client, makefile string, renovate bool, argTools []string, toolData []toolData) error {
+func generateForTools(
+	client *resty.Client,
+	makefile string,
+	renovate, toolchain bool,
+	argTools []string,
+	toolData []toolData,
+) error {
 	for _, t := range argTools {
 		td, err := dataForArg(client, t)
 		if err != nil {
@@ -54,6 +60,7 @@ func generateForTools(client *resty.Client, makefile string, renovate bool, argT
 		"Tools":        toolData,
 		"WithVersions": withVersions,
 		"Renovate":     renovate,
+		"Toolchain":    toolchain,
 	}); err != nil {
 		return err
 	}
