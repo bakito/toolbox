@@ -35,16 +35,16 @@ TB_{{.UpperName}}_VERSION_NUM ?= {{.VersionNumeric}}
 ## Tool Installer
 {{- range .Tools }}
 .PHONY: tb.{{.Name}}
-tb.{{.Name}}: $(TB_{{.UpperName}}) ## Download {{.Name}} locally if necessary.
-$(TB_{{.UpperName}}): $(TB_LOCALBIN)
-	test -s $(TB_LOCALBIN)/{{.Name}} {{ if .VersionParam }}&& $(TB_{{.UpperName}}) {{ .VersionParam }} | grep -q $(TB_{{.UpperName}}_VERSION_NUM) {{ end }}|| GOBIN=$(TB_LOCALBIN) {{ if $.Toolchain }}GOTOOLCHAIN=go$(TB_GO_VERSION) {{ end }}go install {{.ToolName}}{{- if .Version }}@$(TB_{{.UpperName}}_VERSION){{- end }}
+tb.{{.Name}}: $(TB_LOCALBIN) ## Download {{.Name}} locally if necessary.
+	test -s $(TB_{{.UpperName}}) {{ if .VersionParam }}&& $(TB_{{.UpperName}}) {{ .VersionParam }} | grep -q $(TB_{{.UpperName}}_VERSION_NUM) {{ end }}|| \
+	  GOBIN=$(TB_LOCALBIN) {{ if $.Toolchain }}GOTOOLCHAIN=go$(TB_GO_VERSION) {{ end }}go install {{.ToolName}}{{- if .Version }}@$(TB_{{.UpperName}}_VERSION){{- end }}
 {{- end }}
 
 ## Reset Tools
 .PHONY: tb.reset
 tb.reset:
 	@rm -f{{- range .Tools }} \
-		$(TB_LOCALBIN)/{{.Name}}
+		$(TB_{{.UpperName}})
 {{- end }}
 
 ## Update Tools

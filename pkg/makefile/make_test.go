@@ -48,8 +48,8 @@ var _ = Describe("Make", func() {
 			)
 			Ω(err).ShouldNot(HaveOccurred())
 
-			Ω(readFile(makeFilePath)).Should(EqualDiff(readFile(testDataDir, "Makefile.content.expected")))
-			Ω(readFile(includeFilePath)).Should(EqualDiff(readFile(testDataDir, ".toolbox.mk.content.expected")))
+			Ω(makeFilePath).Should(EqualFileDiff(testDataDir, "Makefile.content.expected"))
+			Ω(includeFilePath).Should(EqualFileDiff(testDataDir, ".toolbox.mk.content.expected"))
 		})
 		It("should migrate to include correct output", func() {
 			makeFilePath = copyFile("Makefile.content.migrate", tempDir)
@@ -61,8 +61,8 @@ var _ = Describe("Make", func() {
 			)
 			Ω(err).ShouldNot(HaveOccurred())
 
-			Ω(readFile(makeFilePath)).Should(EqualDiff(readFile(testDataDir, "Makefile.content.expected")))
-			Ω(readFile(includeFilePath)).Should(EqualDiff(readFile(testDataDir, ".toolbox.mk.content.expected")))
+			Ω(makeFilePath).Should(EqualFileDiff(testDataDir, "Makefile.content.expected"))
+			Ω(includeFilePath).Should(EqualFileDiff(testDataDir, ".toolbox.mk.content.expected"))
 		})
 		It("should generateForTools a correct output with hybrid tools", func() {
 			err := Generate(resty.New(), makeFilePath, false, false,
@@ -71,8 +71,8 @@ var _ = Describe("Make", func() {
 				"github.com/bakito/toolbox",
 			)
 			Ω(err).ShouldNot(HaveOccurred())
-			Ω(readFile(makeFilePath)).Should(EqualDiff(readFile(testDataDir, "Makefile.content.expected")))
-			Ω(readFile(includeFilePath)).Should(EqualDiff(readFile(testDataDir, ".toolbox.mk.hybrid.expected")))
+			Ω(makeFilePath).Should(EqualFileDiff(testDataDir, "Makefile.content.expected"))
+			Ω(includeFilePath).Should(EqualFileDiff(testDataDir, ".toolbox.mk.hybrid.expected"))
 		})
 		It("should generateForTools a correct output with renovate enabled", func() {
 			err := Generate(resty.New(), makeFilePath, true, false, "",
@@ -82,8 +82,8 @@ var _ = Describe("Make", func() {
 				"github.com/bakito/toolbox",
 			)
 			Ω(err).ShouldNot(HaveOccurred())
-			Ω(readFile(makeFilePath)).Should(EqualDiff(readFile(testDataDir, "Makefile.content.expected")))
-			Ω(readFile(includeFilePath)).Should(EqualDiff(readFile(testDataDir, ".toolbox.mk.renovate.expected")))
+			Ω(makeFilePath).Should(EqualFileDiff(testDataDir, "Makefile.content.expected"))
+			Ω(includeFilePath).Should(EqualFileDiff(testDataDir, ".toolbox.mk.renovate.expected"))
 		})
 
 		It("should generateForTools a correct output with toolchain enabled", func() {
@@ -95,8 +95,8 @@ var _ = Describe("Make", func() {
 			)
 			Ω(err).ShouldNot(HaveOccurred())
 
-			Ω(readFile(makeFilePath)).Should(EqualDiff(readFile(testDataDir, "Makefile.content.expected")))
-			Ω(readFile(includeFilePath)).Should(EqualDiff(readFile(testDataDir, ".toolbox.mk.toolchain.expected")))
+			Ω(makeFilePath).Should(EqualFileDiff(testDataDir, "Makefile.content.expected"))
+			Ω(includeFilePath).Should(EqualFileDiff(testDataDir, ".toolbox.mk.toolchain.expected"))
 		})
 		It("should generateForTools a correct output with versioned tool", func() {
 			err := Generate(resty.New(), makeFilePath, false, false, "",
@@ -107,8 +107,8 @@ var _ = Describe("Make", func() {
 			)
 			Ω(err).ShouldNot(HaveOccurred())
 
-			Ω(readFile(makeFilePath)).Should(EqualDiff(readFile(testDataDir, "Makefile.content.expected")))
-			Ω(readFile(includeFilePath)).Should(EqualDiff(readFile(testDataDir, ".toolbox.mk.version.expected")))
+			Ω(makeFilePath).Should(EqualFileDiff(testDataDir, "Makefile.content.expected"))
+			Ω(includeFilePath).Should(EqualFileDiff(testDataDir, ".toolbox.mk.version.expected"))
 		})
 	})
 
@@ -121,8 +121,8 @@ var _ = Describe("Make", func() {
 			}
 			err := generateForTools(resty.New(), makeFilePath, false, false, nil, td)
 			Ω(err).ShouldNot(HaveOccurred())
-			Ω(readFile(makeFilePath)).Should(EqualDiff(readFile(testDataDir, "Makefile.content.expected")))
-			Ω(readFile(includeFilePath)).Should(EqualDiff(readFile(testDataDir, ".toolbox.mk.tools.go.expected")))
+			Ω(makeFilePath).Should(EqualFileDiff(testDataDir, "Makefile.content.expected"))
+			Ω(includeFilePath).Should(EqualFileDiff(testDataDir, ".toolbox.mk.tools.go.expected"))
 		})
 	})
 	Context("updateRenovateConfInternal", func() {
@@ -160,12 +160,6 @@ var _ = Describe("Make", func() {
 		})
 	})
 })
-
-func readFile(path ...string) string {
-	b, err := os.ReadFile(filepath.Join(path...))
-	Ω(err).ShouldNot(HaveOccurred())
-	return string(b)
-}
 
 func copyFile(name, targetDir string) string {
 	bytesRead, err := os.ReadFile(filepath.Join(testDataDir, name))
