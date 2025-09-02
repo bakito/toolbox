@@ -4,12 +4,13 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/bakito/toolbox/pkg/github"
-	"github.com/bakito/toolbox/pkg/types"
 	"github.com/go-resty/resty/v2"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/format"
+
+	"github.com/bakito/toolbox/pkg/github"
+	"github.com/bakito/toolbox/pkg/types"
 )
 
 const testDataDir = "../../testdata"
@@ -41,14 +42,14 @@ var _ = Describe("Make", func() {
 		It("should generateForTools a correct output", func() {
 			err := Generate(resty.New(), makeFilePath, false, false, "",
 				"sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools",
-				"github.com/golangci/golangci-lint/v2/cmd/golangci-lint?--version",
+				"github.com/golangci/golangci-lint/v2/cmd/golangci-lint",
 				"github.com/bakito/semver",
 				"github.com/bakito/toolbox",
 			)
 			Ω(err).ShouldNot(HaveOccurred())
 
-			Ω(readFile(makeFilePath)).Should(Equal(readFile(testDataDir, "Makefile.content.expected")))
-			Ω(readFile(includeFilePath) + "\n").Should(Equal(readFile(testDataDir, ".toolbox.mk.content.expected")))
+			Ω(readFile(makeFilePath)).Should(EqualDiff(readFile(testDataDir, "Makefile.content.expected")))
+			Ω(readFile(includeFilePath)).Should(EqualDiff(readFile(testDataDir, ".toolbox.mk.content.expected")))
 		})
 		It("should migrate to include correct output", func() {
 			makeFilePath = copyFile("Makefile.content.migrate", tempDir)
@@ -60,8 +61,8 @@ var _ = Describe("Make", func() {
 			)
 			Ω(err).ShouldNot(HaveOccurred())
 
-			Ω(readFile(makeFilePath)).Should(Equal(readFile(testDataDir, "Makefile.content.expected")))
-			Ω(readFile(includeFilePath) + "\n").Should(Equal(readFile(testDataDir, ".toolbox.mk.content.expected")))
+			Ω(readFile(makeFilePath)).Should(EqualDiff(readFile(testDataDir, "Makefile.content.expected")))
+			Ω(readFile(includeFilePath)).Should(EqualDiff(readFile(testDataDir, ".toolbox.mk.content.expected")))
 		})
 		It("should generateForTools a correct output with hybrid tools", func() {
 			err := Generate(resty.New(), makeFilePath, false, false,
@@ -70,8 +71,8 @@ var _ = Describe("Make", func() {
 				"github.com/bakito/toolbox",
 			)
 			Ω(err).ShouldNot(HaveOccurred())
-			Ω(readFile(makeFilePath)).Should(Equal(readFile(testDataDir, "Makefile.content.expected")))
-			Ω(readFile(includeFilePath) + "\n").Should(Equal(readFile(testDataDir, ".toolbox.mk.hybrid.expected")))
+			Ω(readFile(makeFilePath)).Should(EqualDiff(readFile(testDataDir, "Makefile.content.expected")))
+			Ω(readFile(includeFilePath)).Should(EqualDiff(readFile(testDataDir, ".toolbox.mk.hybrid.expected")))
 		})
 		It("should generateForTools a correct output with renovate enabled", func() {
 			err := Generate(resty.New(), makeFilePath, true, false, "",
@@ -81,8 +82,8 @@ var _ = Describe("Make", func() {
 				"github.com/bakito/toolbox",
 			)
 			Ω(err).ShouldNot(HaveOccurred())
-			Ω(readFile(makeFilePath)).Should(Equal(readFile(testDataDir, "Makefile.content.expected")))
-			Ω(readFile(includeFilePath) + "\n").Should(Equal(readFile(testDataDir, ".toolbox.mk.renovate.expected")))
+			Ω(readFile(makeFilePath)).Should(EqualDiff(readFile(testDataDir, "Makefile.content.expected")))
+			Ω(readFile(includeFilePath)).Should(EqualDiff(readFile(testDataDir, ".toolbox.mk.renovate.expected")))
 		})
 
 		It("should generateForTools a correct output with toolchain enabled", func() {
@@ -94,8 +95,20 @@ var _ = Describe("Make", func() {
 			)
 			Ω(err).ShouldNot(HaveOccurred())
 
-			Ω(readFile(makeFilePath)).Should(Equal(readFile(testDataDir, "Makefile.content.expected")))
-			Ω(readFile(includeFilePath) + "\n").Should(Equal(readFile(testDataDir, ".toolbox.mk.toolchain.expected")))
+			Ω(readFile(makeFilePath)).Should(EqualDiff(readFile(testDataDir, "Makefile.content.expected")))
+			Ω(readFile(includeFilePath)).Should(EqualDiff(readFile(testDataDir, ".toolbox.mk.toolchain.expected")))
+		})
+		It("should generateForTools a correct output with versioned tool", func() {
+			err := Generate(resty.New(), makeFilePath, false, false, "",
+				"sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools",
+				"github.com/golangci/golangci-lint/v2/cmd/golangci-lint?--version",
+				"github.com/bakito/semver",
+				"github.com/bakito/toolbox",
+			)
+			Ω(err).ShouldNot(HaveOccurred())
+
+			Ω(readFile(makeFilePath)).Should(EqualDiff(readFile(testDataDir, "Makefile.content.expected")))
+			Ω(readFile(includeFilePath)).Should(EqualDiff(readFile(testDataDir, ".toolbox.mk.version.expected")))
 		})
 	})
 
@@ -108,10 +121,8 @@ var _ = Describe("Make", func() {
 			}
 			err := generateForTools(resty.New(), makeFilePath, false, false, nil, td)
 			Ω(err).ShouldNot(HaveOccurred())
-			Ω(readFile(makeFilePath)).Should(Equal(readFile(testDataDir, "Makefile.content.expected")))
-
-			Ω(err).ShouldNot(HaveOccurred())
-			Ω(readFile(includeFilePath) + "\n").Should(EqualDiff(readFile(testDataDir, ".toolbox.mk.tools.go.expected")))
+			Ω(readFile(makeFilePath)).Should(EqualDiff(readFile(testDataDir, "Makefile.content.expected")))
+			Ω(readFile(includeFilePath)).Should(EqualDiff(readFile(testDataDir, ".toolbox.mk.tools.go.expected")))
 		})
 	})
 	Context("updateRenovateConfInternal", func() {
