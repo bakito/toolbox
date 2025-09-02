@@ -47,6 +47,6 @@ tb.reset:
 ## Update Tools
 .PHONY: tb.update
 tb.update: tb.reset
-	toolbox makefile {{ if $.Renovate }}--renovate {{ end }}-f $(TB_LOCALDIR)/Makefile{{- range .Tools }}{{- if not .FromToolsGo }} \
+	toolbox makefile {{ if $.Renovate }}--renovate {{ end }}{{ if $.Toolchain }}--toolchain {{ end }}-f $(TB_LOCALDIR)/Makefile{{- range .Tools }}{{- if not .FromToolsGo }} \
 		{{.Tool}}{{- end }}
 {{- end }}
