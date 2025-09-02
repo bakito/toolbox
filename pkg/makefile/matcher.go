@@ -38,7 +38,7 @@ func (matcher *EqualDiffMatcher) Match(actual any) (success bool, err error) {
 	}
 	if actualByteSlice, ok := actual.([]byte); ok {
 		if expectedByteSlice, ok := matcher.Expected.([]byte); ok {
-			diff, err := unifiedDiff(string(actualByteSlice), "Actual", string(expectedByteSlice), "Expected")
+			diff, err := unifiedDiff(string(expectedByteSlice), "Expected", string(actualByteSlice), "Actual")
 			if err != nil {
 				return false, err
 			}
@@ -48,7 +48,7 @@ func (matcher *EqualDiffMatcher) Match(actual any) (success bool, err error) {
 	}
 	if actualString, ok := actual.(string); ok {
 		if expectedString, ok := matcher.Expected.(string); ok {
-			diff, err := unifiedDiff(actualString, "Actual", expectedString, "Expected")
+			diff, err := unifiedDiff(expectedString, "Expected", actualString, "Actual")
 			if err != nil {
 				return false, err
 			}
@@ -84,7 +84,7 @@ func (matcher *EqualFileDiffMatcher) Match(actual any) (success bool, err error)
 			actualFile := readFile(actualString)
 			expectedFile := readFile(expectedString)
 
-			diff, err := unifiedDiff(actualFile, actualString, expectedFile, expectedString)
+			diff, err := unifiedDiff(expectedFile, expectedString, actualFile, actualString)
 			if err != nil {
 				return false, err
 			}
@@ -105,10 +105,10 @@ func (matcher *EqualFileDiffMatcher) NegatedFailureMessage(_ any) (message strin
 
 func unifiedDiff(a, nameA, b, nameB string) (string, error) {
 	ud := difflib.UnifiedDiff{
+		FromFile: nameA,
 		A:        difflib.SplitLines(a),
+		ToFile:   nameB,
 		B:        difflib.SplitLines(b),
-		FromFile: nameB,
-		ToFile:   nameA,
 		Context:  3,
 	}
 	return difflib.GetUnifiedDiffString(ud)

@@ -17,30 +17,30 @@ TB_SEMVER ?= $(TB_LOCALBIN)/semver
 ## Tool Versions
 # renovate: packageName=github.com/golangci/golangci-lint/v2
 TB_GOLANGCI_LINT_VERSION ?= v2.4.0
-TB_GOLANGCI_LINT_VERSION_NUM ?= 2.4.0
+TB_GOLANGCI_LINT_VERSION_NUM ?= $(shell echo $(TB_GOLANGCI_LINT_VERSION) | sed 's/^v//')
 # renovate: packageName=github.com/goreleaser/goreleaser/v2
 TB_GORELEASER_VERSION ?= v2.11.2
-TB_GORELEASER_VERSION_NUM ?= 2.11.2
+TB_GORELEASER_VERSION_NUM ?= $(shell echo $(TB_GORELEASER_VERSION) | sed 's/^v//')
 # renovate: packageName=github.com/bakito/semver
 TB_SEMVER_VERSION ?= v1.1.5
 
 ## Tool Installer
 .PHONY: tb.ginkgo
 tb.ginkgo: ## Download ginkgo locally if necessary.
-	test -s $(TB_GINKGO) || \
-	  GOBIN=$(TB_LOCALBIN) go install github.com/onsi/ginkgo/v2/ginkgo
+	@test -s $(TB_GINKGO) || \
+		GOBIN=$(TB_LOCALBIN) go install github.com/onsi/ginkgo/v2/ginkgo
 .PHONY: tb.golangci-lint
 tb.golangci-lint: ## Download golangci-lint locally if necessary.
-	@test -s $(TB_GOLANGCI_LINT) && $(TB_GOLANGCI_LINT) --version | grep -q $(TB_GOLANGCI_LINT_VERSION_NUM) || echo "*****"&&\
+	@test -s $(TB_GOLANGCI_LINT) && $(TB_GOLANGCI_LINT) --version | grep -q $(TB_GOLANGCI_LINT_VERSION_NUM) || \
 		GOBIN=$(TB_LOCALBIN) go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(TB_GOLANGCI_LINT_VERSION)
 .PHONY: tb.goreleaser
 tb.goreleaser: ## Download goreleaser locally if necessary.
-	test -s $(TB_GORELEASER) && $(TB_GORELEASER) --version | grep -q $(TB_GORELEASER_VERSION_NUM) || \
-	  GOBIN=$(TB_LOCALBIN) go install github.com/goreleaser/goreleaser/v2@$(TB_GORELEASER_VERSION)
+	@test -s $(TB_GORELEASER) && $(TB_GORELEASER) --version | grep -q $(TB_GORELEASER_VERSION_NUM) || \
+		GOBIN=$(TB_LOCALBIN) go install github.com/goreleaser/goreleaser/v2@$(TB_GORELEASER_VERSION)
 .PHONY: tb.semver
 tb.semver: ## Download semver locally if necessary.
-	test -s $(TB_SEMVER) || \
-	  GOBIN=$(TB_LOCALBIN) go install github.com/bakito/semver@$(TB_SEMVER_VERSION)
+	@test -s $(TB_SEMVER) || \
+		GOBIN=$(TB_LOCALBIN) go install github.com/bakito/semver@$(TB_SEMVER_VERSION)
 
 ## Reset Tools
 .PHONY: tb.reset

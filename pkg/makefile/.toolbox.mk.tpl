@@ -26,7 +26,7 @@ TB_{{.UpperName}} ?= $(TB_LOCALBIN)/{{.Name}}
 {{- end }}
 TB_{{.UpperName}}_VERSION ?= {{.Version}}
 {{- if .VersionParam }}
-TB_{{.UpperName}}_VERSION_NUM ?= {{.VersionNumeric}}
+TB_{{.UpperName}}_VERSION_NUM ?= $(shell echo $(TB_{{.UpperName}}_VERSION) | sed 's/^v//')
 {{- end }}
 {{- end }}
 {{- end }}
