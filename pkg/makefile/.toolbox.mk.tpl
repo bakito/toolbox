@@ -11,6 +11,11 @@ $(TB_LOCALBIN):
 ## Go Version
 TB_GO_VERSION ?= $(shell grep -E '^go [0-9]+\.[0-9]+' go.mod | awk '{print $$2}')
 {{- end }}
+{{- if $.WithVersionArgs }}
+
+# Helper functions
+STRIP_V = $(patsubst v%,%,$(1))
+{{- end }}
 
 ## Tool Binaries
 {{- range .Tools }}
@@ -25,8 +30,8 @@ TB_{{.UpperName}} ?= $(TB_LOCALBIN)/{{.Name}}
 # renovate: packageName={{.RepoURL}}
 {{- end }}
 TB_{{.UpperName}}_VERSION ?= {{.Version}}
-{{- if .VersionParam }}
-TB_{{.UpperName}}_VERSION_NUM ?= $(shell echo $(TB_{{.UpperName}}_VERSION) | sed 's/^v//')
+{{- if .VersionArg }}
+TB_{{.UpperName}}_VERSION_NUM ?= $(call STRIP_V,$(TB_{{.UpperName}}_VERSION))
 {{- end }}
 {{- end }}
 {{- end }}
@@ -36,7 +41,7 @@ TB_{{.UpperName}}_VERSION_NUM ?= $(shell echo $(TB_{{.UpperName}}_VERSION) | sed
 {{- range .Tools }}
 .PHONY: tb.{{.Name}}
 tb.{{.Name}}: ## Download {{.Name}} locally if necessary.
-	@test -s $(TB_{{.UpperName}}) {{ if .VersionParam }}&& $(TB_{{.UpperName}}) {{ .VersionParam }} | grep -q $(TB_{{.UpperName}}_VERSION_NUM) {{ end }}|| \
+	@test -s $(TB_{{.UpperName}}) {{ if .VersionArg }}&& $(TB_{{.UpperName}}) {{ .VersionArg }} | grep -q $(TB_{{.UpperName}}_VERSION_NUM) {{ end }}|| \
 		GOBIN=$(TB_LOCALBIN) {{ if $.Toolchain }}GOTOOLCHAIN=go$(TB_GO_VERSION) {{ end }}go install {{.ToolName}}{{- if .Version }}@$(TB_{{.UpperName}}_VERSION){{- end }}
 {{- end }}
 
@@ -51,5 +56,5 @@ tb.reset:
 .PHONY: tb.update
 tb.update: tb.reset
 	toolbox makefile {{ if $.Renovate }}--renovate {{ end }}{{ if $.Toolchain }}--toolchain {{ end }}-f $(TB_LOCALDIR)/Makefile{{- range .Tools }}{{- if not .FromToolsGo }} \
-		{{.Tool}}{{ if .VersionParam }}?{{ .VersionParam }}{{ end }}{{- end }}
+		{{.Tool}}{{ if .VersionArg }}?{{ .VersionArg }}{{ end }}{{- end }}
 {{- end }}

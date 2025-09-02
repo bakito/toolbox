@@ -48,19 +48,24 @@ func generateForTools(
 	})
 
 	withVersions := false
+	withVersionArgs := false
 	for _, td := range toolData {
 		if !withVersions && td.Version != "" {
 			withVersions = true
+		}
+		if !withVersionArgs && td.VersionArg != "" {
+			withVersionArgs = true
 		}
 	}
 
 	out := &bytes.Buffer{}
 	t := template.Must(template.New("toolbox.mk").Parse(makefileTemplate))
 	if err := t.Execute(out, map[string]any{
-		"Tools":        toolData,
-		"WithVersions": withVersions,
-		"Renovate":     renovate,
-		"Toolchain":    toolchain,
+		"Tools":           toolData,
+		"WithVersions":    withVersions,
+		"WithVersionArgs": withVersionArgs,
+		"Renovate":        renovate,
+		"Toolchain":       toolchain,
 	}); err != nil {
 		return err
 	}
@@ -137,7 +142,7 @@ func dataForTool(fromToolsGo bool, toolName string, fullTool ...string) toolData
 
 	if sp := strings.Split(td.ToolName, "?"); len(sp) > 1 {
 		td.ToolName = sp[0]
-		td.VersionParam = sp[1]
+		td.VersionArg = sp[1]
 	}
 
 	parts := strings.Split(td.ToolName, "/")
@@ -190,7 +195,7 @@ type toolData struct {
 	Tool           string `json:"Tool"`
 	ToolName       string `json:"ToolName"`
 	FromToolsGo    bool   `json:"FromToolsGo"`
-	VersionParam   string `json:"VersionParam"`
+	VersionArg     string `json:"VersionArg"`
 }
 
 func mergeWithToolsGo(fileName string, inTools []string) ([]string, []toolData) {

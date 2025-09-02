@@ -8,6 +8,9 @@ TB_LOCALBIN ?= $(TB_LOCALDIR)/bin
 $(TB_LOCALBIN):
 	if [ ! -e $(TB_LOCALBIN) ]; then mkdir -p $(TB_LOCALBIN); fi
 
+# Helper functions
+STRIP_V = $(patsubst v%,%,$(1))
+
 ## Tool Binaries
 TB_GINKGO ?= $(TB_LOCALBIN)/ginkgo
 TB_GOLANGCI_LINT ?= $(TB_LOCALBIN)/golangci-lint
@@ -17,10 +20,10 @@ TB_SEMVER ?= $(TB_LOCALBIN)/semver
 ## Tool Versions
 # renovate: packageName=github.com/golangci/golangci-lint/v2
 TB_GOLANGCI_LINT_VERSION ?= v2.4.0
-TB_GOLANGCI_LINT_VERSION_NUM ?= $(shell echo $(TB_GOLANGCI_LINT_VERSION) | sed 's/^v//')
+TB_GOLANGCI_LINT_VERSION_NUM ?= $(call STRIP_V,$(TB_GOLANGCI_LINT_VERSION))
 # renovate: packageName=github.com/goreleaser/goreleaser/v2
 TB_GORELEASER_VERSION ?= v2.11.2
-TB_GORELEASER_VERSION_NUM ?= $(shell echo $(TB_GORELEASER_VERSION) | sed 's/^v//')
+TB_GORELEASER_VERSION_NUM ?= $(call STRIP_V,$(TB_GORELEASER_VERSION))
 # renovate: packageName=github.com/bakito/semver
 TB_SEMVER_VERSION ?= v1.1.5
 
