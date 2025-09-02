@@ -6,6 +6,11 @@ TB_LOCALDIR ?= $(shell which cygpath > /dev/null 2>&1 && cygpath -m $$(pwd) || p
 TB_LOCALBIN ?= $(TB_LOCALDIR)/bin
 $(TB_LOCALBIN):
 	if [ ! -e $(TB_LOCALBIN) ]; then mkdir -p $(TB_LOCALBIN); fi
+{{- if $.Toolchain }}
+
+## Go Version
+TB_GO_VERSION ?= $(shell grep -E '^go [0-9]+\.[0-9]+' go.mod | awk '{print $$2}')
+{{- end }}
 
 ## Tool Binaries
 {{- range .Tools }}
@@ -29,7 +34,7 @@ TB_{{.UpperName}}_VERSION ?= {{.Version}}
 .PHONY: tb.{{.Name}}
 tb.{{.Name}}: $(TB_{{.UpperName}}) ## Download {{.Name}} locally if necessary.
 $(TB_{{.UpperName}}): $(TB_LOCALBIN)
-	test -s $(TB_LOCALBIN)/{{.Name}} || GOBIN=$(TB_LOCALBIN) go install {{.ToolName}}{{- if .Version }}@$(TB_{{.UpperName}}_VERSION){{- end }}
+	test -s $(TB_LOCALBIN)/{{.Name}} || GOBIN=$(TB_LOCALBIN) {{ if $.Toolchain }}GOTOOLCHAIN=go$(TB_GO_VERSION) {{ end }}go install {{.ToolName}}{{- if .Version }}@$(TB_{{.UpperName}}_VERSION){{- end }}
 {{- end }}
 
 ## Reset Tools
