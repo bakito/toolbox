@@ -14,6 +14,7 @@ STRIP_V = $(patsubst v%,%,$(1))
 ## Tool Binaries
 TB_CONTROLLER_GEN ?= $(TB_LOCALBIN)/controller-gen
 TB_GOLANGCI_LINT ?= $(TB_LOCALBIN)/golangci-lint
+TB_MOCKGEN ?= $(TB_LOCALBIN)/mockgen
 TB_SEMVER ?= $(TB_LOCALBIN)/semver
 TB_TOOLBOX ?= $(TB_LOCALBIN)/toolbox
 
@@ -21,6 +22,8 @@ TB_TOOLBOX ?= $(TB_LOCALBIN)/toolbox
 TB_CONTROLLER_GEN_VERSION ?= v0.2.1
 TB_GOLANGCI_LINT_VERSION ?= v0.2.1
 TB_GOLANGCI_LINT_VERSION_NUM ?= $(call STRIP_V,$(TB_GOLANGCI_LINT_VERSION))
+TB_MOCKGEN_VERSION ?= v0.2.1
+TB_MOCKGEN_VERSION_NUM ?= $(call STRIP_V,$(TB_MOCKGEN_VERSION))
 TB_SEMVER_VERSION ?= v0.2.1
 TB_TOOLBOX_VERSION ?= v0.2.1
 
@@ -33,6 +36,10 @@ tb.controller-gen: ## Download controller-gen locally if necessary.
 tb.golangci-lint: ## Download golangci-lint locally if necessary.
 	@test -s $(TB_GOLANGCI_LINT) && $(TB_GOLANGCI_LINT) --version | grep -q $(TB_GOLANGCI_LINT_VERSION_NUM) || \
 		GOBIN=$(TB_LOCALBIN) go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(TB_GOLANGCI_LINT_VERSION)
+.PHONY: tb.mockgen
+tb.mockgen: ## Download mockgen locally if necessary.
+	@test -s $(TB_MOCKGEN) && $(TB_MOCKGEN) --version | grep -q $(TB_MOCKGEN_VERSION_NUM) || \
+		GOBIN=$(TB_LOCALBIN) go install go.uber.org/mock/mockgen@$(TB_MOCKGEN_VERSION)
 .PHONY: tb.semver
 tb.semver: ## Download semver locally if necessary.
 	@test -s $(TB_SEMVER) || \
@@ -48,6 +55,7 @@ tb.reset:
 	@rm -f \
 		$(TB_CONTROLLER_GEN) \
 		$(TB_GOLANGCI_LINT) \
+		$(TB_MOCKGEN) \
 		$(TB_SEMVER) \
 		$(TB_TOOLBOX)
 
@@ -57,6 +65,7 @@ tb.update: tb.reset
 	toolbox makefile -f $(TB_LOCALDIR)/Makefile \
 		sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools \
 		github.com/golangci/golangci-lint/v2/cmd/golangci-lint?--version \
+		go.uber.org/mock/mockgen@github.com/uber-go/mock?--version \
 		github.com/bakito/semver \
 		github.com/bakito/toolbox
 ## toolbox - end

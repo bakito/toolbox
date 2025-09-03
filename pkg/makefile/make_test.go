@@ -104,6 +104,7 @@ var _ = Describe("Make", func() {
 				"github.com/golangci/golangci-lint/v2/cmd/golangci-lint?--version",
 				"github.com/bakito/semver",
 				"github.com/bakito/toolbox",
+				"go.uber.org/mock/mockgen@github.com/uber-go/mock?--version",
 			)
 			Ω(err).ShouldNot(HaveOccurred())
 

@@ -147,7 +147,11 @@ func dataForTool(fromToolsGo bool, toolName string, fullTool ...string) toolData
 	parts := strings.Split(td.ToolName, "/")
 
 	if len(fullTool) == 1 {
-		td.Tool = strings.Split(fullTool[0], "?")[0]
+		sp := strings.Split(fullTool[0], "?")
+		td.Tool = sp[0]
+		if len(sp) > 1 {
+			td.VersionArg = sp[1]
+		}
 	} else {
 		td.Tool = toolName
 	}
