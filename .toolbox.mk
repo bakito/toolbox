@@ -25,7 +25,7 @@ TB_GOLANGCI_LINT_VERSION_NUM ?= $(call STRIP_V,$(TB_GOLANGCI_LINT_VERSION))
 TB_GORELEASER_VERSION ?= v2.12.0
 TB_GORELEASER_VERSION_NUM ?= $(call STRIP_V,$(TB_GORELEASER_VERSION))
 # renovate: packageName=github.com/bakito/semver
-TB_SEMVER_VERSION ?= v1.1.5
+TB_SEMVER_VERSION ?= v1.1.7
 
 ## Tool Installer
 .PHONY: tb.ginkgo
