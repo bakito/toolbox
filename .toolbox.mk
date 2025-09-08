@@ -26,6 +26,7 @@ TB_GORELEASER_VERSION ?= v2.12.0
 TB_GORELEASER_VERSION_NUM ?= $(call STRIP_V,$(TB_GORELEASER_VERSION))
 # renovate: packageName=github.com/bakito/semver
 TB_SEMVER_VERSION ?= v1.1.7
+TB_SEMVER_VERSION_NUM ?= $(call STRIP_V,$(TB_SEMVER_VERSION))
 
 ## Tool Installer
 .PHONY: tb.ginkgo
@@ -42,7 +43,7 @@ tb.goreleaser: ## Download goreleaser locally if necessary.
 		GOBIN=$(TB_LOCALBIN) go install github.com/goreleaser/goreleaser/v2@$(TB_GORELEASER_VERSION)
 .PHONY: tb.semver
 tb.semver: ## Download semver locally if necessary.
-	@test -s $(TB_SEMVER) || \
+	@test -s $(TB_SEMVER) && $(TB_SEMVER) -version | grep -q $(TB_SEMVER_VERSION_NUM) || \
 		GOBIN=$(TB_LOCALBIN) go install github.com/bakito/semver@$(TB_SEMVER_VERSION)
 
 ## Reset Tools
@@ -60,5 +61,5 @@ tb.update: tb.reset
 	toolbox makefile --renovate -f $(TB_LOCALDIR)/Makefile \
 		github.com/golangci/golangci-lint/v2/cmd/golangci-lint?--version \
 		github.com/goreleaser/goreleaser/v2?--version \
-		github.com/bakito/semver
+		github.com/bakito/semver?-version
 ## toolbox - end
