@@ -10,7 +10,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2
 	github.com/spf13/cobra v1.10.1
 	github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8
-	golang.org/x/mod v0.27.0
+	golang.org/x/mod v0.28.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
