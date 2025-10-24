@@ -13,10 +13,10 @@ tidy:
 test: tb.ginkgo
 	$(TB_GINKGO) -r --cover --coverprofile=coverage.out
 
-release: tb.goreleaser tb.semver
+release: tb.goreleaser tb.semver tb.syft
 	@version=$$($(TB_SEMVER)); \
 	git tag -s $$version -m"Release $$version"
-	$(TB_GORELEASER) --clean
+	PATH=$(TB_LOCALBIN):$${PATH} $(TB_GORELEASER) --clean
 
-test-release: tb.goreleaser
-	$(TB_GORELEASER) --skip=publish --snapshot --clean
+test-release: tb.goreleaser tb.syft
+	PATH=$(TB_LOCALBIN):$${PATH} $(TB_GORELEASER) --skip=publish --snapshot --clean
