@@ -13,6 +13,16 @@
 curl -sSL https://raw.githubusercontent.com/bakito/toolbox/refs/heads/main/install.sh | sh
 ```
 
+### Brew
+
+```bash
+# Add the tap
+brew tap bakito/tap
+
+# install toolbox 
+brew install --cask toolbox
+```
+
 ## Fetch tools
 
 ```text

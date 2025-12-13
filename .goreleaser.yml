@@ -9,23 +9,48 @@ builds:
     goos:
       - linux
       - windows
-    #- darwin
+      - darwin
     goarch:
-      # - 386
       - amd64
+      - arm64
     hooks:
       post:
         # don't upx windows binaries as they make trouble with virus scanners
-        - bash -c 'if [[ "{{ .Path }}" != *.exe ]]; then upx {{ .Path }}; fi'
+        - bash -c 'if [[ "{{ .Path }}" != *.exe ]] && [[ "{{ .Path }}" != *darwin* ]] && [[ "{{ .Path }}" != *openbsd* ]] && [[ "{{ .Path }}" != *riscv* ]]; then upx {{ .Path }}; fi'
+
+# Ensure archives exist, as Homebrew/Snap/Chocolatey typically package from archives.
+archives:
+  - id: default
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    files:
+      - LICENSE
+      - README.md
 checksum:
   name_template: 'checksums.txt'
+
 snapshot:
-  version_template: "{{ .Tag }}-next"
+  version_template: "{{ .Version }}-next"
+
 changelog:
   sort: asc
   filters:
     exclude:
       - '^docs:'
       - '^test:'
+
 sboms:
   - artifacts: archive
+
+homebrew_casks:
+  - name: toolbox
+    homepage: "https://github.com/bakito/toolbox"
+    description: "A little toolbox to help fetching tools"
+    repository:
+      owner: "bakito"
+      name: "homebrew-tap"
