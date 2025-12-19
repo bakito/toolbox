@@ -21,7 +21,7 @@ DOWNLOAD_URL="https://github.com/$REPO/releases/download/$LATEST_TAG/$ARCHIVE_NA
 TMP_DIR=$(mktemp -d)
 
 # Download the archive
-echo "🧰 Downloading $BIN_NAME version $LATEST_TAG..."
+echo "$(date '+%Y/%m/%d %H:%M:%S') 🧰 Downloading $BIN_NAME version $LATEST_TAG..."
 curl -sSL "$DOWNLOAD_URL" -o "$TMP_DIR/$ARCHIVE_NAME"
 
 # Extract the archive
@@ -37,5 +37,5 @@ chmod +x "$INSTALL_DIR/$BIN_NAME"
 rm -rf "$TMP_DIR"
 
 # Print success message
-echo "🚀 $BIN_NAME installed successfully to $INSTALL_DIR"
-echo "Add $INSTALL_DIR to your PATH if not already included"
+echo "$(date '+%Y/%m/%d %H:%M:%S') 🚀 $BIN_NAME installed successfully to $INSTALL_DIR"
+echo "$(date '+%Y/%m/%d %H:%M:%S') Add $INSTALL_DIR to your PATH if not already included"
