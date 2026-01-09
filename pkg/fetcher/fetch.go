@@ -329,9 +329,13 @@ func findMatching(tb *types.Toolbox, toolName string, assets []types.Asset) *typ
 		}
 	}
 	sort.Slice(matching, func(i, j int) bool {
-		mi := matches(runtime.GOARCH, matching[i].Name)
-		mj := matches(runtime.GOARCH, matching[j].Name)
+		mi := strings.HasPrefix(matching[i].Name, toolName+"-")
+		mj := strings.HasPrefix(matching[j].Name, toolName+"-")
 
+		if mi == mj {
+			mi = matches(runtime.GOARCH, matching[i].Name)
+			mj = matches(runtime.GOARCH, matching[j].Name)
+		}
 		if mi == mj {
 			mi = strings.Contains(matching[i].Name, runtime.GOARCH)
 			mj = strings.Contains(matching[j].Name, runtime.GOARCH)
