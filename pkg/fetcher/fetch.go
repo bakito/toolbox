@@ -208,7 +208,7 @@ func (f *fetcher) handleTool(
 	tb *types.Toolbox,
 	tool *types.Tool,
 ) error {
-	log.Printf("⚙️ Processing %s\n", tool.Name)
+	log.Printf("🛠  Processing %s\n", tool.Name)
 	defer println()
 	var ghr *types.GithubRelease
 	var err error
@@ -434,14 +434,14 @@ func (f *fetcher) fetchTool(tool *types.Tool, toolName, url, tmpDir, targetDir s
 func (f *fetcher) validate(targetPath, check string) error {
 	match, err := arch.DoesBinaryMatchCurrentOSArch(targetPath)
 	if err != nil {
-		log.Printf("🏛🚫 Arch check failed: %v", err)
+		log.Printf("📐🚫 Arch check failed: %v", err)
 		return ValidationError("arch check failed %v", err)
 	}
 	if !match {
-		log.Print("🏛🚫 Arch doesn't match system")
+		log.Print("📐🚫 Arch doesn't match system")
 		return ValidationError("arch doesn't match system")
 	}
-	log.Print("🏛 Arch matches")
+	log.Print("📐 Arch matches")
 
 	if check != "" {
 		// #nosec G204:
