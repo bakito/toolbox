@@ -12,6 +12,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -678,10 +679,8 @@ func downloadFile(path, url string) (err error) {
 }
 
 func contains(list []string, v string) bool {
-	for _, s := range list {
-		if s == v {
-			return true
-		}
+	if slices.Contains(list, v) {
+		return true
 	}
 	return len(list) == 0
 }

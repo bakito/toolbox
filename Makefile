@@ -20,3 +20,6 @@ release: tb.goreleaser tb.semver tb.syft
 
 test-release: tb.goreleaser tb.syft
 	PATH=$(TB_LOCALBIN):$${PATH} $(TB_GORELEASER) --skip=publish --snapshot --clean
+
+check-vulnerabilities:
+	go run golang.org/x/vuln/cmd/govulncheck@latest -show verbose,color ./...
