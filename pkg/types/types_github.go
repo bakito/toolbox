@@ -1,7 +1,7 @@
 package types
 
 import (
-	"sort"
+	"slices"
 	"strings"
 	"time"
 
@@ -21,31 +21,12 @@ type GithubRelease struct {
 }
 
 type Asset struct {
-	URL      string `json:"url"`
-	ID       int    `json:"id"`
-	NodeID   string `json:"node_id"`
-	Name     string `json:"name"`
-	Label    any    `json:"label"`
-	Uploader struct {
-		Login             string `json:"login"`
-		ID                int    `json:"id"`
-		NodeID            string `json:"node_id"`
-		AvatarURL         string `json:"avatar_url"`
-		GravatarID        string `json:"gravatar_id"`
-		URL               string `json:"url"`
-		HTMLURL           string `json:"html_url"`
-		FollowersURL      string `json:"followers_url"`
-		FollowingURL      string `json:"following_url"`
-		GistsURL          string `json:"gists_url"`
-		StarredURL        string `json:"starred_url"`
-		SubscriptionsURL  string `json:"subscriptions_url"`
-		OrganizationsURL  string `json:"organizations_url"`
-		ReposURL          string `json:"repos_url"`
-		EventsURL         string `json:"events_url"`
-		ReceivedEventsURL string `json:"received_events_url"`
-		Type              string `json:"type"`
-		SiteAdmin         bool   `json:"site_admin"`
-	} `json:"uploader"`
+	URL                string    `json:"url"`
+	ID                 int       `json:"id"`
+	NodeID             string    `json:"node_id"`
+	Name               string    `json:"name"`
+	Label              any       `json:"label"`
+	Uploader           Uploader  `json:"uploader"`
 	ContentType        string    `json:"content_type"`
 	State              string    `json:"state"`
 	Size               int       `json:"size"`
@@ -55,11 +36,32 @@ type Asset struct {
 	BrowserDownloadURL string    `json:"browser_download_url"`
 }
 
+type Uploader struct {
+	Login             string `json:"login"`
+	ID                int    `json:"id"`
+	NodeID            string `json:"node_id"`
+	AvatarURL         string `json:"avatar_url"`
+	GravatarID        string `json:"gravatar_id"`
+	URL               string `json:"url"`
+	HTMLURL           string `json:"html_url"`
+	FollowersURL      string `json:"followers_url"`
+	FollowingURL      string `json:"following_url"`
+	GistsURL          string `json:"gists_url"`
+	StarredURL        string `json:"starred_url"`
+	SubscriptionsURL  string `json:"subscriptions_url"`
+	OrganizationsURL  string `json:"organizations_url"`
+	ReposURL          string `json:"repos_url"`
+	EventsURL         string `json:"events_url"`
+	ReceivedEventsURL string `json:"received_events_url"`
+	Type              string `json:"type"`
+	SiteAdmin         bool   `json:"site_admin"`
+}
+
 type GithubTags []GithubTag
 
 func (ght GithubTags) GetLatest() *GithubTag {
-	sort.Slice(ght, func(i, j int) bool {
-		return semver.Compare(ght[i].Name, ght[j].Name) > 0
+	slices.SortFunc(ght, func(a, b GithubTag) int {
+		return strings.Compare(a.Name, b.Name)
 	})
 
 	for _, tag := range ght {
@@ -74,9 +76,11 @@ type GithubTag struct {
 	Name       string `json:"name"`
 	ZipballURL string `json:"zipball_url"`
 	TarballURL string `json:"tarball_url"`
-	Commit     struct {
-		Sha string `json:"sha"`
-		URL string `json:"url"`
-	} `json:"commit"`
-	NodeID string `json:"node_id"`
+	Commit     Commit `json:"commit"`
+	NodeID     string `json:"node_id"`
+}
+
+type Commit struct {
+	Sha string `json:"sha"`
+	URL string `json:"url"`
 }

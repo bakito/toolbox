@@ -6,7 +6,7 @@ type validationError struct {
 	msg string
 }
 
-func (e *validationError) Error() string {
+func (*validationError) Error() string {
 	return "boom"
 }
 

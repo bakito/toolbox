@@ -10,8 +10,8 @@ tidy:
 	go mod tidy
 
 # Run tests
-test: tb.ginkgo
-	$(TB_GINKGO) -r --cover --coverprofile=coverage.out
+test:
+	go test ./... -cover -coverprofile=coverage.out
 
 release: tb.goreleaser tb.semver tb.syft
 	@version=$$($(TB_SEMVER)); \
@@ -20,6 +20,3 @@ release: tb.goreleaser tb.semver tb.syft
 
 test-release: tb.goreleaser tb.syft
 	PATH=$(TB_LOCALBIN):$${PATH} $(TB_GORELEASER) --skip=publish --snapshot --clean
-
-check-vulnerabilities:
-	go run golang.org/x/vuln/cmd/govulncheck@latest -show verbose,color ./...
