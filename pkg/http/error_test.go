@@ -32,7 +32,7 @@ var _ = Describe("Error", func() {
 
 		It("should log fatal error", func() {
 			var logformat string
-			logFatalf = func(format string, v ...any) {
+			logFatalf = func(format string, _ ...any) {
 				logformat = format
 			}
 			urlErr := &url.Error{Err: &net.OpError{Op: dialOperation}}

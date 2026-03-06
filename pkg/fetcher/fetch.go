@@ -13,7 +13,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"slices"
-	"sort"
 	"strconv"
 	"strings"
 	"text/template"
@@ -122,12 +121,11 @@ func (f *fetcher) Fetch(cfgFile string, selectedTools ...string) error {
 	defer func() { _ = os.RemoveAll(tmp) }()
 
 	tools := tb.GetTools()
-	println()
+	fmt.Println()
 	for _, tool := range tools {
 		if contains(selectedTools, tool.Name) {
 			if err := f.handleTool(client, ver, tmp, tb, tool); err != nil {
-				var validationError *validationError
-				if !errors.As(err, &validationError) {
+				if _, ok := errors.AsType[*validationError](err); !ok {
 					return err
 				}
 				tool.Invalid = true
@@ -152,7 +150,7 @@ func sanitizeTargetDir(tb *types.Toolbox) {
 	}
 }
 
-func (f *fetcher) assureTargetDirAvailable(tb *types.Toolbox) error {
+func (*fetcher) assureTargetDirAvailable(tb *types.Toolbox) error {
 	if _, err := os.Stat(tb.Target); err != nil {
 		if !os.IsNotExist(err) {
 			return err
@@ -167,8 +165,8 @@ func (f *fetcher) assureTargetDirAvailable(tb *types.Toolbox) error {
 	return nil
 }
 
-func (f *fetcher) deleteOldBinary(tb *types.Toolbox) error {
-	return filepath.Walk(tb.Target, func(path string, f os.FileInfo, _ error) error {
+func (*fetcher) deleteOldBinary(tb *types.Toolbox) error {
+	return filepath.Walk(tb.Target, func(_ string, f os.FileInfo, _ error) error {
 		if !f.IsDir() {
 			if strings.HasPrefix(f.Name(), oldExecutablePrefix) {
 				toolPath := filepath.Join(tb.Target, f.Name())
@@ -210,7 +208,7 @@ func (f *fetcher) handleTool(
 	tool *types.Tool,
 ) error {
 	log.Printf("🛠  Processing %s\n", tool.Name)
-	defer println()
+	defer fmt.Println()
 	var ghr *types.GithubRelease
 	var err error
 	configVersion := tool.Version
@@ -329,33 +327,36 @@ func findMatching(tb *types.Toolbox, toolName string, assets []types.Asset) *typ
 			matching = append(matching, &a)
 		}
 	}
-	sort.Slice(matching, func(i, j int) bool {
-		mi := strings.HasPrefix(matching[i].Name, toolName+"-")
-		mj := strings.HasPrefix(matching[j].Name, toolName+"-")
+	slices.SortFunc(matching, func(a, b *types.Asset) int {
+		mi := strings.HasPrefix(a.Name, toolName+"-")
+		mj := strings.HasPrefix(b.Name, toolName+"-")
 
 		if mi == mj {
-			mi = matches(runtime.GOARCH, matching[i].Name)
-			mj = matches(runtime.GOARCH, matching[j].Name)
+			mi = matches(runtime.GOARCH, a.Name)
+			mj = matches(runtime.GOARCH, b.Name)
 		}
 		if mi == mj {
-			mi = strings.Contains(matching[i].Name, runtime.GOARCH)
-			mj = strings.Contains(matching[j].Name, runtime.GOARCH)
+			mi = strings.Contains(a.Name, runtime.GOARCH)
+			mj = strings.Contains(b.Name, runtime.GOARCH)
 		}
 		if mi == mj {
 			// prefer non archive files
-			mi = !strings.Contains(matching[i].Name, ".")
-			mj = !strings.Contains(matching[j].Name, ".")
+			mi = !strings.Contains(a.Name, ".")
+			mj = !strings.Contains(b.Name, ".")
 		}
 		if mi == mj {
 			// prefer non archive files
-			mi = strings.HasSuffix(matching[i].Name, defaultFileExtension())
-			mj = strings.HasSuffix(matching[j].Name, defaultFileExtension())
+			mi = strings.HasSuffix(a.Name, defaultFileExtension())
+			mj = strings.HasSuffix(b.Name, defaultFileExtension())
 		}
 		if mi == mj {
-			return true
+			return 0
+		}
+		if mi {
+			return 1
 		}
 
-		return mi
+		return -1
 	})
 	if len(matching) == 0 {
 		return nil
@@ -432,7 +433,7 @@ func (f *fetcher) fetchTool(tool *types.Tool, toolName, url, tmpDir, targetDir s
 	return nil
 }
 
-func (f *fetcher) validate(targetPath, check string) error {
+func (*fetcher) validate(targetPath, check string) error {
 	match, err := arch.DoesBinaryMatchCurrentOSArch(targetPath)
 	if err != nil {
 		log.Printf("📐🚫 Arch check failed: %v", err)
@@ -532,7 +533,7 @@ func (f *fetcher) copyTool(
 	return false, nil
 }
 
-func (f *fetcher) upxCompress(targetPath string) {
+func (*fetcher) upxCompress(targetPath string) {
 	log.Print("🗜️ Compressing with upx")
 	cmd := exec.CommandContext(context.TODO(), "upx", "-q", "-q", targetPath)
 	stdout, err := cmd.Output()
@@ -541,8 +542,7 @@ func (f *fetcher) upxCompress(targetPath string) {
 		size, _ := strconv.Atoi(parts[2])
 		log.Printf("\tCompressed to %s (%s)", parts[3], formatBytes(int64(size)))
 	} else {
-		var ee *exec.ExitError
-		if errors.As(err, &ee) && ee.ExitCode() == 2 {
+		if ee, ok := errors.AsType[*exec.ExitError](err); ok && ee.ExitCode() == 2 {
 			log.Print("\tAlready Compressed")
 		} else {
 			log.Printf("\tCompression error: %v", err)
