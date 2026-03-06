@@ -12,6 +12,7 @@ $(TB_LOCALBIN):
 STRIP_V = $(patsubst v%,%,$(1))
 
 ## Tool Binaries
+TB_GINKGO ?= $(TB_LOCALBIN)/ginkgo
 TB_GOLANGCI_LINT ?= $(TB_LOCALBIN)/golangci-lint
 TB_GORELEASER ?= $(TB_LOCALBIN)/goreleaser
 TB_SEMVER ?= $(TB_LOCALBIN)/semver
@@ -19,7 +20,7 @@ TB_SYFT ?= $(TB_LOCALBIN)/syft
 
 ## Tool Versions
 # renovate: packageName=github.com/golangci/golangci-lint/v2
-TB_GOLANGCI_LINT_VERSION ?= v2.11.1
+TB_GOLANGCI_LINT_VERSION ?= v2.10.1
 TB_GOLANGCI_LINT_VERSION_NUM ?= $(call STRIP_V,$(TB_GOLANGCI_LINT_VERSION))
 # renovate: packageName=github.com/goreleaser/goreleaser/v2
 TB_GORELEASER_VERSION ?= v2.14.1
@@ -32,6 +33,10 @@ TB_SYFT_VERSION ?= v1.42.1
 TB_SYFT_VERSION_NUM ?= $(call STRIP_V,$(TB_SYFT_VERSION))
 
 ## Tool Installer
+.PHONY: tb.ginkgo
+tb.ginkgo: ## Download ginkgo locally if necessary.
+	@test -s $(TB_GINKGO) || \
+		GOBIN=$(TB_LOCALBIN) go install github.com/onsi/ginkgo/v2/ginkgo
 .PHONY: tb.golangci-lint
 tb.golangci-lint: ## Download golangci-lint locally if necessary.
 	@test -s $(TB_GOLANGCI_LINT) && $(TB_GOLANGCI_LINT) --version | grep -q $(TB_GOLANGCI_LINT_VERSION_NUM) || \
@@ -53,6 +58,7 @@ tb.syft: ## Download syft locally if necessary.
 .PHONY: tb.reset
 tb.reset:
 	@rm -f \
+		$(TB_GINKGO) \
 		$(TB_GOLANGCI_LINT) \
 		$(TB_GORELEASER) \
 		$(TB_SEMVER) \

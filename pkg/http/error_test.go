@@ -4,46 +4,41 @@ import (
 	"errors"
 	"net"
 	"net/url"
-	"testing"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
-func TestCheckError(t *testing.T) {
-	t.Run("should return the same error", func(t *testing.T) {
-		err := errors.New("test")
-		err2 := CheckError(err)
-		if !errors.Is(err2, err) {
-			t.Errorf("expected %v, got %v", err, err2)
-		}
+var _ = Describe("Error", func() {
+	var err error
+	BeforeEach(func() {
+		err = errors.New("test")
 	})
-	t.Run("should return the same url.Error", func(t *testing.T) {
-		err := errors.New("test")
-		urlErr := &url.Error{Err: err}
-		err2 := CheckError(urlErr)
-		if !errors.Is(err2, urlErr) {
-			t.Errorf("expected %v, got %v", urlErr, err2)
-		}
+	Context("CheckError", func() {
+		It("should return the same error", func() {
+			err2 := CheckError(err)
+			Ω(err2).Should(BeIdenticalTo(err))
+		})
+		It("should return the same url.Error", func() {
+			urlErr := &url.Error{Err: err}
+			err2 := CheckError(urlErr)
+			Ω(err2).Should(BeIdenticalTo(urlErr))
+		})
+		It("should return the url.Error if wrong OpError", func() {
+			urlErr := &url.Error{Err: &net.OpError{Op: "foo"}}
+			err2 := CheckError(urlErr)
+			Ω(err2).Should(BeIdenticalTo(urlErr))
+		})
+
+		It("should log fatal error", func() {
+			var logformat string
+			logFatalf = func(format string, v ...any) {
+				logformat = format
+			}
+			urlErr := &url.Error{Err: &net.OpError{Op: dialOperation}}
+			err2 := CheckError(urlErr)
+			Ω(err2).Should(BeNil())
+			Ω(logformat).Should(Equal(msgFormat))
+		})
 	})
-	t.Run("should return the url.Error if wrong OpError", func(t *testing.T) {
-		urlErr := &url.Error{Err: &net.OpError{Op: "foo"}}
-		err2 := CheckError(urlErr)
-		if !errors.Is(err2, urlErr) {
-			t.Errorf("expected %v, got %v", urlErr, err2)
-		}
-	})
-	t.Run("should log fatal error", func(t *testing.T) {
-		var logformat string
-		originalLogFatalf := logFatalf
-		defer func() { logFatalf = originalLogFatalf }()
-		logFatalf = func(format string, _ ...any) {
-			logformat = format
-		}
-		urlErr := &url.Error{Err: &net.OpError{Op: dialOperation}}
-		err2 := CheckError(urlErr)
-		if err2 != nil {
-			t.Errorf("expected nil error, got %v", err2)
-		}
-		if logformat != msgFormat {
-			t.Errorf("expected log format %q, got %q", msgFormat, logformat)
-		}
-	})
-}
+})

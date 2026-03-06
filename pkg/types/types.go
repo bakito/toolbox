@@ -2,7 +2,7 @@
 package types
 
 import (
-	"slices"
+	"sort"
 	"strings"
 )
 
@@ -28,8 +28,8 @@ func (t *Toolbox) GetTools() []*Tool {
 		}
 	}
 
-	slices.SortFunc(tools, func(a, b *Tool) int {
-		return strings.Compare(a.Name, b.Name)
+	sort.Slice(tools, func(i, j int) bool {
+		return strings.ToLower(tools[i].Name) < strings.ToLower(tools[j].Name)
 	})
 
 	return tools
