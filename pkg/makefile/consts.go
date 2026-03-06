@@ -1,8 +1,9 @@
 package makefile
 
 import (
-	_ "embed"
 	"fmt"
+
+	_ "embed"
 )
 
 const (

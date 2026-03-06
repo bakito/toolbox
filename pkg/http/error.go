@@ -16,10 +16,8 @@ const (
 var logFatalf = log.Fatalf
 
 func CheckError(err error) error {
-	urlError := &url.Error{}
-	if errors.As(err, &urlError) {
-		opError := &net.OpError{}
-		if errors.As(urlError.Err, &opError) {
+	if urlError, ok := errors.AsType[*url.Error](err); ok {
+		if opError, ok2 := errors.AsType[*net.OpError](urlError.Err); ok2 {
 			if opError.Op == dialOperation {
 				logFatalf(msgFormat, err)
 				return nil
