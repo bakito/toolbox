@@ -1,0 +1,5 @@
+# Include toolbox tasks
+include ./.toolbox.mk
+
+foo:
+    @echo "bar"
