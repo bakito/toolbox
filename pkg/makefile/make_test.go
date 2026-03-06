@@ -5,12 +5,13 @@ import (
 	"path/filepath"
 
 	"github.com/go-resty/resty/v2"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/format"
 
 	"github.com/bakito/toolbox/pkg/github"
 	"github.com/bakito/toolbox/pkg/types"
+
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 const testDataDir = "../../testdata"
@@ -25,7 +26,7 @@ var _ = Describe("Make", func() {
 		var err error
 		tempDir, err = os.MkdirTemp("", "toolbox_make_test_")
 		Ω(err).ShouldNot(HaveOccurred())
-		getRelease = func(client *resty.Client, repo string, quiet bool) (*types.GithubRelease, error) {
+		getRelease = func(*resty.Client, string, bool) (*types.GithubRelease, error) {
 			return &types.GithubRelease{TagName: "v0.2.1"}, nil
 		}
 		makeFilePath = copyFile("Makefile.content", tempDir)
