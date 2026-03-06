@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"slices"
-	"sort"
 	"strings"
 	"text/template"
 
@@ -33,23 +32,23 @@ func generateForTools(
 	makefile string,
 	renovate, toolchain bool,
 	argTools []string,
-	toolData []toolData,
+	toolDataList []toolData,
 ) error {
 	for _, t := range argTools {
 		td, err := dataForArg(client, t)
 		if err != nil {
 			return err
 		}
-		toolData = append(toolData, td)
+		toolDataList = append(toolDataList, td)
 	}
 
-	sort.Slice(toolData, func(i, j int) bool {
-		return toolData[i].Name < toolData[j].Name
+	slices.SortFunc(toolDataList, func(a, b toolData) int {
+		return strings.Compare(a.Name, b.Name)
 	})
 
 	withVersions := false
 	withVersionArgs := false
-	for _, td := range toolData {
+	for _, td := range toolDataList {
 		if !withVersions && td.Version != "" {
 			withVersions = true
 		}
@@ -61,7 +60,7 @@ func generateForTools(
 	out := &bytes.Buffer{}
 	t := template.Must(template.New("toolbox.mk").Parse(makefileTemplate))
 	if err := t.Execute(out, map[string]any{
-		"Tools":           toolData,
+		"Tools":           toolDataList,
 		"WithVersions":    withVersions,
 		"WithVersionArgs": withVersionArgs,
 		"Renovate":        renovate,

@@ -1,59 +1,76 @@
 package extract_test
 
 import (
+	"bytes"
 	"os"
 	"path/filepath"
-
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"testing"
 
 	"github.com/bakito/toolbox/pkg/extract"
 )
 
-var _ = Describe("Extract", func() {
-	var (
-		tempDir  string
-		testFile []byte
-	)
-	BeforeEach(func() {
-		var err error
-		tempDir, err = os.MkdirTemp("", "toolbox_extract_test_")
-		Ω(err).ShouldNot(HaveOccurred())
-		testFile, err = os.ReadFile("../../testdata/testfile")
-		Ω(err).ShouldNot(HaveOccurred())
-	})
-	AfterEach(func() {
-		_ = os.RemoveAll(tempDir)
-	})
+func TestFile(t *testing.T) {
+	testFile, err := os.ReadFile("../../testdata/testfile")
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	Context("File", func() {
-		DescribeTable("Extracting the testfile",
-			func(file string) {
-				ok, err := extract.File("../../testdata/"+file, tempDir)
-				Ω(ok).Should(BeTrue())
-				Ω(err).ShouldNot(HaveOccurred())
-				files, err := findFiles(tempDir)
-				Ω(err).ShouldNot(HaveOccurred())
-				Ω(files).Should(HaveLen(1))
+	tests := []struct {
+		name string
+		file string
+	}{
+		{"It should extract a simple zip file", "testfile.zip"},
+		{"It should extract a zip file with directories", "testfile-dirs.zip"},
+		{"It should extract a simple tar.gz file", "testfile.tar.gz"},
+		{"It should extract a tar.gz file with directories", "testfile-dirs.tar.gz"},
+		{"It should extract a simple tar.xz file", "testfile.tar.xz"},
+		{"It should extract a tar.xz file with directories", "testfile-dirs.tar.xz"},
+	}
 
-				archiveFile, err := os.ReadFile(files[0])
-				Ω(err).ShouldNot(HaveOccurred())
-				Ω(archiveFile).Should(Equal(testFile))
-			},
-			Entry("It should extract a simple zip file", "testfile.zip"),
-			Entry("It should extract a zip file with directories", "testfile-dirs.zip"),
-			Entry("It should extract a simple tar.gz file", "testfile.tar.gz"),
-			Entry("It should extract a tar.gz file with directories", "testfile-dirs.tar.gz"),
-			Entry("It should extract a simple tar.xz file", "testfile.tar.xz"),
-			Entry("It should extract a tar.xz file with directories", "testfile-dirs.tar.xz"),
-		)
-		It("should not know the extension", func() {
-			ok, err := extract.File("a.txt", tempDir)
-			Ω(err).ShouldNot(HaveOccurred())
-			Ω(ok).Should(BeFalse())
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tempDir := t.TempDir()
+			defer os.RemoveAll(tempDir)
+
+			ok, err := extract.File("../../testdata/"+tt.file, tempDir)
+			if !ok {
+				t.Error("expected ok to be true")
+			}
+			if err != nil {
+				t.Fatalf("expected no error, got %v", err)
+			}
+
+			files, err := findFiles(tempDir)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(files) != 1 {
+				t.Fatalf("expected 1 file, got %d", len(files))
+			}
+
+			archiveFile, err := os.ReadFile(files[0])
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !bytes.Equal(archiveFile, testFile) {
+				t.Error("extracted file content does not match testfile")
+			}
 		})
+	}
+
+	t.Run("should not know the extension", func(t *testing.T) {
+		tempDir := t.TempDir()
+		defer os.RemoveAll(tempDir)
+
+		ok, err := extract.File("a.txt", tempDir)
+		if err != nil {
+			t.Errorf("expected no error, got %v", err)
+		}
+		if ok {
+			t.Error("expected ok to be false")
+		}
 	})
-})
+}
 
 func findFiles(dir string) ([]string, error) {
 	var files []string

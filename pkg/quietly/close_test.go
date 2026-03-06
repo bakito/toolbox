@@ -2,30 +2,30 @@ package quietly_test
 
 import (
 	"errors"
-
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"testing"
 
 	"github.com/bakito/toolbox/pkg/quietly"
 )
 
-var _ = Describe("Close", func() {
-	Context("CheckError", func() {
-		It("Should close the Closer", func() {
-			cl := &closer{}
-			quietly.Close(cl)
-			Ω(cl.closed).Should(BeTrue())
-		})
-		It("Should not fail on nil", func() {
-			quietly.Close(nil)
-		})
-		It("Should not fail when close return an error", func() {
-			cl := &closer{fail: true}
-			quietly.Close(cl)
-			Ω(cl.closed).Should(BeFalse())
-		})
+func TestClose(t *testing.T) {
+	t.Run("Should close the Closer", func(t *testing.T) {
+		cl := &closer{}
+		quietly.Close(cl)
+		if !cl.closed {
+			t.Error("expected closer to be closed")
+		}
 	})
-})
+	t.Run("Should not fail on nil", func(*testing.T) {
+		quietly.Close(nil)
+	})
+	t.Run("Should not fail when close return an error", func(t *testing.T) {
+		cl := &closer{fail: true}
+		quietly.Close(cl)
+		if cl.closed {
+			t.Error("expected closer to not be closed due to error")
+		}
+	})
+}
 
 type closer struct {
 	closed bool
