@@ -1,6 +1,6 @@
 module github.com/bakito/toolbox
 
-go 1.26.0
+go 1.26.1
 
 require (
 	github.com/cavaliergopher/grab/v3 v3.0.1
