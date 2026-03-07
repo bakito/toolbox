@@ -1,51 +1,88 @@
 package types_test
 
 import (
-	"github.com/bakito/toolbox/pkg/types"
+	"testing"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/google/go-cmp/cmp"
+
+	"github.com/bakito/toolbox/pkg/types"
 )
 
-var _ = Describe("Types", func() {
-	Context("Toolbox", func() {
-		var tb *types.Toolbox
-		BeforeEach(func() {
-			tb = &types.Toolbox{}
+func TestToolbox_GetTools(t *testing.T) {
+	tests := []struct {
+		name string
+		tb   *types.Toolbox
+		want []string // tool names
+	}{
+		{
+			name: "should return an empty slice",
+			tb:   &types.Toolbox{},
+			want: nil,
+		},
+		{
+			name: "should return a sorted slice",
+			tb: &types.Toolbox{
+				Tools: map[string]*types.Tool{
+					"xyz":       {Name: "xyz", Github: "foo"},
+					"abc":       {Name: "abc", Google: "bar"},
+					"no-source": {Name: "no-source"},
+					"foo":       {DownloadURL: "url"},
+				},
+			},
+			want: []string{"abc", "foo", "xyz"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.tb.GetTools()
+			var gotNames []string
+			for _, tool := range got {
+				gotNames = append(gotNames, tool.Name)
+			}
+			if tt.want == nil && len(gotNames) == 0 {
+				return
+			}
+			if diff := cmp.Diff(tt.want, gotNames); diff != "" {
+				t.Errorf("GetTools() mismatch (-want +got):\n%s", diff)
+			}
 		})
-		Context("GetTools", func() {
-			It("should return an empty slice", func() {
-				tools := tb.GetTools()
-				Ω(tools).Should(BeEmpty())
-			})
-			It("should return an a sorted slice", func() {
-				t1 := &types.Tool{Name: "xyz", Github: "foo"}
-				t2 := &types.Tool{Name: "abc", Google: "bar"}
-				t3 := &types.Tool{Name: "no-source"}
-				tb.Tools = map[string]*types.Tool{t1.Name: t1, t2.Name: t2, t3.Name: t3, "foo": {DownloadURL: "url"}}
-				tools := tb.GetTools()
-				Ω(tools).Should(HaveLen(3))
-				Ω(tools[0].Name).Should(Equal("abc"))
-				Ω(tools[1].Name).Should(Equal("foo"))
-				Ω(tools[2].Name).Should(Equal("xyz"))
-			})
+	}
+}
+
+func TestToolbox_Versions(t *testing.T) {
+	tests := []struct {
+		name string
+		tb   *types.Toolbox
+		want map[string]string
+	}{
+		{
+			name: "should return an empty map",
+			tb:   &types.Toolbox{},
+			want: make(map[string]string),
+		},
+		{
+			name: "should return a map of versions",
+			tb: &types.Toolbox{
+				Tools: map[string]*types.Tool{
+					"xyz": {Name: "xyz", CouldNotBeFound: true, Github: "foo"},
+					"abc": {Name: "abc", Version: "v1.0.0", Github: "foo"},
+					"foo": {Version: "v1.2.3", Github: "foo"},
+				},
+			},
+			want: map[string]string{
+				"abc": "v1.0.0",
+				"foo": "v1.2.3",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.tb.Versions()
+			if diff := cmp.Diff(tt.want, got.Versions); diff != "" {
+				t.Errorf("Versions() mismatch (-want +got):\n%s", diff)
+			}
 		})
-		Context("Versions", func() {
-			It("should return an empty map", func() {
-				versions := tb.Versions()
-				Ω(versions.Versions).Should(BeEmpty())
-			})
-			It("should return an a sorted slice", func() {
-				t1 := &types.Tool{Name: "xyz", CouldNotBeFound: true, Github: "foo"}
-				t2 := &types.Tool{Name: "abc", Version: "v1.0.0", Github: "foo"}
-				tb.Tools = map[string]*types.Tool{t1.Name: t1, t2.Name: t2, "foo": {Version: "v1.2.3", Github: "foo"}}
-				versions := tb.Versions()
-				Ω(versions.Versions).Should(HaveLen(2))
-				Ω(versions.Versions).Should(HaveKey("abc"))
-				Ω(versions.Versions["abc"]).Should(Equal("v1.0.0"))
-				Ω(versions.Versions).Should(HaveKey("foo"))
-				Ω(versions.Versions["foo"]).Should(Equal("v1.2.3"))
-			})
-		})
-	})
-})
+	}
+}

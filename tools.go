@@ -3,5 +3,6 @@
 package tools
 
 import (
-	_ "github.com/onsi/ginkgo/v2/ginkgo"
+	_ "github.com/golangci/golangci-lint/cmd/golangci-lint"
+	_ "github.com/goreleaser/goreleaser/v2"
 )

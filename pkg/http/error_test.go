@@ -4,41 +4,65 @@ import (
 	"errors"
 	"net"
 	"net/url"
+	"testing"
 
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 )
 
-var _ = Describe("Error", func() {
-	var err error
-	BeforeEach(func() {
-		err = errors.New("test")
-	})
-	Context("CheckError", func() {
-		It("should return the same error", func() {
-			err2 := CheckError(err)
-			Ω(err2).Should(BeIdenticalTo(err))
-		})
-		It("should return the same url.Error", func() {
-			urlErr := &url.Error{Err: err}
-			err2 := CheckError(urlErr)
-			Ω(err2).Should(BeIdenticalTo(urlErr))
-		})
-		It("should return the url.Error if wrong OpError", func() {
-			urlErr := &url.Error{Err: &net.OpError{Op: "foo"}}
-			err2 := CheckError(urlErr)
-			Ω(err2).Should(BeIdenticalTo(urlErr))
-		})
+func TestCheckError(t *testing.T) {
+	err := errors.New("test")
+	urlErr := &url.Error{Err: err}
+	wrongOpErr := &url.Error{Err: &net.OpError{Op: "foo"}}
+	dialErr := &url.Error{Err: &net.OpError{Op: dialOperation}}
+	tests := []struct {
+		name          string
+		err           error
+		want          error
+		wantLogFormat string
+	}{
+		{
+			name: "should return the same error",
+			err:  err,
+			want: err,
+		},
+		{
+			name: "should return the same url.Error",
+			err:  urlErr,
+			want: urlErr,
+		},
+		{
+			name: "should return the url.Error if wrong OpError",
+			err:  wrongOpErr,
+			want: wrongOpErr,
+		},
+		{
+			name:          "should log fatal error",
+			err:           dialErr,
+			want:          nil,
+			wantLogFormat: msgFormat,
+		},
+	}
 
-		It("should log fatal error", func() {
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
 			var logformat string
+			originalLogFatalf := logFatalf
 			logFatalf = func(format string, _ ...any) {
 				logformat = format
 			}
-			urlErr := &url.Error{Err: &net.OpError{Op: dialOperation}}
-			err2 := CheckError(urlErr)
-			Ω(err2).Should(BeNil())
-			Ω(logformat).Should(Equal(msgFormat))
+			defer func() { logFatalf = originalLogFatalf }()
+
+			got := CheckError(tt.err)
+			if !errors.Is(got, tt.want) {
+				if diff := cmp.Diff(tt.want, got, cmpopts.EquateErrors()); diff != "" {
+					t.Errorf("CheckError() mismatch (-want +got):\n%s", diff)
+				}
+			}
+
+			if logformat != tt.wantLogFormat {
+				t.Errorf("logformat = %v, want %v", logformat, tt.wantLogFormat)
+			}
 		})
-	})
-})
+	}
+}
