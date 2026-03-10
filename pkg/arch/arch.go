@@ -41,6 +41,8 @@ func checkPEFileArch(file *os.File, currentArch string) (bool, error) {
 		arch = "386"
 	case pe.IMAGE_FILE_MACHINE_AMD64:
 		arch = "amd64"
+	case pe.IMAGE_FILE_MACHINE_ARM64:
+		arch = "arm64"
 	default:
 		return false, fmt.Errorf("unsupported architecture in PE file: %v", peFile.Machine)
 	}
@@ -60,6 +62,10 @@ func checkELFFileArch(file *os.File, currentArch string) (bool, error) {
 		arch = "386"
 	case elf.EM_X86_64:
 		arch = "amd64"
+	case elf.EM_AARCH64:
+		arch = "arm64"
+	case elf.EM_ARM:
+		arch = "arm"
 	default:
 		return false, fmt.Errorf("unsupported architecture in ELF file: %v", elfFile.Machine)
 	}

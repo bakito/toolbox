@@ -223,6 +223,45 @@ func TestFindMatching(t *testing.T) {
 			},
 			expected: &types.Asset{Name: "tool1-" + runtime.GOOS + "-" + runtime.GOARCH + "-a"},
 		},
+		{
+			name:     "Prefer arm64 even if aarch64 is present",
+			tb:       nil,
+			toolName: "fnox",
+			assets: []types.Asset{
+				{Name: "fnox-aarch64-unknown-linux-gnu.tar.gz"},
+				{Name: "fnox-arm64-unknown-linux-gnu.tar.gz"},
+			},
+			expected: func() *types.Asset {
+				if runtime.GOARCH == "arm64" {
+					return &types.Asset{Name: "fnox-arm64-unknown-linux-gnu.tar.gz"}
+				}
+				// if not arm64, it shouldn't match either ideally,
+				// but findMatching filters by GOOS first, then sorts.
+				// If GOOS matches, it will return one of them.
+				return &types.Asset{Name: "fnox-aarch64-unknown-linux-gnu.tar.gz"}
+			}(),
+		},
+		{
+			name:     "Should match aarch64 for arm64 if arm64 not available",
+			tb:       nil,
+			toolName: "fnox",
+			assets: []types.Asset{
+				{Name: "fnox-aarch64-unknown-linux-gnu.tar.gz"},
+				{Name: "fnox-x86_64-unknown-linux-gnu.tar.gz"},
+			},
+			expected: func() *types.Asset {
+				switch runtime.GOARCH {
+				case "arm64":
+					return &types.Asset{Name: "fnox-aarch64-unknown-linux-gnu.tar.gz"}
+				case "amd64":
+					return &types.Asset{Name: "fnox-x86_64-unknown-linux-gnu.tar.gz"}
+				}
+				return findMatching(nil, "fnox", []types.Asset{
+					{Name: "fnox-aarch64-unknown-linux-gnu.tar.gz"},
+					{Name: "fnox-x86_64-unknown-linux-gnu.tar.gz"},
+				})
+			}(),
+		},
 	}
 
 	for _, tt := range tests {

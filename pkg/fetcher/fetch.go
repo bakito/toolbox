@@ -41,11 +41,12 @@ const (
 var (
 	aliases = map[string][]string{
 		"amd64":   {"x86_64", "64", "64bit"},
+		"arm64":   {"aarch64", "arm64", "arm64bit"},
 		"windows": {"win", "win64"},
 		"linux":   {"linux64"},
 	}
 	stopAliases = map[string][]string{
-		"amd64":   {"arm", "mips", "ppc", "risc", "s390"},
+		"amd64":   {"arm", "aarch64", "mips", "ppc", "risc", "s390"},
 		"windows": {"darwin"},
 	}
 
@@ -332,6 +333,10 @@ func findMatching(tb *types.Toolbox, toolName string, assets []types.Asset) *typ
 		mi := strings.HasPrefix(a.Name, toolName+"-")
 		mj := strings.HasPrefix(b.Name, toolName+"-")
 
+		if mi == mj {
+			mi = isExactMatch(runtime.GOARCH, a.Name)
+			mj = isExactMatch(runtime.GOARCH, b.Name)
+		}
 		if mi == mj {
 			mi = matches(runtime.GOARCH, a.Name)
 			mj = matches(runtime.GOARCH, b.Name)
@@ -649,17 +654,23 @@ func matches(info, name string) bool {
 		if strings.Contains(ln, a) {
 			matches := true
 			for _, sa := range stopAliases[info] {
-				if matches && strings.Contains(ln, sa) {
+				if strings.Contains(ln, sa) {
 					matches = false
+					break
 				}
 			}
 			if matches {
-				return matches
+				return true
 			}
 		}
 	}
 
 	return false
+}
+
+func isExactMatch(info, name string) bool {
+	ln := strings.ToLower(name)
+	return strings.Contains(ln, strings.ToLower(info))
 }
 
 func downloadFile(path, url string) (err error) {
