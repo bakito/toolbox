@@ -13,7 +13,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"slices"
-	"sort"
 	"strconv"
 	"strings"
 	"text/template"
@@ -329,34 +328,36 @@ func findMatching(tb *types.Toolbox, toolName string, assets []types.Asset) *typ
 		}
 	}
 
-	//nolint:revive // use-slices-sort
-	sort.Slice(matching, func(i, j int) bool {
-		mi := strings.HasPrefix(matching[i].Name, toolName+"-")
-		mj := strings.HasPrefix(matching[j].Name, toolName+"-")
+	slices.SortFunc(matching, func(a, b *types.Asset) int {
+		mi := strings.HasPrefix(a.Name, toolName+"-")
+		mj := strings.HasPrefix(b.Name, toolName+"-")
 
 		if mi == mj {
-			mi = matches(runtime.GOARCH, matching[i].Name)
-			mj = matches(runtime.GOARCH, matching[j].Name)
+			mi = matches(runtime.GOARCH, a.Name)
+			mj = matches(runtime.GOARCH, b.Name)
 		}
 		if mi == mj {
-			mi = strings.Contains(matching[i].Name, runtime.GOARCH)
-			mj = strings.Contains(matching[j].Name, runtime.GOARCH)
+			mi = strings.Contains(a.Name, runtime.GOARCH)
+			mj = strings.Contains(b.Name, runtime.GOARCH)
 		}
 		if mi == mj {
 			// prefer non archive files
-			mi = !strings.Contains(matching[i].Name, ".")
-			mj = !strings.Contains(matching[j].Name, ".")
+			mi = !strings.Contains(a.Name, ".")
+			mj = !strings.Contains(b.Name, ".")
 		}
 		if mi == mj {
 			// prefer non archive files
-			mi = strings.HasSuffix(matching[i].Name, defaultFileExtension())
-			mj = strings.HasSuffix(matching[j].Name, defaultFileExtension())
+			mi = strings.HasSuffix(a.Name, defaultFileExtension())
+			mj = strings.HasSuffix(b.Name, defaultFileExtension())
 		}
 		if mi == mj {
-			return false
+			return 0
 		}
 
-		return mi
+		if mi {
+			return -1
+		}
+		return 1
 	})
 	if len(matching) == 0 {
 		return nil
