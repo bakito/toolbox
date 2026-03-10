@@ -46,11 +46,12 @@ var (
 		"linux":   {"linux64"},
 	}
 	stopAliases = map[string][]string{
-		"amd64":   {"arm", "aarch64", "mips", "ppc", "risc", "s390"},
+		"amd64":   {"arm", "aarch64", "mips", "ppc", "risc", "s390", "loongarch"},
+		"arm64":   {"loongarch", "mips", "ppc", "risc", "s390"},
 		"windows": {"darwin"},
 	}
 
-	excludedSuffixes = []string{"sum", "sha256", "sha512", "sbom", "pem", "sig", "rpm", "txt", "deb", "json", "asc"}
+	excludedSuffixes = []string{"sum", "sha256", "sha512", "sbom", "pem", "sig", "rpm", "txt", "deb", "json", "asc", "apk"}
 )
 
 func New() Fetcher {
@@ -273,7 +274,7 @@ func (f *fetcher) downloadViaGithub(tb *types.Toolbox, tool *types.Tool, ghr *ty
 		}
 	}
 	for _, add := range tool.Additional {
-		matching := findMatching(nil, add, ghr.Assets)
+		matching := findMatching(tb, add, ghr.Assets)
 		if matching != nil {
 			tool.CouldNotBeFound = false
 			if err := f.fetchTool(tool, add, matching.BrowserDownloadURL, tmp, tb.Target); err != nil {
@@ -356,6 +357,9 @@ func findMatching(tb *types.Toolbox, toolName string, assets []types.Asset) *typ
 			mj = strings.HasSuffix(b.Name, defaultFileExtension())
 		}
 		if mi == mj {
+			return extensionWeight(b.Name) - extensionWeight(a.Name)
+		}
+		if mi == mj {
 			return 0
 		}
 
@@ -375,8 +379,10 @@ func hasForbiddenSuffix(tb *types.Toolbox, a types.Asset) bool {
 	if tb != nil && len(tb.ExcludedSuffixes) != 0 {
 		excl = tb.ExcludedSuffixes
 	}
+	ln := strings.ToLower(a.Name)
 	for _, suffix := range excl {
-		if strings.HasSuffix(a.Name, suffix) {
+		if strings.HasSuffix(ln, strings.ToLower(suffix)) ||
+			strings.Contains(ln, "."+strings.ToLower(suffix)+".") {
 			return true
 		}
 	}
@@ -671,6 +677,20 @@ func matches(info, name string) bool {
 func isExactMatch(info, name string) bool {
 	ln := strings.ToLower(name)
 	return strings.Contains(ln, strings.ToLower(info))
+}
+
+func extensionWeight(name string) int {
+	ln := strings.ToLower(name)
+	if strings.HasSuffix(ln, ".tar.gz") || strings.HasSuffix(ln, ".tgz") {
+		return 10
+	}
+	if strings.HasSuffix(ln, ".tar.xz") || strings.HasSuffix(ln, ".txz") {
+		return 9
+	}
+	if strings.HasSuffix(ln, ".zip") {
+		return 8
+	}
+	return 0
 }
 
 func downloadFile(path, url string) (err error) {

@@ -19,15 +19,16 @@ import (
 )
 
 func File(file, target string) (bool, error) {
-	if strings.HasSuffix(file, ".tar.gz") {
+	ln := strings.ToLower(file)
+	if strings.HasSuffix(ln, ".tar.gz") || strings.HasSuffix(ln, ".tgz") {
 		log.Printf("Extracting %s", file)
 		return true, tarGz(file, target)
 	}
-	if strings.HasSuffix(file, ".zip") {
+	if strings.HasSuffix(ln, ".zip") {
 		log.Printf("Extracting %s", file)
 		return true, unzip(file, target)
 	}
-	if strings.HasSuffix(file, ".tar.xz") {
+	if strings.HasSuffix(ln, ".tar.xz") || strings.HasSuffix(ln, ".txz") {
 		log.Printf("Extracting %s", file)
 		return true, tarXz(file, target)
 	}

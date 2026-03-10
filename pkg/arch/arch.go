@@ -66,6 +66,14 @@ func checkELFFileArch(file *os.File, currentArch string) (bool, error) {
 		arch = "arm64"
 	case elf.EM_ARM:
 		arch = "arm"
+	case elf.EM_LOONGARCH:
+		arch = "loong64"
+	case elf.EM_PPC64:
+		arch = "ppc64"
+	case elf.EM_S390:
+		arch = "s390x"
+	case elf.EM_RISCV:
+		arch = "riscv64"
 	default:
 		return false, fmt.Errorf("unsupported architecture in ELF file: %v", elfFile.Machine)
 	}

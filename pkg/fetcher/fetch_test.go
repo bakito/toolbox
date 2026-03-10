@@ -262,6 +262,92 @@ func TestFindMatching(t *testing.T) {
 				})
 			}(),
 		},
+		{
+			name:     "Should NOT match loongarch64 for amd64",
+			tb:       nil,
+			toolName: "nu",
+			assets: []types.Asset{
+				{Name: "nu-0.111.0-loongarch64-unknown-linux-gnu.tar.gz"},
+				{Name: "nu-0.111.0-x86_64-unknown-linux-gnu.tar.gz"},
+			},
+			expected: func() *types.Asset {
+				switch runtime.GOARCH {
+				case "amd64":
+					return &types.Asset{Name: "nu-0.111.0-x86_64-unknown-linux-gnu.tar.gz"}
+				case "loong64":
+					return &types.Asset{Name: "nu-0.111.0-loongarch64-unknown-linux-gnu.tar.gz"}
+				}
+				return findMatching(nil, "nu", []types.Asset{
+					{Name: "nu-0.111.0-loongarch64-unknown-linux-gnu.tar.gz"},
+					{Name: "nu-0.111.0-x86_64-unknown-linux-gnu.tar.gz"},
+				})
+			}(),
+		},
+		{
+			name:     "Should NOT match apk file",
+			tb:       nil,
+			toolName: "k9s",
+			assets: []types.Asset{
+				{Name: "k9s_linux_amd64.apk"},
+			},
+			expected: nil,
+		},
+		{
+			name:     "Should NOT match apk file (case insensitive)",
+			tb:       nil,
+			toolName: "k9s",
+			assets: []types.Asset{
+				{Name: "k9s_linux_amd64.APK"},
+			},
+			expected: nil,
+		},
+		{
+			name:     "Should NOT match apk file (from toolbox config)",
+			tb:       &types.Toolbox{ExcludedSuffixes: []string{"apk"}},
+			toolName: "k9s",
+			assets: []types.Asset{
+				{Name: "k9s_linux_amd64.apk"},
+			},
+			expected: nil,
+		},
+		{
+			name:     "Should NOT match sha256.sig file",
+			tb:       nil,
+			toolName: "k9s",
+			assets: []types.Asset{
+				{Name: "k9s_linux_amd64.sha256.sig"},
+			},
+			expected: nil,
+		},
+		{
+			name:     "Should NOT match apk file for additional tools",
+			tb:       &types.Toolbox{ExcludedSuffixes: []string{"apk"}},
+			toolName: "other",
+			assets: []types.Asset{
+				{Name: "other_linux_amd64.apk"},
+			},
+			expected: nil,
+		},
+		{
+			name:     "Should prefer tar.gz over apk if both exist",
+			tb:       nil,
+			toolName: "k9s",
+			assets: []types.Asset{
+				{Name: "k9s_linux_amd64.apk"},
+				{Name: "k9s_Linux_amd64.tar.gz"},
+			},
+			expected: &types.Asset{Name: "k9s_Linux_amd64.tar.gz"},
+		},
+		{
+			name:     "Should prefer tar.gz over zip on Linux",
+			tb:       nil,
+			toolName: "tool",
+			assets: []types.Asset{
+				{Name: "tool-linux-amd64.zip"},
+				{Name: "tool-linux-amd64.tar.gz"},
+			},
+			expected: &types.Asset{Name: "tool-linux-amd64.tar.gz"},
+		},
 	}
 
 	for _, tt := range tests {
