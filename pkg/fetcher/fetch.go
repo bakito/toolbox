@@ -353,7 +353,7 @@ func findMatching(tb *types.Toolbox, toolName string, assets []types.Asset) *typ
 			mj = strings.HasSuffix(matching[j].Name, defaultFileExtension())
 		}
 		if mi == mj {
-			return true
+			return false
 		}
 
 		return mi
