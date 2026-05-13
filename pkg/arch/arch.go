@@ -34,6 +34,7 @@ func checkPEFileArch(file *os.File, currentArch string) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("error opening PE file: %w", err)
 	}
+	defer peFile.Close()
 
 	var arch string
 	switch peFile.Machine {
@@ -55,6 +56,7 @@ func checkELFFileArch(file *os.File, currentArch string) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("error opening ELF file: %w", err)
 	}
+	defer elfFile.Close()
 
 	var arch string
 	switch elfFile.Machine {

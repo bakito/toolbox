@@ -61,7 +61,7 @@ type GithubTags []GithubTag
 
 func (ght GithubTags) GetLatest() *GithubTag {
 	slices.SortFunc(ght, func(a, b GithubTag) int {
-		return strings.Compare(a.Name, b.Name)
+		return semver.Compare(b.Name, a.Name)
 	})
 
 	for _, tag := range ght {

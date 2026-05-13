@@ -418,10 +418,13 @@ func templateData(v string) map[string]string {
 }
 
 func (f *fetcher) fetchTool(tool *types.Tool, toolName, url, tmpDir, targetDir string) error {
-	dir := fmt.Sprintf("%s/%s", tmpDir, toolName)
+	dir := filepath.Join(tmpDir, toolName)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
 	paths := strings.Split(url, "/")
 	fileName := paths[len(paths)-1]
-	path := fmt.Sprintf("%s/%s", dir, fileName)
+	path := filepath.Join(dir, fileName)
 	log.Printf("📥 Downloading %s", url)
 	if err := f.downloadFile(path, url); err != nil {
 		return err

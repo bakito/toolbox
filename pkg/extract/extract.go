@@ -57,6 +57,7 @@ func unzipFile(file *zip.File, target string) error {
 	if err != nil {
 		return err
 	}
+	defer quietly.Close(open)
 	name, err := sanitizeArchivePath(target, file.Name)
 	if err != nil {
 		return err
@@ -96,6 +97,7 @@ func tarGz(file, target string) error {
 	if err != nil {
 		return fmt.Errorf("ExtractTarGz: NewReader failed: %w", err)
 	}
+	defer quietly.Close(uncompressedStream)
 
 	tarReader := tar.NewReader(uncompressedStream)
 
@@ -188,15 +190,8 @@ func tarXzFile(tr *tar.Reader, hdr *tar.Header, target string) error {
 		}
 
 		defer quietly.Close(w)
-		for {
-			_, err := io.CopyN(w, tr, 1024)
-			if err != nil {
-				if errors.Is(err, io.EOF) {
-					break
-				}
-				return err
-			}
-		}
+		_, err = io.Copy(w, tr)
+		return err
 	}
 	return nil
 }
