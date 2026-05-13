@@ -16,6 +16,7 @@ import (
 	"strconv"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/cavaliergopher/grab/v3"
 	"github.com/go-resty/resty/v2"
@@ -55,7 +56,9 @@ var (
 )
 
 func New() Fetcher {
-	return &fetcher{}
+	return &fetcher{
+		grabClient: grab.NewClient(),
+	}
 }
 
 type Fetcher interface {
@@ -64,6 +67,7 @@ type Fetcher interface {
 type fetcher struct {
 	executablePath string
 	upx            bool
+	grabClient     *grab.Client
 }
 
 func (f *fetcher) Fetch(cfgFile string, selectedTools ...string) error {
@@ -419,7 +423,7 @@ func (f *fetcher) fetchTool(tool *types.Tool, toolName, url, tmpDir, targetDir s
 	fileName := paths[len(paths)-1]
 	path := fmt.Sprintf("%s/%s", dir, fileName)
 	log.Printf("📥 Downloading %s", url)
-	if err := downloadFile(path, url); err != nil {
+	if err := f.downloadFile(path, url); err != nil {
 		return err
 	}
 	extracted, err := extract.File(path, dir)
@@ -693,15 +697,39 @@ func extensionWeight(name string) int {
 	return 0
 }
 
-func downloadFile(path, url string) (err error) {
+func (f *fetcher) downloadFile(path, url string) (err error) {
 	req, err := grab.NewRequest(path, url)
 	if err != nil {
 		return err
 	}
-	client := grab.NewClient()
 	req.HTTPRequest.Header.Set("User-Agent", "toolbox/"+version.Version)
 
-	resp := client.Do(req)
+	resp := f.grabClient.Do(req)
+
+	t := time.NewTicker(200 * time.Millisecond)
+	defer t.Stop()
+
+Loop:
+	for {
+		select {
+		case <-t.C:
+			fmt.Printf("\r  %s / %s (%.2f%%) %s/s            ",
+				formatBytes(resp.BytesComplete()),
+				formatBytes(resp.Size()),
+				100*resp.Progress(),
+				formatBytes(int64(resp.BytesPerSecond())))
+
+		case <-resp.Done:
+			fmt.Printf("\r  %s / %s (%.2f%%) %s/s            ",
+				formatBytes(resp.BytesComplete()),
+				formatBytes(resp.Size()),
+				100*resp.Progress(),
+				formatBytes(int64(resp.BytesPerSecond())))
+			fmt.Println()
+			break Loop
+		}
+	}
+
 	if resp.Err() != nil {
 		return http.CheckError(resp.Err())
 	}
