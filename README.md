@@ -18,6 +18,7 @@ curl -sSL https://raw.githubusercontent.com/bakito/toolbox/refs/heads/main/insta
 ```bash
 # Add the tap
 brew tap bakito/tap
+brew trust bakito/tap
 
 # install toolbox 
 brew install --cask toolbox
