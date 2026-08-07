@@ -29,6 +29,15 @@ func (t *Toolbox) GetTools() []*Tool {
 	}
 
 	slices.SortFunc(tools, func(a, b *Tool) int {
+		// process upx as first tool
+		if t.Upx {
+			if a.Name == "upx" {
+				return -1
+			}
+			if b.Name == "upx" {
+				return 1
+			}
+		}
 		return strings.Compare(a.Name, b.Name)
 	})
 

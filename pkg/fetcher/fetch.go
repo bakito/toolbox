@@ -15,6 +15,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"syscall"
 	"text/template"
 	"time"
 
@@ -484,12 +485,13 @@ func (f *fetcher) moveToTarget(
 	downloadedName string,
 	isAdditional bool,
 ) error {
-	targetFilePath, err := filepath.Abs(filepath.Join(targetDir, trueToolName))
+	trueBinaryName := binaryName(trueToolName)
+	targetFilePath, err := filepath.Abs(filepath.Join(targetDir, trueBinaryName))
 	if err != nil {
 		return err
 	}
 	if f.executablePath == targetFilePath {
-		renameTo := filepath.Join(targetDir, oldExecutablePrefix+trueToolName)
+		renameTo := filepath.Join(targetDir, oldExecutablePrefix+trueBinaryName)
 		err = os.Rename(targetFilePath, renameTo)
 		if err != nil {
 			return err
@@ -498,7 +500,17 @@ func (f *fetcher) moveToTarget(
 	}
 	ok, err := f.copyTool(tool, dir, downloadedName, targetDir, trueToolName)
 	if err != nil {
-		return err
+		if errors.Is(err, syscall.ETXTBSY) {
+			renameTo := filepath.Join(targetDir, oldExecutablePrefix+trueBinaryName)
+			if renameErr := os.Rename(targetFilePath, renameTo); renameErr != nil {
+				return err
+			}
+			log.Printf("🔀 Rename busy executable to %s", renameTo)
+			ok, err = f.copyTool(tool, dir, downloadedName, targetDir, trueToolName)
+		}
+		if err != nil {
+			return err
+		}
 	}
 	if !ok && !isAdditional {
 		return fmt.Errorf("could not find: %s", downloadedName)
