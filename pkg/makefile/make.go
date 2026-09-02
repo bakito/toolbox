@@ -125,7 +125,7 @@ func dataForArg(client *resty.Client, tool string) (toolData, error) {
 		return td, fmt.Errorf("invalid tool %q", tool)
 	}
 
-	ghr, err := getRelease(client, match[1], true)
+	ghr, err := getRelease(client, match[1], "", true)
 	if err != nil {
 		return td, err
 	}

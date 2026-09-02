@@ -2,7 +2,7 @@
 
 # toolbox
 
-🧰 A little toolbox to help fetching tools
+🧰 A little toolbox to help fetch tools
 
 ## Installation
 
@@ -77,7 +77,15 @@ tools:
     github: cli/cli
 target: /home/xyz/bin
 upx: false # if enabled and upx is installed, the tools will be upx compressed.
+githubApiToken: <your-github-token> # optional: if defined it will be used instead of env var GITHUB_TOKEN
 ```
+
+## GitHub Authentication
+
+When fetching tools from GitHub, it is recommended to use a GitHub API token to avoid rate limiting.
+You can provide the token in two ways:
+1. Environment variable `GITHUB_TOKEN`
+2. Configuration field `githubApiToken` (takes precedence over the environment variable)
 
 ## Generate Makefile go tool install tasks
 

@@ -199,19 +199,19 @@ func TestFindMatching(t *testing.T) {
 			toolName: "tool1",
 			assets: []types.Asset{
 				{Name: "tool1-" + runtime.GOOS + "-" + runtime.GOARCH + ".tar.gz"},
-				{Name: "tool1-" + runtime.GOOS + "-" + runtime.GOARCH + (func() string {
+				{Name: "tool1-" + runtime.GOOS + "-" + runtime.GOARCH + func() string {
 					if runtime.GOOS == "windows" {
 						return ".exe"
 					}
 					return ""
-				})()},
+				}()},
 			},
-			expected: &types.Asset{Name: "tool1-" + runtime.GOOS + "-" + runtime.GOARCH + (func() string {
+			expected: &types.Asset{Name: "tool1-" + runtime.GOOS + "-" + runtime.GOARCH + func() string {
 				if runtime.GOOS == "windows" {
 					return ".exe"
 				}
 				return ""
-			})()},
+			}()},
 		},
 		{
 			name:     "All sorting criteria equal - return first",

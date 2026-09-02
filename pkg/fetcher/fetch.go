@@ -79,10 +79,14 @@ func (f *fetcher) Fetch(cfgFile string, selectedTools ...string) error {
 	}
 
 	log.Printf("🧰 toolbox %s", version.Version)
+	tb, _, err := ReadToolbox(cfgFile)
+	if err != nil {
+		return err
+	}
 
 	client := resty.New()
 
-	tbRel, err := github.LatestRelease(client, "bakito/toolbox", true)
+	tbRel, err := github.LatestRelease(client, "bakito/toolbox", tb.GithubAPIToken, true)
 	if err != nil {
 		return err
 	}
@@ -90,12 +94,10 @@ func (f *fetcher) Fetch(cfgFile string, selectedTools ...string) error {
 		log.Printf("🌟 A new toolbox version is available %s (current: %s)\n", tbRel.TagName, version.Version)
 	}
 
-	tb, _, err := ReadToolbox(cfgFile)
-	if tb.HasGithubTools() && !github.TokenSet() {
-		log.Print("⚠️ when using github tools, defining a github token 'GITHUB_TOKEN' is recommended")
-	}
-	if err != nil {
-		return err
+	if tb.HasGithubTools() && !github.TokenSet(tb.GithubAPIToken) {
+		log.Print(
+			"⚠️ when using github tools, defining a github token 'GITHUB_TOKEN' or 'githubApiToken' in the config is recommended",
+		)
 	}
 	sanitizeTargetDir(tb)
 
@@ -222,9 +224,9 @@ func (f *fetcher) handleTool(
 	currentVersion := ver[tool.Name]
 	if tool.Github != "" {
 		if configVersion == "" {
-			ghr, err = github.LatestRelease(client, tool.Github, false)
+			ghr, err = github.LatestRelease(client, tool.Github, tb.GithubAPIToken, false)
 		} else {
-			ghr, err = github.Release(client, tool.Github, configVersion, false)
+			ghr, err = github.Release(client, tool.Github, configVersion, tb.GithubAPIToken, false)
 		}
 		if err != nil {
 			return err

@@ -17,7 +17,7 @@ func TestMake_Generate(t *testing.T) {
 	tempDir := t.TempDir()
 
 	originalGetRelease := getRelease
-	getRelease = func(*resty.Client, string, bool) (*types.GithubRelease, error) {
+	getRelease = func(_ *resty.Client, _, _ string, _ bool) (*types.GithubRelease, error) {
 		return &types.GithubRelease{TagName: "v0.2.1"}, nil
 	}
 	defer func() { getRelease = originalGetRelease }()
