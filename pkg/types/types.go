@@ -13,6 +13,7 @@ type Toolbox struct {
 	CreateTarget     *bool                `yaml:"createTarget,omitempty"`
 	Aliases          *map[string][]string `yaml:"aliases,omitempty"`
 	ExcludedSuffixes []string             `yaml:"excludedSuffixes,omitempty"`
+	GithubAPIToken   string               `yaml:"githubApiToken,omitempty"`
 }
 
 func (t *Toolbox) GetTools() []*Tool {

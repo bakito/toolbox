@@ -22,14 +22,14 @@ var (
 	latestTagURLPattern     = "https://api.github.com/repos/%s/tags"
 )
 
-func LatestRelease(client *resty.Client, repo string, quiet bool) (*types.GithubRelease, error) {
+func LatestRelease(client *resty.Client, repo, token string, quiet bool) (*types.GithubRelease, error) {
 	ghr := &types.GithubRelease{}
 	ghErr := &types.GithubError{}
 	ghc := client.R().
 		SetResult(ghr).
 		SetError(ghErr).
 		SetHeader("Accept", "application/json")
-	handleGithubToken(ghc, quiet)
+	handleGithubToken(ghc, token, quiet)
 	url := latestReleaseURL(repo)
 	resp, err := ghc.Get(url)
 	if err != nil {
@@ -65,13 +65,23 @@ func LatestRelease(client *resty.Client, repo string, quiet bool) (*types.Github
 	return ghr, nil
 }
 
-func TokenSet() bool {
+func TokenSet(token string) bool {
+	if token != "" {
+		return true
+	}
 	t, ok := os.LookupEnv(EnvGithubToken)
 	return ok && strings.TrimSpace(t) != ""
 }
 
-func handleGithubToken(ghc *resty.Request, quiet bool) {
-	if t, ok := os.LookupEnv(EnvGithubToken); ok && strings.TrimSpace(t) != "" {
+func handleGithubToken(ghc *resty.Request, token string, quiet bool) {
+	t := token
+	if t == "" {
+		if v, ok := os.LookupEnv(EnvGithubToken); ok && strings.TrimSpace(v) != "" {
+			t = v
+		}
+	}
+
+	if t != "" {
 		if !quiet {
 			log.Print("🔑 Using github token\n")
 		}
@@ -79,7 +89,7 @@ func handleGithubToken(ghc *resty.Request, quiet bool) {
 	}
 }
 
-func Release(client *resty.Client, repo, version string, quiet bool) (*types.GithubRelease, error) {
+func Release(client *resty.Client, repo, version, token string, quiet bool) (*types.GithubRelease, error) {
 	ghr := &types.GithubRelease{}
 	ghErr := &types.GithubError{}
 
@@ -88,7 +98,7 @@ func Release(client *resty.Client, repo, version string, quiet bool) (*types.Git
 		SetError(ghErr).
 		SetHeader("Accept", "application/json")
 
-	handleGithubToken(ghc, quiet)
+	handleGithubToken(ghc, token, quiet)
 
 	url := releaseURL(repo, version)
 	resp, err := ghc.Get(releaseURL(repo, version))
