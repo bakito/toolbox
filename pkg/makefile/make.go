@@ -70,7 +70,8 @@ func generateForTools(
 		return err
 	}
 
-	makefile, err := filepath.Abs(makefile)
+	 var makefile string
+	makefile, err = filepath.Abs(makefile)
 	if err != nil {
 		return err
 	}
