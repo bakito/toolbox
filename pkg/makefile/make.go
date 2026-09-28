@@ -59,13 +59,14 @@ func generateForTools(
 
 	out := &bytes.Buffer{}
 	t := template.Must(template.New("toolbox.mk").Parse(makefileTemplate))
-	if err := t.Execute(out, map[string]any{
+	err := t.Execute(out, map[string]any{
 		"Tools":           toolDataList,
 		"WithVersions":    withVersions,
 		"WithVersionArgs": withVersionArgs,
 		"Renovate":        renovate,
 		"Toolchain":       toolchain,
-	}); err != nil {
+	})
+	if err != nil {
 		return err
 	}
 
