@@ -99,6 +99,8 @@ Flags:
   -f, --file string       The Makefile path to generate tools in (default "Makefile")
   -h, --help              help for makefile
       --renovate          If enables, renovate config is added to the Makefile (renovate.json file, if existing)
+      --toolchain string[="go.mod"]  If set, use the specified Go version (numeric semver, e.g. 1.27.3);
+                                     a bare flag reads the version from go.mod
       --tools-go string   The tools.go file to check for tools dependencies (default "tools.go")
 ```
 

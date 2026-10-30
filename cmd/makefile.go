@@ -8,14 +8,15 @@ import (
 )
 
 const (
-	flagFile    = "file"
-	flagToolsGo = "tools-go"
+	flagFile      = "file"
+	flagToolsGo   = "tools-go"
+	flagToolchain = "toolchain"
 )
 
 var (
 	toolsGo   string
 	renovate  bool
-	toolchain bool
+	toolchain string
 	// makefileCmd represents the makefile command.
 	makefileCmd = &cobra.Command{
 		Use:   "makefile [tools]",
@@ -26,7 +27,11 @@ var (
 			if err != nil {
 				return err
 			}
-			return makefile.Generate(client, mf, renovate, toolchain, toolsGo, args...)
+			goVersion := toolchain
+			if goVersion == "go.mod" {
+				goVersion = ""
+			}
+			return makefile.Generate(client, mf, renovate, cmd.Flags().Changed(flagToolchain), goVersion, toolsGo, args...)
 		},
 	}
 )
@@ -41,6 +46,7 @@ func init() {
 		BoolVar(&renovate, "renovate", false, "If enabled, renovate config is added to the Makefile "+
 			"(renovate.json file, if existing)")
 	makefileCmd.Flags().
-		BoolVar(&toolchain, "toolchain", false, "If enabled, the Makefile evaluates the go version from "+
-			"go.mod and installs the tool with this go version")
+		StringVar(&toolchain, flagToolchain, "", "If set, use the specified Go version (numeric semver, e.g. 1.27.3); "+
+			"a bare flag reads the version from go.mod")
+	makefileCmd.Flags().Lookup(flagToolchain).NoOptDefVal = "go.mod"
 }

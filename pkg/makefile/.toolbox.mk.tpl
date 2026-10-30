@@ -9,7 +9,7 @@ $(TB_LOCALBIN):
 {{- if $.Toolchain }}
 
 ## Go Version
-TB_GO_VERSION ?= $(shell grep -E '^go [0-9]+\.[0-9]+' go.mod | awk '{print $$2}')
+TB_GO_VERSION ?= {{ if $.GoVersion }}{{ $.GoVersion }}{{ else }}$(shell grep -E '^go [0-9]+\.[0-9]+' go.mod | awk '{print $$2}'){{ end }}
 {{- end }}
 {{- if $.WithVersionArgs }}
 
@@ -55,6 +55,6 @@ tb.reset:
 ## Update Tools
 .PHONY: tb.update
 tb.update: tb.reset
-	toolbox makefile {{ if $.Renovate }}--renovate {{ end }}{{ if $.Toolchain }}--toolchain {{ end }}-f $(TB_LOCALDIR)/Makefile{{- range .Tools }}{{- if not .FromToolsGo }} \
+	toolbox makefile {{ if $.Renovate }}--renovate {{ end }}{{ if $.Toolchain }}--toolchain{{ if $.GoVersion }}={{ $.GoVersion }}{{ end }} {{ end }}-f $(TB_LOCALDIR)/Makefile{{- range .Tools }}{{- if not .FromToolsGo }} \
 		{{.Tool}}{{ if .VersionArg }}?{{ .VersionArg }}{{ end }}{{- end }}
 {{- end }}

@@ -18,19 +18,31 @@ import (
 )
 
 var (
-	githubPattern = regexp.MustCompile(`^github\.com/([\w-]+/[\w-]+).*$`)
-	getRelease    = github.LatestRelease
+	githubPattern    = regexp.MustCompile(`^github\.com/([\w-]+/[\w-]+).*$`)
+	goVersionPattern = regexp.MustCompile(`^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$`)
+	getRelease       = github.LatestRelease
 )
 
-func Generate(client *resty.Client, makefile string, renovate, toolchain bool, toolsFile string, tools ...string) error {
+func Generate(
+	client *resty.Client,
+	makefile string,
+	renovate, toolchain bool,
+	goVersion, toolsFile string,
+	tools ...string,
+) error {
+	if goVersion != "" && !goVersionPattern.MatchString(goVersion) {
+		return fmt.Errorf("invalid Go version %q: must be a numeric semver (e.g. 1.27.3)", goVersion)
+	}
+
 	argTools, toolData := mergeWithToolsGo(toolsFile, unique(tools))
-	return generateForTools(client, makefile, renovate, toolchain, argTools, toolData)
+	return generateForTools(client, makefile, renovate, toolchain, goVersion, argTools, toolData)
 }
 
 func generateForTools(
 	client *resty.Client,
 	makefile string,
 	renovate, toolchain bool,
+	goVersion string,
 	argTools []string,
 	toolDataList []toolData,
 ) error {
@@ -65,6 +77,7 @@ func generateForTools(
 		"WithVersionArgs": withVersionArgs,
 		"Renovate":        renovate,
 		"Toolchain":       toolchain,
+		"GoVersion":       goVersion,
 	})
 	if err != nil {
 		return err

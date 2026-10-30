@@ -27,6 +27,7 @@ func TestMake_Generate(t *testing.T) {
 		setup           func(t *testing.T, tempDir string) (string, string) // returns makeFilePath, includeFilePath
 		renovate        bool
 		toolchain       bool
+		goVersion       string
 		toolsGo         string
 		args            []string
 		expectedMake    string
@@ -109,6 +110,23 @@ func TestMake_Generate(t *testing.T) {
 			expectedInclude: ".toolbox.mk.toolchain.expected",
 		},
 		{
+			name: "should generateForTools a correct output with explicit toolchain version",
+			setup: func(t *testing.T, tempDir string) (string, string) {
+				t.Helper()
+				return copyFile(t, "Makefile.content", tempDir), filepath.Join(tempDir, includeFileName)
+			},
+			toolchain: true,
+			goVersion: "1.27.3",
+			args: []string{
+				"sigs.k8s.io/controller-tools/cmd/controller-gen@github.com/kubernetes-sigs/controller-tools",
+				"github.com/golangci/golangci-lint/v2/cmd/golangci-lint",
+				"github.com/bakito/semver",
+				"github.com/bakito/toolbox",
+			},
+			expectedMake:    "Makefile.content.expected",
+			expectedInclude: ".toolbox.mk.toolchain-version.expected",
+		},
+		{
 			name: "should generateForTools a correct output with versioned tool",
 			setup: func(t *testing.T, tempDir string) (string, string) {
 				t.Helper()
@@ -131,13 +149,38 @@ func TestMake_Generate(t *testing.T) {
 			runTempDir := filepath.Join(tempDir, tt.name)
 			_ = os.MkdirAll(runTempDir, 0o755)
 			makeFilePath, includeFilePath := tt.setup(t, runTempDir)
-			err := Generate(resty.New(), makeFilePath, tt.renovate, tt.toolchain, tt.toolsGo, tt.args...)
+			err := Generate(resty.New(), makeFilePath, tt.renovate, tt.toolchain, tt.goVersion, tt.toolsGo, tt.args...)
 			if err != nil {
 				t.Fatalf("Generate() error = %v", err)
 			}
 
 			assertEqualFiles(t, makeFilePath, filepath.Join(testDataDir, tt.expectedMake))
 			assertEqualFiles(t, includeFilePath, filepath.Join(testDataDir, tt.expectedInclude))
+		})
+	}
+}
+
+func TestMake_GenerateInvalidGoVersion(t *testing.T) {
+	for _, v := range []string{
+		"not-a-go-version",
+		"go1.27.3",
+		"v1.27.3",
+		"1.27",
+		"1",
+		"1.27.3rc1",
+		"1.27rc1",
+		"1.27.3-rc.1",
+		"1.27.3+build",
+		"01.27.3",
+		"1.27.3.1",
+		" 1.27.3",
+	} {
+		t.Run(v, func(t *testing.T) {
+			makeFilePath := copyFile(t, "Makefile.content", t.TempDir())
+			err := Generate(resty.New(), makeFilePath, false, true, v, "", "")
+			if err == nil {
+				t.Fatalf("Generate() error = nil for %q, want invalid Go version error", v)
+			}
 		})
 	}
 }
@@ -153,7 +196,7 @@ func TestMake_generateForTools(t *testing.T) {
 		dataForTool(true, "github.com/bakito/semver"),
 		dataForTool(true, "github.com/bakito/toolbox"),
 	}
-	err := generateForTools(resty.New(), makeFilePath, false, false, nil, td)
+	err := generateForTools(resty.New(), makeFilePath, false, false, "", nil, td)
 	if err != nil {
 		t.Fatalf("generateForTools() error = %v", err)
 	}
