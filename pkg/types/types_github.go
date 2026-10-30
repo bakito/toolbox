@@ -1,6 +1,7 @@
 package types
 
 import (
+	"regexp"
 	"slices"
 	"strings"
 	"time"
@@ -14,10 +15,37 @@ type GithubError struct {
 }
 
 type GithubRelease struct {
-	TagName string  `json:"tag_name"`
-	Name    string  `json:"name"`
-	Assets  []Asset `json:"assets"`
-	Body    string  `json:"body"`
+	TagName    string  `json:"tag_name"`
+	Name       string  `json:"name"`
+	Assets     []Asset `json:"assets"`
+	Body       string  `json:"body"`
+	Draft      bool    `json:"draft"`
+	Prerelease bool    `json:"prerelease"`
+}
+
+type GithubReleases []GithubRelease
+
+// GetLatest returns the latest non draft / non prerelease release with a valid semver tag matching the optional pattern.
+func (ghr GithubReleases) GetLatest(pattern *regexp.Regexp) *GithubRelease {
+	var latest *GithubRelease
+	for i := range ghr {
+		rel := &ghr[i]
+		if rel.Draft || rel.Prerelease || !IsReleaseVersion(rel.TagName, pattern) {
+			continue
+		}
+		if latest == nil || semver.Compare(rel.TagName, latest.TagName) > 0 {
+			latest = rel
+		}
+	}
+	return latest
+}
+
+// IsReleaseVersion checks if the version is a valid semver release version (no prerelease) matching the optional pattern.
+func IsReleaseVersion(version string, pattern *regexp.Regexp) bool {
+	if !semver.IsValid(version) || strings.Contains(version, "-") {
+		return false
+	}
+	return pattern == nil || pattern.MatchString(version)
 }
 
 type Asset struct {
@@ -59,13 +87,14 @@ type Uploader struct {
 
 type GithubTags []GithubTag
 
-func (ght GithubTags) GetLatest() *GithubTag {
+// GetLatest returns the latest valid semver release tag matching the optional pattern.
+func (ght GithubTags) GetLatest(pattern *regexp.Regexp) *GithubTag {
 	slices.SortFunc(ght, func(a, b GithubTag) int {
 		return semver.Compare(b.Name, a.Name)
 	})
 
 	for _, tag := range ght {
-		if semver.IsValid(tag.Name) && !strings.Contains(tag.Name, "-") {
+		if IsReleaseVersion(tag.Name, pattern) {
 			return &tag
 		}
 	}

@@ -75,6 +75,9 @@ tools:
     github: kubernetes/minikube
   gh:
     github: cli/cli
+  golangci-lint:
+    github: golangci/golangci-lint
+    releasePattern: ^v1\. # optional: only versions matching this regex are considered as latest (non semver versions are always ignored)
 target: /home/xyz/bin
 upx: false # if enabled and upx is installed, the tools will be upx compressed.
 githubApiToken: <your-github-token> # optional: if defined it will be used instead of env var GITHUB_TOKEN

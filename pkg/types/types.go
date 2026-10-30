@@ -75,6 +75,7 @@ type Tool struct {
 	Additional      []string `yaml:"additional,omitempty"`
 	Check           string   `yaml:"check,omitempty"`
 	SkipUpx         bool     `yaml:"skipUpx,omitempty"`
+	ReleasePattern  string   `yaml:"releasePattern,omitempty"`
 	CouldNotBeFound bool     `yaml:"-"`
 	Invalid         bool     `yaml:"-"`
 }

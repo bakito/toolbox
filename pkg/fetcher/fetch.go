@@ -86,7 +86,7 @@ func (f *fetcher) Fetch(cfgFile string, selectedTools ...string) error {
 
 	client := resty.New()
 
-	tbRel, err := github.LatestRelease(client, "bakito/toolbox", tb.GithubAPIToken, true)
+	tbRel, err := github.LatestRelease(client, "bakito/toolbox", tb.GithubAPIToken, true, "")
 	if err != nil {
 		return err
 	}
@@ -224,7 +224,7 @@ func (f *fetcher) handleTool(
 	currentVersion := ver[tool.Name]
 	if tool.Github != "" {
 		if configVersion == "" {
-			ghr, err = github.LatestRelease(client, tool.Github, tb.GithubAPIToken, false)
+			ghr, err = github.LatestRelease(client, tool.Github, tb.GithubAPIToken, false, tool.ReleasePattern)
 		} else {
 			ghr, err = github.Release(client, tool.Github, configVersion, tb.GithubAPIToken, false)
 		}
