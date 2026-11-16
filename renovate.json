@@ -13,5 +13,7 @@
       ]
     }
   ],
-  "dependencyDashboard": true
+  "dependencyDashboard": {
+    "enabled": true
+  }
 }
